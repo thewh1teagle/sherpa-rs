@@ -1,1 +1,1 @@
-mod speaker_identify;
+pub mod speaker_identify;
