@@ -29,7 +29,7 @@ fn main() -> Result<()> {
         None,
         false,
     );
-    let mut extractor = speaker_identify::EmbeddingExtractor::new(config);
+    let mut extractor = speaker_identify::EmbeddingExtractor::new_from_config(config).unwrap();
 
     // Compute the speaker embedding
     let embedding = extractor.compute_speaker_embedding(sample_rate, samples)?;

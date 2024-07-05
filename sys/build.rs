@@ -64,4 +64,13 @@ fn main() {
     println!("cargo:rustc-link-search={}", out.join("lib").display());
     println!("cargo:rustc-link-search=native={}", destination.display());
     println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
+    println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
+    println!("cargo:rustc-link-lib=static=onnxruntime");
+
+    #[cfg(target_os = "macos")]
+    {
+        println!("cargo:rustc-link-lib=framework=Foundation");
+    }
+    println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
+    println!("cargo:rustc-link-lib=c++");
 }

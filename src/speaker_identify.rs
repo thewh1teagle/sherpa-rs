@@ -1,9 +1,10 @@
 use eyre::{bail, Result};
-use std::ffi::CString;
+use std::{ffi::CString, path::PathBuf};
 
 #[derive(Debug)]
 pub struct ExtractorConfig {
     pub(crate) cfg: sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig,
+    model: String,
 }
 
 #[derive(Debug)]
@@ -21,15 +22,15 @@ impl ExtractorConfig {
         let provider = provider.unwrap_or("cpu".into());
         let num_threads = num_threads.unwrap_or(2);
         let debug = if debug { 1 } else { 0 };
-        let model = CString::new(model).unwrap();
+        let model_cstr = CString::new(model.clone()).unwrap();
         let provider = CString::new(provider).unwrap();
         let cfg = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig {
             debug,
-            model: model.as_ptr(),
+            model: model_cstr.as_ptr(),
             num_threads,
             provider: provider.as_ptr(),
         };
-        Self { cfg }
+        Self { cfg, model }
     }
 
     pub fn as_ptr(&self) -> *const sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig {
@@ -38,10 +39,14 @@ impl ExtractorConfig {
 }
 
 impl EmbeddingExtractor {
-    pub fn new(config: ExtractorConfig) -> Self {
+    pub fn new_from_config(config: ExtractorConfig) -> Result<Self> {
+        let model_path = PathBuf::from(&config.model);
+        if !model_path.exists() {
+            bail!("model not found at {}", model_path.display())
+        }
         let extractor =
             unsafe { sherpa_rs_sys::SherpaOnnxCreateSpeakerEmbeddingExtractor(config.as_ptr()) };
-        Self { extractor }
+        Ok(Self { extractor })
     }
 
     pub fn compute_speaker_embedding(
