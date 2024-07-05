@@ -1,0 +1,1 @@
+#include "sherpa-onnx/sherpa-onnx/c-api/c-api.h"

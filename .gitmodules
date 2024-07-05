@@ -1,0 +1,3 @@
+[submodule "sys/sherpa-onnx"]
+	path = sys/sherpa-onnx
+	url = https://github.com/k2-fsa/sherpa-onnx
