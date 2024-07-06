@@ -1,5 +1,6 @@
 use eyre::{bail, Result};
 use sherpa_rs::speaker_identify;
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
@@ -49,45 +50,45 @@ fn main() -> Result<()> {
     for file in &audio_files {
         let (sample_rate, samples) = read_audio_file(file)?;
         let embedding = extractor.compute_speaker_embedding(sample_rate, samples)?;
-        embeddings.push((file, embedding));
+        embeddings.push((file.to_string(), embedding));
     }
 
-    // Compute cosine similarities
-    let mut same_speaker_count = 0;
+    // Identify speakers
+    let mut speaker_id_counter = 0;
+    let mut speaker_map: HashMap<usize, Vec<String>> = HashMap::new();
+    let mut file_speaker_id: HashMap<String, usize> = HashMap::new();
+
     for i in 0..embeddings.len() {
-        for j in i + 1..embeddings.len() {
+        let mut assigned = false;
+        for j in 0..i {
             let sim =
                 speaker_identify::compute_cosine_similarity(&embeddings[i].1, &embeddings[j].1);
-            println!(
-                "🔍 Cosine similarity between {} and {}: {:.4}",
-                embeddings[i].0, embeddings[j].0, sim
-            );
-
             if sim > speaker_identify::DEFAULT_SIMILARITY_THRESHOLD {
-                println!(
-                    "✅ {} and {} are likely the same speaker.",
-                    embeddings[i].0, embeddings[j].0
-                );
-                same_speaker_count += 1;
-            } else {
-                println!(
-                    "❌ {} and {} are likely different speakers.",
-                    embeddings[i].0, embeddings[j].0
-                );
+                let speaker_id = file_speaker_id[&embeddings[j].0];
+                speaker_map
+                    .entry(speaker_id)
+                    .or_default()
+                    .push(embeddings[i].0.clone());
+                file_speaker_id.insert(embeddings[i].0.clone(), speaker_id);
+                assigned = true;
+                break;
             }
+        }
+        if !assigned {
+            speaker_map
+                .entry(speaker_id_counter)
+                .or_default()
+                .push(embeddings[i].0.clone());
+            file_speaker_id.insert(embeddings[i].0.clone(), speaker_id_counter);
+            speaker_id_counter += 1;
         }
     }
 
-    // Print summary
+    // Print results
     println!("--------");
-    println!("📊 Summary:");
-    if same_speaker_count == 0 {
-        println!("No pairs of files are likely to be from the same speaker.");
-    } else {
-        println!(
-            "There are {} pairs of files that are likely from the same speaker.",
-            same_speaker_count
-        );
+    println!("📊 Speaker Identification Summary:");
+    for (speaker_id, files) in &speaker_map {
+        println!("Speaker {}: {:?}", speaker_id, files);
     }
 
     Ok(())
