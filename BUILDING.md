@@ -1,8 +1,7 @@
 # Build
 
 ```console
-git clone https://github.com/thewh1teagle/sherpa-rs
+git clone https://github.com/thewh1teagle/sherpa-rs --recursive
 cd sherpa-rs
-git submodule update --init
 cargo build --release
 ```
