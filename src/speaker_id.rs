@@ -4,6 +4,8 @@ use std::{
     path::PathBuf,
 };
 
+use crate::get_default_provider;
+
 /// If similarity is greater or equal to thresold than it's a match!
 pub const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.5;
 
@@ -26,12 +28,7 @@ impl ExtractorConfig {
         num_threads: Option<i32>,
         debug: bool,
     ) -> Self {
-        let default_provider = if cfg!(target_os = "macos") {
-            "coreml"
-        } else {
-            "cpu"
-        };
-        let provider = provider.unwrap_or(default_provider.into());
+        let provider = provider.unwrap_or(get_default_provider());
         let num_threads = num_threads.unwrap_or(2);
         let debug = if debug { 1 } else { 0 };
         let model_cstr = CString::new(model.clone()).unwrap();

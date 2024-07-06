@@ -2,3 +2,6 @@ target/
 *.onnx
 .DS_Store
 venv/
+vits-piper*
+*.wav
+!samples/*.wav

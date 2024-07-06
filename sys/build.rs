@@ -64,7 +64,7 @@ fn main() {
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
         .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
-        .define("SHERPA_ONNX_ENABLE_TTS", "OFF");
+        .define("SHERPA_ONNX_ENABLE_TTS", "ON");
 
     #[cfg(windows)]
     {
@@ -99,5 +99,17 @@ fn main() {
         println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
         println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
         println!("cargo:rustc-link-lib=static=ssentencepiece_core");
+    }
+
+    // tts
+    if true {
+        println!("cargo:rustc-link-lib=static=espeak-ng");
+        println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
+        println!("cargo:rustc-link-lib=static=ssentencepiece_core");
+        println!("cargo:rustc-link-lib=static=piper_phonemize");
+        println!("cargo:rustc-link-lib=static=ucd");
     }
 }

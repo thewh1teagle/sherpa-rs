@@ -1,3 +1,5 @@
+/// wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
+/// cargo run --example speaker_embedding
 use eyre::{bail, Result};
 use sherpa_rs::speaker_id;
 use std::io::Cursor;

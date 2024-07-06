@@ -1,6 +1,8 @@
 use eyre::Result;
 use std::ffi::CString;
 
+use crate::get_default_provider;
+
 #[derive(Debug)]
 pub struct VadConfig {
     pub(crate) cfg: sherpa_rs_sys::SherpaOnnxVadModelConfig,
@@ -23,12 +25,7 @@ impl VadConfig {
         num_threads: Option<i32>,
         debug: Option<bool>,
     ) -> Self {
-        let default_provider = if cfg!(target_os = "macos") {
-            "coreml"
-        } else {
-            "cpu"
-        };
-        let provider = provider.unwrap_or(default_provider.into());
+        let provider = provider.unwrap_or(get_default_provider());
         let provider = CString::new(provider).unwrap();
         let model = CString::new(model).unwrap();
 
