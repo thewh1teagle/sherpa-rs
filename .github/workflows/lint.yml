@@ -10,7 +10,7 @@ jobs:
       - name: Check out code into the proper directory
         uses: actions/checkout@v3
         with:
-          submodules: "recursive"
+          submodules: "true"
 
       - name: Cache rust
         uses: Swatinem/rust-cache@v2
