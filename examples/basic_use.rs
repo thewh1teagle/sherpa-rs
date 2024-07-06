@@ -1,6 +1,7 @@
 use eyre::{bail, Result};
 use sherpa_rs::speaker_identify;
 use std::io::Cursor;
+use std::path::PathBuf;
 
 fn main() -> Result<()> {
     // Read audio data from the file
@@ -23,8 +24,14 @@ fn main() -> Result<()> {
         .collect();
 
     // Create the extractor configuration and extractor
+    let mut model_path = PathBuf::from(std::env::current_dir()?);
+    model_path.push("wespeaker_zh_cnceleb_resnet34.onnx");
+
+    println!("loading model from {}", model_path.display());
+
+    // Create the extractor configuration and extractor
     let config = speaker_identify::ExtractorConfig::new(
-        "wespeaker_zh_cnceleb_resnet34.onnx".into(),
+        model_path.into_os_string().into_string().unwrap(),
         None,
         None,
         false,

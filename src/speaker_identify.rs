@@ -1,5 +1,5 @@
 use eyre::{bail, Result};
-use nalgebra::{DVector, Norm};
+use nalgebra::DVector;
 use std::{ffi::CString, path::PathBuf};
 
 /// If similarity is greater or equal to thresold than it's a match!
