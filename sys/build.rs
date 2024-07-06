@@ -3,6 +3,7 @@ extern crate bindgen;
 use cmake::Config;
 use std::env;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 fn main() {
     let out = PathBuf::from(env::var("OUT_DIR").unwrap());
@@ -14,26 +15,28 @@ fn main() {
     if !sherpa_root.exists() {
         std::fs::create_dir_all(&sherpa_root).expect("Failed to create sherpa-onnx directory");
 
-        fs_extra::dir::copy(sherpa_onnx_path.clone(), &out, &Default::default()).unwrap_or_else(
-            |e| {
-                panic!(
-                    "Failed to copy sherpa sources from {} into {}: {}",
-                    sherpa_onnx_path.display(),
-                    sherpa_root.display(),
-                    e
-                )
-            },
-        );
-                // Two problematic git files
-        // Otherwise copy will fail
-        #[cfg(not(windows))]
+        #[cfg(windows)]
         {
-            let path_to_remove = out
-                .join("sherpa-onnx")
-                .join("scripts")
-                .join("go")
-                .join("_internal");
-            let _ = std::fs::remove_dir_all(path_to_remove);
+            fs_extra::dir::copy(sherpa_onnx_path.clone(), &out, &Default::default())
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "Failed to copy sherpa sources from {} into {}: {}",
+                        sherpa_onnx_path.display(),
+                        sherpa_root.display(),
+                        e
+                    )
+                });
+        }
+
+        // There's some invalid files. better to use cp
+        #[cfg(unix)]
+        {
+            Command::new("cp")
+                .arg("-rf")
+                .arg(sherpa_onnx_path.clone())
+                .arg(out.clone())
+                .status()
+                .expect("Failed to execute cp command");
         }
     }
 
@@ -60,7 +63,7 @@ fn main() {
         .define("BUILD_SHARED_LIBS", "OFF")
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
-        .define("SHERPA_ONNX_ENABLE_BINARY", "ON")
+        .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
         .define("SHERPA_ONNX_ENABLE_TTS", "OFF");
 
     #[cfg(windows)]
@@ -72,13 +75,11 @@ fn main() {
 
     println!("cargo:rustc-link-search=native={}", destination.display());
     println!("cargo:rustc-link-search={}", out.join("lib").display());
-    
 
     println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
     println!("cargo:rustc-link-lib=static=onnxruntime");
     println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
-
 
     #[cfg(target_os = "macos")]
     {
@@ -99,5 +100,4 @@ fn main() {
         println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
         println!("cargo:rustc-link-lib=static=ssentencepiece_core");
     }
-    
 }
