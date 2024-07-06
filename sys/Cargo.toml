@@ -7,6 +7,13 @@ homepage = "https://github.com/thewh1teagle/sherpa-rs"
 repository = "https://github.com/thewh1teagle/sherpa-rs"
 license = "MIT"
 description = "Rust bindings to https://github.com/k2-fsa/sherpa-onnx"
+keywords = [
+    "audio",
+    "embeddings",
+    "speech-recognition",
+    "sherpa",
+    "diarization",
+]
 
 include = [
     "sherpa-onnx/sherpa-onnx/c-api",
