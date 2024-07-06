@@ -16,16 +16,16 @@ fn main() {
 
         // Two problematic git files
         // Otherwise copy will fail
-        std::fs::remove_file(
-            sherpa_onnx_path.join("scripts/go/_internal/vad-spoken-language-identification/run.sh"),
-        )
-        .unwrap();
-        std::fs::remove_file(
-            sherpa_onnx_path
-                .join("scripts/go/_internal/vad-spoken-language-identification/main.go"),
-        )
-        .unwrap();
-
+        #[cfg(not(windows))]
+        {
+            let path_to_remove = sherpa_onnx_path
+                .join("scripts")
+                .join("go")
+                .join("_internal")
+                .join("vad-spoken-language-identification");
+            std::fs::remove_file(path_to_remove.join("run.sh")).unwrap();
+            std::fs::remove_file(path_to_remove.join("main.go")).unwrap();
+        }
         fs_extra::dir::copy(sherpa_onnx_path.clone(), &out, &Default::default()).unwrap_or_else(
             |e| {
                 panic!(
@@ -59,18 +59,39 @@ fn main() {
     config
         .profile("Release")
         .define("BUILD_SHARED_LIBS", "OFF")
-        .define("SHERPA_ONNX_ENABLE_C_API", "ON");
-    let destination = config.build();
-    println!("cargo:rustc-link-search={}", out.join("lib").display());
+        .define("SHERPA_ONNX_ENABLE_C_API", "ON")
+        .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
+        .define("SHERPA_ONNX_ENABLE_BINARY", "ON")
+        .define("SHERPA_ONNX_ENABLE_TTS", "OFF");
+
+    #[cfg(windows)]
+    {
+        config.define("SHERPA_ONNX_ENABLE_PORTAUDIO", "ON");
+    }
+
+    let destination = config.
+        very_verbose(true)
+        .build();
+
     println!("cargo:rustc-link-search=native={}", destination.display());
+    #[cfg(target_os = "macos")]
+    {
+        println!("cargo:rustc-link-search={}", out.join("lib").display());
+    }
+    #[cfg(windows)]
+    {
+        println!("cargo:rustc-link-search={}", out.join("lib").join("Release").display());
+    }
+
+    
     println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
     println!("cargo:rustc-link-lib=static=onnxruntime");
+    println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
+    println!("cargo:rustc-link-lib=c++");
 
     #[cfg(target_os = "macos")]
     {
         println!("cargo:rustc-link-lib=framework=Foundation");
     }
-    println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
-    println!("cargo:rustc-link-lib=c++");
 }
