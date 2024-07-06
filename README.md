@@ -23,7 +23,7 @@ cargo run --example speaker_id
 
 ## Docs
 
-See [sherpa/onnx/speaker-identification/index.html](https://k2-fsa.github.io/sherpa/onnx/speaker-identification)
+See [sherpa/intro.html](https://k2-fsa.github.io/sherpa/intro.html)
 
 ## Examples
 
