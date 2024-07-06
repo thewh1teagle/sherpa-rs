@@ -5,6 +5,13 @@
 
 Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 
+## Features
+
+- Spoken language detection
+- Speaker embedding (labeling)
+- Text to speech
+- Voice activity detection
+
 ## Install
 
 ```console
