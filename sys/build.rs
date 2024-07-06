@@ -23,8 +23,8 @@ fn main() {
                 .join("go")
                 .join("_internal")
                 .join("vad-spoken-language-identification");
-            std::fs::remove_file(path_to_remove.join("run.sh")).unwrap();
-            std::fs::remove_file(path_to_remove.join("main.go")).unwrap();
+            let _ = std::fs::remove_file(path_to_remove.join("run.sh"));
+            let _ = std::fs::remove_file(path_to_remove.join("main.go"));
         }
         fs_extra::dir::copy(sherpa_onnx_path.clone(), &out, &Default::default()).unwrap_or_else(
             |e| {
@@ -69,9 +69,7 @@ fn main() {
         config.define("SHERPA_ONNX_ENABLE_PORTAUDIO", "ON");
     }
 
-    let destination = config.
-        very_verbose(true)
-        .build();
+    let destination = config.very_verbose(true).build();
 
     println!("cargo:rustc-link-search=native={}", destination.display());
     #[cfg(target_os = "macos")]
@@ -83,12 +81,10 @@ fn main() {
         println!("cargo:rustc-link-search={}", out.join("lib").display());
     }
 
-    
     println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
     println!("cargo:rustc-link-lib=static=onnxruntime");
     println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
-    
 
     #[cfg(windows)]
     {
