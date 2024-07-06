@@ -32,9 +32,9 @@ fn main() -> Result<()> {
 
     // Create the extractor configuration and extractor
     let mut model_path = PathBuf::from(std::env::current_dir()?);
-    model_path.push("wespeaker_en_voxceleb_resnet152_LM.onnx");
+    model_path.push("nemo_en_speakerverification_speakernet.onnx");
 
-    println!("Loading model from {}", model_path.display());
+    println!("🎤 Loading model from {}", model_path.display());
 
     let config = speaker_identify::ExtractorConfig::new(
         model_path.into_os_string().into_string().unwrap(),
@@ -42,11 +42,11 @@ fn main() -> Result<()> {
         None,
         false,
     );
-    let mut extractor = speaker_identify::EmbeddingExtractor::new_from_config(config).unwrap();
+    let mut extractor = speaker_identify::EmbeddingExtractor::new_from_config(config)?;
 
     // Read and process each audio file
     let mut embeddings = Vec::new();
-    for file in audio_files {
+    for file in &audio_files {
         let (sample_rate, samples) = read_audio_file(file)?;
         let embedding = extractor.compute_speaker_embedding(sample_rate, samples)?;
         embeddings.push((file, embedding));
@@ -59,19 +59,19 @@ fn main() -> Result<()> {
             let sim =
                 speaker_identify::compute_cosine_similarity(&embeddings[i].1, &embeddings[j].1);
             println!(
-                "Cosine similarity between {} and {}: {:.4}",
+                "🔍 Cosine similarity between {} and {}: {:.4}",
                 embeddings[i].0, embeddings[j].0, sim
             );
 
             if sim > speaker_identify::DEFAULT_SIMILARITY_THRESHOLD {
                 println!(
-                    "{} and {} are likely the same speaker.",
+                    "✅ {} and {} are likely the same speaker.",
                     embeddings[i].0, embeddings[j].0
                 );
                 same_speaker_count += 1;
             } else {
                 println!(
-                    "{} and {} are likely different speakers.",
+                    "❌ {} and {} are likely different speakers.",
                     embeddings[i].0, embeddings[j].0
                 );
             }
@@ -80,7 +80,7 @@ fn main() -> Result<()> {
 
     // Print summary
     println!("--------");
-    println!("Summary:");
+    println!("📊 Summary:");
     if same_speaker_count == 0 {
         println!("No pairs of files are likely to be from the same speaker.");
     } else {

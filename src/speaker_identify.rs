@@ -3,7 +3,7 @@ use nalgebra::DVector;
 use std::{ffi::CString, path::PathBuf};
 
 /// If similarity is greater or equal to thresold than it's a match!
-pub const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.9;
+pub const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.5;
 
 #[derive(Debug)]
 pub struct ExtractorConfig {

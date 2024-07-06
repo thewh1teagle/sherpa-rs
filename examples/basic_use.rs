@@ -25,7 +25,7 @@ fn main() -> Result<()> {
 
     // Create the extractor configuration and extractor
     let mut model_path = PathBuf::from(std::env::current_dir()?);
-    model_path.push("wespeaker_zh_cnceleb_resnet34.onnx");
+    model_path.push("nemo_en_speakerverification_speakernet.onnx");
 
     println!("loading model from {}", model_path.display());
 
