@@ -105,6 +105,10 @@ fn main() {
     #[cfg(target_os = "macos")]
     {
         println!("cargo:rustc-link-lib=framework=Foundation");
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
+        println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
         println!("cargo:rustc-link-lib=c++");
     }
 

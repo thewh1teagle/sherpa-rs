@@ -28,7 +28,7 @@ fn main() -> Result<()> {
     let mut extractor = language_id::SpokenLanguageId::new(encoder, decoder, None, None, None);
 
     let language = extractor.compute(samples, sample_rate)?;
-    println!("Spoken language: {:?}", language);
+    println!("Spoken language: {}", language);
 
     Ok(())
 }
