@@ -1,7 +1,6 @@
+use crate::get_default_provider;
 use eyre::Result;
 use std::ffi::CString;
-
-use crate::get_default_provider;
 
 #[derive(Debug)]
 pub struct VadConfig {
@@ -72,6 +71,7 @@ impl Vad {
         unsafe {
             let segment_ptr = sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorFront(self.vad);
             let segment = segment_ptr.read();
+            // Free
             sherpa_rs_sys::SherpaOnnxDestroySpeechSegment(segment_ptr);
             return segment;
         };
@@ -80,6 +80,14 @@ impl Vad {
     pub fn pop(&mut self) {
         unsafe {
             sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorPop(self.vad);
+        }
+    }
+}
+
+impl Drop for Vad {
+    fn drop(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxDestroyVoiceActivityDetector(self.vad);
         }
     }
 }

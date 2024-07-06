@@ -96,7 +96,8 @@ impl EmbeddingExtractor {
             }
             log::debug!("using dimensions {}", self.embedding_size);
             let embedding = std::slice::from_raw_parts(embedding_ptr, self.embedding_size).to_vec();
-            // Free ptr
+            // Free
+            sherpa_rs_sys::DestroyOnlineStream(stream);
             sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorDestroyEmbedding(embedding_ptr);
             Ok(embedding)
         }
@@ -111,6 +112,14 @@ impl EmbeddingExtractor {
             let result =
                 sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorIsReady(self.extractor, stream);
             result != 0
+        }
+    }
+}
+
+impl Drop for EmbeddingExtractor {
+    fn drop(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxDestroySpeakerEmbeddingExtractor(self.extractor);
         }
     }
 }

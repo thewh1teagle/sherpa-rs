@@ -45,3 +45,11 @@ impl EmbeddingManager {
         }
     }
 }
+
+impl Drop for EmbeddingManager {
+    fn drop(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxDestroySpeakerEmbeddingManager(self.manager);
+        };
+    }
+}

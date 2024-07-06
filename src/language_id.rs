@@ -54,7 +54,19 @@ impl SpokenLanguageId {
             }
             let language_ptr = (*language_result_ptr).lang;
             let c_language = CStr::from_ptr(language_ptr);
+            // Free
+            sherpa_rs_sys::SherpaOnnxDestroySpokenLanguageIdentificationResult(language_result_ptr);
+            sherpa_rs_sys::DestroyOfflineStream(stream);
+
             Ok(c_language.to_string_lossy().to_string())
+        }
+    }
+}
+
+impl Drop for SpokenLanguageId {
+    fn drop(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxDestroySpokenLanguageIdentification(self.slid);
         }
     }
 }

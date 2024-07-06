@@ -1,8 +1,7 @@
+use crate::get_default_provider;
 use eyre::{bail, Result};
 use hound::{WavSpec, WavWriter};
 use std::ffi::CString;
-
-use crate::get_default_provider;
 
 #[derive(Debug)]
 pub struct TtsVitsModelConfig {
@@ -148,6 +147,7 @@ impl OfflineTts {
             if n_samples.is_negative() {
                 bail!("no samples found")
             }
+            // Free
             sherpa_rs_sys::SherpaOnnxDestroyOfflineTtsGeneratedAudio(audio_ptr);
             let samples: &[f32] = std::slice::from_raw_parts(audio.samples, n_samples as usize);
             let sample_rate = audio.sample_rate;
