@@ -38,6 +38,15 @@ fn main() {
         }
     }
 
+    // Speed up build
+    env::set_var(
+        "CMAKE_BUILD_PARALLEL_LEVEL",
+        std::thread::available_parallelism()
+            .unwrap()
+            .get()
+            .to_string(),
+    );
+
     // Set up bindgen builder
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")

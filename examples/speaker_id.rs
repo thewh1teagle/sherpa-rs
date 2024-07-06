@@ -1,5 +1,5 @@
 use eyre::{bail, Result};
-use sherpa_rs::speaker_id::{self, EmbeddingManager};
+use sherpa_rs::{embedding_manager, speaker_id};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -55,7 +55,8 @@ fn main() -> Result<()> {
     }
 
     // Create the embedding manager
-    let mut embedding_manager = EmbeddingManager::new(extractor.embedding_size.try_into().unwrap()); // Assuming dimension 512 for embeddings
+    let mut embedding_manager =
+        embedding_manager::EmbeddingManager::new(extractor.embedding_size.try_into().unwrap()); // Assuming dimension 512 for embeddings
 
     // Map to store speakers and their corresponding files
     let mut speaker_map: HashMap<String, Vec<String>> = HashMap::new();
