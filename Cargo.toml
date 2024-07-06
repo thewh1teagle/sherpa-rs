@@ -24,3 +24,13 @@ env_logger = { version = "0.11.3", features = ["color"] }
 
 [workspace]
 members = ["sys"]
+
+[features]
+default = []
+tts = ["sherpa-rs-sys/tts"]
+cuda = ["sherpa-rs-sys/cuda"]
+
+
+[[example]]
+name = "tts"
+required-features = ["tts"]

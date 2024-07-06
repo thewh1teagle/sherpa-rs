@@ -1,5 +1,3 @@
-extern crate bindgen;
-
 use cmake::Config;
 use std::env;
 use std::path::{Path, PathBuf};
@@ -58,13 +56,26 @@ fn main() {
     println!("cargo:rerun-if-changed=./sherpa-onnx");
 
     let mut config = Config::new(&sherpa_root);
+
     config
         .profile("Release")
         .define("BUILD_SHARED_LIBS", "OFF")
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
-        .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
-        .define("SHERPA_ONNX_ENABLE_TTS", "ON");
+        .define("SHERPA_ONNX_ENABLE_BINARY", "OFF");
+
+    // TTS
+    config.define(
+        "SHERPA_ONNX_ENABLE_TTS",
+        if cfg!(feature = "tts") { "ON" } else { "OFF" },
+    );
+
+    // Cuda
+    // https://k2-fsa.github.io/k2/installation/cuda-cudnn.html
+    #[cfg(feature = "cuda")]
+    {
+        config.define("SHERPA_ONNX_ENABLE_GPU", "ON")
+    }
 
     #[cfg(windows)]
     {
@@ -73,25 +84,28 @@ fn main() {
 
     let destination = config.very_verbose(true).build();
 
+    // Common
     println!("cargo:rustc-link-search=native={}", destination.display());
     println!("cargo:rustc-link-search={}", out.join("lib").display());
-
     println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
     println!("cargo:rustc-link-lib=static=onnxruntime");
     println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
 
+    // macOS
     #[cfg(target_os = "macos")]
     {
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=c++");
     }
 
+    // Linux
     #[cfg(target_os = "linux")]
     {
         println!("cargo:rustc-link-lib=dylib=stdc++");
     }
 
+    // Linux and Windows
     #[cfg(any(target_os = "linux", windows))]
     {
         println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
@@ -101,8 +115,9 @@ fn main() {
         println!("cargo:rustc-link-lib=static=ssentencepiece_core");
     }
 
-    // tts
-    if true {
+    // TTS
+    #[cfg(feature = "tts")]
+    {
         println!("cargo:rustc-link-lib=static=espeak-ng");
         println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
         println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
