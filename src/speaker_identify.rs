@@ -23,7 +23,12 @@ impl ExtractorConfig {
         num_threads: Option<i32>,
         debug: bool,
     ) -> Self {
-        let provider = provider.unwrap_or("cpu".into());
+        let default_provider = if cfg!(target_os = "macos") {
+            "coreml"
+        } else {
+            "cpu"
+        };
+        let provider = provider.unwrap_or(default_provider.into());
         let num_threads = num_threads.unwrap_or(2);
         let debug = if debug { 1 } else { 0 };
         let model_cstr = CString::new(model.clone()).unwrap();
