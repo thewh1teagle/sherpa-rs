@@ -3,8 +3,17 @@ name = "sherpa-rs"
 version = "0.1.0"
 edition = "2021"
 authors = ["thewh1teagle"]
+license = "MIT"
 repository = "https://github.com/thewh1teagle/sherpa-rs"
 description = "Rust bindings to https://github.com/k2-fsa/sherpa-onnx"
+readme = "README.md"
+keywords = [
+    "audio",
+    "embeddings",
+    "speech-recognition",
+    "sherpa",
+    "diarization",
+]
 
 [dependencies]
 eyre = "0.6.12"
