@@ -1,1 +1,2 @@
-pub mod speaker_identify;
+pub mod speaker_id;
+pub mod vad;

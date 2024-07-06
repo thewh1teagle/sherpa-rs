@@ -1,5 +1,5 @@
 use eyre::{bail, Result};
-use sherpa_rs::speaker_identify;
+use sherpa_rs::speaker_id;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -37,13 +37,13 @@ fn main() -> Result<()> {
 
     println!("🎤 Loading model from {}", model_path.display());
 
-    let config = speaker_identify::ExtractorConfig::new(
+    let config = speaker_id::ExtractorConfig::new(
         model_path.into_os_string().into_string().unwrap(),
         None,
         None,
         false,
     );
-    let mut extractor = speaker_identify::EmbeddingExtractor::new_from_config(config)?;
+    let mut extractor = speaker_id::EmbeddingExtractor::new_from_config(config)?;
 
     // Read and process each audio file
     let mut embeddings = Vec::new();
@@ -61,9 +61,8 @@ fn main() -> Result<()> {
     for i in 0..embeddings.len() {
         let mut assigned = false;
         for j in 0..i {
-            let sim =
-                speaker_identify::compute_cosine_similarity(&embeddings[i].1, &embeddings[j].1);
-            if sim > speaker_identify::DEFAULT_SIMILARITY_THRESHOLD {
+            let sim = speaker_id::compute_cosine_similarity(&embeddings[i].1, &embeddings[j].1);
+            if sim > speaker_id::DEFAULT_SIMILARITY_THRESHOLD {
                 let speaker_id = file_speaker_id[&embeddings[j].0];
                 speaker_map
                     .entry(speaker_id)

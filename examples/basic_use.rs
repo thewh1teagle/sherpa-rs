@@ -1,5 +1,5 @@
 use eyre::{bail, Result};
-use sherpa_rs::speaker_identify;
+use sherpa_rs::speaker_id;
 use std::io::Cursor;
 use std::path::PathBuf;
 
@@ -30,13 +30,13 @@ fn main() -> Result<()> {
     println!("loading model from {}", model_path.display());
 
     // Create the extractor configuration and extractor
-    let config = speaker_identify::ExtractorConfig::new(
+    let config = speaker_id::ExtractorConfig::new(
         model_path.into_os_string().into_string().unwrap(),
         None,
         None,
         false,
     );
-    let mut extractor = speaker_identify::EmbeddingExtractor::new_from_config(config).unwrap();
+    let mut extractor = speaker_id::EmbeddingExtractor::new_from_config(config).unwrap();
 
     // Compute the speaker embedding
     let embedding = extractor.compute_speaker_embedding(sample_rate, samples)?;
