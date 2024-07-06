@@ -52,6 +52,13 @@ impl VadConfig {
     }
 }
 
+#[derive(Debug)]
+pub struct SpeechSegment {
+    pub start: i32,
+    pub stop: i32,
+    pub samples: *mut f32,
+}
+
 impl Vad {
     pub fn new_from_config(config: VadConfig, buffer_size_in_seconds: f32) -> Result<Self> {
         unsafe {
@@ -67,13 +74,29 @@ impl Vad {
         unsafe { sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorEmpty(self.vad) != 0 }
     }
 
-    pub fn front(&mut self) -> sherpa_rs_sys::SherpaOnnxSpeechSegment {
+    pub fn front(&mut self, sample_rate: i32) -> SpeechSegment {
         unsafe {
             let segment_ptr = sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorFront(self.vad);
-            let segment = segment_ptr.read();
+            let raw_segment = segment_ptr.read();
             // Free
             sherpa_rs_sys::SherpaOnnxDestroySpeechSegment(segment_ptr);
-            return segment;
+            let stop = raw_segment.start + (raw_segment.n / sample_rate);
+
+            SpeechSegment {
+                samples: raw_segment.samples,
+                start: raw_segment.start,
+                stop: stop,
+            }
+        }
+    }
+
+    pub fn accept_waveform(&mut self, samples: Vec<f32>) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorAcceptWaveform(
+                self.vad,
+                samples.as_ptr(),
+                samples.len().try_into().unwrap(),
+            )
         };
     }
 
