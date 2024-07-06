@@ -86,8 +86,10 @@ impl EmbeddingExtractor {
             }
 
             // Assume embedding size is known or can be retrieved
-            let embedding_size = 256; // This should be replaced with the actual size
-            let embedding = std::slice::from_raw_parts(embedding_ptr, embedding_size).to_vec();
+            let embedding_size = self.get_dimension();
+            log::debug!("using dimensions {}", embedding_size);
+            let embedding =
+                std::slice::from_raw_parts(embedding_ptr, embedding_size as usize).to_vec();
 
             Ok(embedding)
         }
@@ -103,6 +105,11 @@ impl EmbeddingExtractor {
                 sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorIsReady(self.extractor, stream);
             result != 0
         }
+    }
+
+    /// Return the dimension of the embedding
+    pub fn get_dimension(&mut self) -> i32 {
+        unsafe { sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorDim(self.extractor) }
     }
 }
 
