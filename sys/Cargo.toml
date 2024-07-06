@@ -6,7 +6,16 @@ authors = ["thewh1teagle"]
 homepage = "https://github.com/thewh1teagle/sherpa-rs"
 repository = "https://github.com/thewh1teagle/sherpa-rs"
 
-[dependencies]
+include = [
+    "sherpa-onnx/cmake",
+    "sherpa-onnx/CMakeLists.txt",
+    "sherpa-onnx/LICENSE",
+    "sherpa-onnx/sherpa-onnx/c-api.cc",
+    "sherpa-onnx/sherpa-onnx/c-api.h",
+    "src/*.rs",
+    "build.rs",
+    "wrapper.h",
+]
 
 [build-dependencies]
 bindgen = "0.69.4"
