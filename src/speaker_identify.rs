@@ -30,9 +30,9 @@ impl ExtractorConfig {
         let provider = CString::new(provider).unwrap();
         let cfg = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig {
             debug,
-            model: model_cstr.as_ptr(),
+            model: model_cstr.into_raw(),
             num_threads,
-            provider: provider.as_ptr(),
+            provider: provider.into_raw(),
         };
         Self { cfg, model }
     }
