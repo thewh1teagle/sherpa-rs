@@ -14,6 +14,7 @@ pub struct ExtractorConfig {
 #[derive(Debug)]
 pub struct EmbeddingExtractor {
     pub(crate) extractor: *const sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractor,
+    embedding_size: usize,
 }
 
 impl ExtractorConfig {
@@ -55,7 +56,15 @@ impl EmbeddingExtractor {
         }
         let extractor =
             unsafe { sherpa_rs_sys::SherpaOnnxCreateSpeakerEmbeddingExtractor(config.as_ptr()) };
-        Ok(Self { extractor })
+        // Assume embedding size is known or can be retrieved
+        let embedding_size =
+            unsafe { sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorDim(extractor) }
+                .try_into()
+                .unwrap();
+        Ok(Self {
+            extractor,
+            embedding_size,
+        })
     }
 
     pub fn compute_speaker_embedding(
@@ -89,13 +98,10 @@ impl EmbeddingExtractor {
             if embedding_ptr.is_null() {
                 bail!("Failed to compute speaker embedding");
             }
-
-            // Assume embedding size is known or can be retrieved
-            let embedding_size = self.get_dimension();
-            log::debug!("using dimensions {}", embedding_size);
-            let embedding =
-                std::slice::from_raw_parts(embedding_ptr, embedding_size as usize).to_vec();
-
+            log::debug!("using dimensions {}", self.embedding_size);
+            let embedding = std::slice::from_raw_parts(embedding_ptr, self.embedding_size).to_vec();
+            // Free ptr
+            sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorDestroyEmbedding(embedding_ptr);
             Ok(embedding)
         }
     }
@@ -110,11 +116,6 @@ impl EmbeddingExtractor {
                 sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorIsReady(self.extractor, stream);
             result != 0
         }
-    }
-
-    /// Return the dimension of the embedding
-    pub fn get_dimension(&mut self) -> i32 {
-        unsafe { sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorDim(self.extractor) }
     }
 }
 
