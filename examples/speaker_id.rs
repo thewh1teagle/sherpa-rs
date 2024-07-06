@@ -1,5 +1,5 @@
 use eyre::{bail, Result};
-use sherpa_rs::speaker_id;
+use sherpa_rs::speaker_id::{self, EmbeddingManager};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -23,6 +23,7 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
 
 fn main() -> Result<()> {
     env_logger::init();
+
     // Define paths to the audio files
     let audio_files = vec![
         "samples/obama.wav",
@@ -45,7 +46,7 @@ fn main() -> Result<()> {
     );
     let mut extractor = speaker_id::EmbeddingExtractor::new_from_config(config)?;
 
-    // Read and process each audio file
+    // Read and process each audio file, compute embeddings
     let mut embeddings = Vec::new();
     for file in &audio_files {
         let (sample_rate, samples) = read_audio_file(file)?;
@@ -53,33 +54,32 @@ fn main() -> Result<()> {
         embeddings.push((file.to_string(), embedding));
     }
 
-    // Identify speakers
-    let mut speaker_id_counter = 0;
-    let mut speaker_map: HashMap<usize, Vec<String>> = HashMap::new();
-    let mut file_speaker_id: HashMap<String, usize> = HashMap::new();
+    // Create the embedding manager
+    let mut embedding_manager = EmbeddingManager::new(extractor.embedding_size.try_into().unwrap()); // Assuming dimension 512 for embeddings
 
-    for i in 0..embeddings.len() {
-        let mut assigned = false;
-        for j in 0..i {
-            let sim = speaker_id::compute_cosine_similarity(&embeddings[i].1, &embeddings[j].1);
-            if sim > speaker_id::DEFAULT_SIMILARITY_THRESHOLD {
-                let speaker_id = file_speaker_id[&embeddings[j].0];
-                speaker_map
-                    .entry(speaker_id)
-                    .or_default()
-                    .push(embeddings[i].0.clone());
-                file_speaker_id.insert(embeddings[i].0.clone(), speaker_id);
-                assigned = true;
-                break;
-            }
-        }
-        if !assigned {
+    // Map to store speakers and their corresponding files
+    let mut speaker_map: HashMap<String, Vec<String>> = HashMap::new();
+    let mut speaker_counter = 0;
+
+    // Process each embedding and identify speakers
+    for (file, embedding) in &embeddings {
+        if let Some(speaker_name) = embedding_manager.search(embedding, 0.5) {
+            // Add file to existing speaker
             speaker_map
-                .entry(speaker_id_counter)
+                .entry(speaker_name)
                 .or_default()
-                .push(embeddings[i].0.clone());
-            file_speaker_id.insert(embeddings[i].0.clone(), speaker_id_counter);
-            speaker_id_counter += 1;
+                .push(file.clone());
+        } else {
+            // Register a new speaker and add the embedding
+            embedding_manager.add(
+                format!("speaker {}", speaker_counter),
+                &mut embedding.clone(),
+            )?;
+            speaker_map
+                .entry(format!("speaker {}", speaker_counter))
+                .or_default()
+                .push(file.clone());
+            speaker_counter += 1;
         }
     }
 

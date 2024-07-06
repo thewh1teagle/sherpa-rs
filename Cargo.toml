@@ -20,7 +20,6 @@ eyre = "0.6.12"
 hound = "3.5.1"
 log = "0.4.22"
 sherpa-rs-sys = { path = "sys", version = "0.1.0" }
-nalgebra = "0.33.0"
 env_logger = { version = "0.11.3", features = ["color"] }
 
 [workspace]

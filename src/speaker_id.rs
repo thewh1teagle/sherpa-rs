@@ -1,6 +1,8 @@
 use eyre::{bail, Result};
-use nalgebra::DVector;
-use std::{ffi::CString, path::PathBuf};
+use std::{
+    ffi::{CStr, CString},
+    path::PathBuf,
+};
 
 /// If similarity is greater or equal to thresold than it's a match!
 pub const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.5;
@@ -14,7 +16,7 @@ pub struct ExtractorConfig {
 #[derive(Debug)]
 pub struct EmbeddingExtractor {
     pub(crate) extractor: *const sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractor,
-    embedding_size: usize,
+    pub embedding_size: usize,
 }
 
 impl ExtractorConfig {
@@ -119,13 +121,47 @@ impl EmbeddingExtractor {
     }
 }
 
-pub fn compute_cosine_similarity(embedding1: &[f32], embedding2: &[f32]) -> f32 {
-    // Convert embeddings to DVector (dynamic vector) from nalgebra
-    let vec1 = DVector::from_iterator(embedding1.len(), embedding1.iter().cloned());
-    let vec2 = DVector::from_iterator(embedding2.len(), embedding2.iter().cloned());
+#[derive(Debug)]
+pub struct EmbeddingManager {
+    pub(crate) manager: *const sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManager,
+}
 
-    // Compute cosine similarity using nalgebra
-    let similarity = vec1.dot(&vec2) / (vec1.norm() * vec2.norm());
+impl EmbeddingManager {
+    pub fn new(dimension: i32) -> Self {
+        unsafe {
+            let manager = sherpa_rs_sys::SherpaOnnxCreateSpeakerEmbeddingManager(dimension);
+            Self { manager }
+        }
+    }
 
-    similarity
+    pub fn search(&mut self, embedding: &[f32], threshold: f32) -> Option<String> {
+        unsafe {
+            let name = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerSearch(
+                self.manager,
+                embedding.to_owned().as_mut_ptr(),
+                threshold,
+            );
+            if name.is_null() {
+                return None;
+            }
+            let cstr = CStr::from_ptr(name);
+            Some(cstr.to_str().unwrap_or_default().to_string())
+        }
+    }
+
+    pub fn add(&mut self, name: String, embedding: &mut [f32]) -> Result<()> {
+        let name_cstr = CString::new(name.clone())?;
+
+        unsafe {
+            let status = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerAdd(
+                self.manager,
+                name_cstr.into_raw(),
+                embedding.as_mut_ptr(),
+            );
+            if status.is_negative() {
+                bail!("Failed to register {}", name)
+            }
+            Ok(())
+        }
+    }
 }
