@@ -1,3 +1,4 @@
+pub mod language_id;
 pub mod speaker_id;
 pub mod tts;
 pub mod vad;
