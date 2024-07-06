@@ -5,7 +5,7 @@
 
 Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 
-## Insatll
+## Install
 
 ```console
 cargo add sherpa-rs
