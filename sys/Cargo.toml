@@ -2,8 +2,9 @@
 name = "sherpa-rs-sys"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["thewh1teagle"]
+homepage = "https://github.com/thewh1teagle/sherpa-rs"
+repository = "https://github.com/thewh1teagle/sherpa-rs"
 
 [dependencies]
 
