@@ -1,5 +1,9 @@
 use eyre::{bail, Result};
+use nalgebra::{DVector, Norm};
 use std::{ffi::CString, path::PathBuf};
+
+/// If similarity is greater or equal to thresold than it's a match!
+pub const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.9;
 
 #[derive(Debug)]
 pub struct ExtractorConfig {
@@ -100,4 +104,15 @@ impl EmbeddingExtractor {
             result != 0
         }
     }
+}
+
+pub fn compute_cosine_similarity(embedding1: &[f32], embedding2: &[f32]) -> f32 {
+    // Convert embeddings to DVector (dynamic vector) from nalgebra
+    let vec1 = DVector::from_iterator(embedding1.len(), embedding1.iter().cloned());
+    let vec2 = DVector::from_iterator(embedding2.len(), embedding2.iter().cloned());
+
+    // Compute cosine similarity using nalgebra
+    let similarity = vec1.dot(&vec2) / (vec1.norm() * vec2.norm());
+
+    similarity
 }
