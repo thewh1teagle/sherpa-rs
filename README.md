@@ -9,6 +9,7 @@ Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 
 - Spoken language detection
 - Speaker embedding (labeling)
+- Speech to text
 - Text to speech
 - Voice activity detection
 
