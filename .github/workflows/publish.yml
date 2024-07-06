@@ -1,0 +1,34 @@
+name: Publish Crate
+
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      # Publish the main crate
+      - name: Publish main crate
+        uses: katyo/publish-crates@v2
+        with:
+          args: -p sherpa-rs
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      # Publish the sys crate
+      - name: Publish sys crate
+        uses: katyo/publish-crates@v2
+        with:
+          args: -p sherpa-rs-sys
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
