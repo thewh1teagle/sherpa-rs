@@ -14,18 +14,6 @@ fn main() {
     if !sherpa_root.exists() {
         std::fs::create_dir_all(&sherpa_root).expect("Failed to create sherpa-onnx directory");
 
-        // Two problematic git files
-        // Otherwise copy will fail
-        #[cfg(not(windows))]
-        {
-            let path_to_remove = sherpa_onnx_path
-                .join("scripts")
-                .join("go")
-                .join("_internal")
-                .join("vad-spoken-language-identification");
-            let _ = std::fs::remove_file(path_to_remove.join("run.sh"));
-            let _ = std::fs::remove_file(path_to_remove.join("main.go"));
-        }
         fs_extra::dir::copy(sherpa_onnx_path.clone(), &out, &Default::default()).unwrap_or_else(
             |e| {
                 panic!(
@@ -36,6 +24,17 @@ fn main() {
                 )
             },
         );
+                // Two problematic git files
+        // Otherwise copy will fail
+        #[cfg(not(windows))]
+        {
+            let path_to_remove = out
+                .join("sherpa-onnx")
+                .join("scripts")
+                .join("go")
+                .join("_internal");
+            let _ = std::fs::remove_dir_all(path_to_remove);
+        }
     }
 
     // Set up bindgen builder
@@ -72,21 +71,27 @@ fn main() {
     let destination = config.very_verbose(true).build();
 
     println!("cargo:rustc-link-search=native={}", destination.display());
-    #[cfg(target_os = "macos")]
-    {
-        println!("cargo:rustc-link-search={}", out.join("lib").display());
-    }
-    #[cfg(windows)]
-    {
-        println!("cargo:rustc-link-search={}", out.join("lib").display());
-    }
+    println!("cargo:rustc-link-search={}", out.join("lib").display());
+    
 
     println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
     println!("cargo:rustc-link-lib=static=onnxruntime");
     println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
 
-    #[cfg(windows)]
+
+    #[cfg(target_os = "macos")]
+    {
+        println!("cargo:rustc-link-lib=framework=Foundation");
+        println!("cargo:rustc-link-lib=c++");
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        println!("cargo:rustc-link-lib=dylib=stdc++");
+    }
+
+    #[cfg(any(target_os = "linux", windows))]
     {
         println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
         println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
@@ -94,10 +99,5 @@ fn main() {
         println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
         println!("cargo:rustc-link-lib=static=ssentencepiece_core");
     }
-
-    #[cfg(target_os = "macos")]
-    {
-        println!("cargo:rustc-link-lib=framework=Foundation");
-        println!("cargo:rustc-link-lib=c++");
-    }
+    
 }
