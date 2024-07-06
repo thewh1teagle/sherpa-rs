@@ -27,7 +27,7 @@ fn main() -> Result<()> {
         "samples/obama.wav",
         "samples/trump.wav",
         "samples/biden.wav",
-        "samples/normal.wav",
+        "samples/biden1.wav",
     ];
 
     // Create the extractor configuration and extractor
