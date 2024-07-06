@@ -5,6 +5,7 @@ edition = "2021"
 authors = ["thewh1teagle"]
 homepage = "https://github.com/thewh1teagle/sherpa-rs"
 repository = "https://github.com/thewh1teagle/sherpa-rs"
+description = "Rust bindings to https://github.com/k2-fsa/sherpa-onnx"
 
 include = [
     "sherpa-onnx/sherpa-onnx/c-api",

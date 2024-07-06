@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 authors = ["thewh1teagle"]
 repository = "https://github.com/thewh1teagle/sherpa-rs"
+description = "Rust bindings to https://github.com/k2-fsa/sherpa-onnx"
 
 [dependencies]
 eyre = "0.6.12"
