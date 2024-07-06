@@ -1,6 +1,7 @@
 pub mod embedding_manager;
 pub mod language_id;
 pub mod speaker_id;
+pub mod transcribe;
 pub mod vad;
 
 #[cfg(feature = "tts")]
@@ -13,4 +14,11 @@ pub fn get_default_provider() -> String {
         "cpu"
     }
     .into()
+}
+
+#[macro_export]
+macro_rules! cstr {
+    ($s:expr) => {
+        CString::new($s).expect("Failed to create CString")
+    };
 }

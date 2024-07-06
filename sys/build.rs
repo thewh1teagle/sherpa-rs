@@ -110,6 +110,7 @@ fn main() {
         println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
         println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
         println!("cargo:rustc-link-lib=c++");
+        println!("cargo:rustc-link-lib=static=ssentencepiece_core");
     }
 
     // Linux
