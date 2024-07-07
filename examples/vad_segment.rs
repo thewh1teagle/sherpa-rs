@@ -25,9 +25,9 @@ fn main() -> Result<()> {
     let window_size: usize = 512;
     let config = VadConfig::new(
         model,
-        0.0,
-        0.0,
-        0.0,
+        0.5,
+        0.5,
+        0.5,
         sample_rate,
         window_size.try_into().unwrap(),
         None,
@@ -35,17 +35,20 @@ fn main() -> Result<()> {
         Some(true),
     );
 
-    let mut vad = Vad::new_from_config(config, 10.0).unwrap();
+    let mut vad = Vad::new_from_config(config, 3.0).unwrap();
     while samples.len() > window_size {
         let window = &samples[..window_size];
-        // println!("accept waveform of {}", window.len());
         vad.accept_waveform(window.to_vec()); // Convert slice to Vec
-        while !vad.is_empty() {
-            let segment = vad.front(sample_rate);
-            let start_seconds = segment.start as f32 / sample_rate as f32;
-            let stop_seconds = segment.stop as f32 / sample_rate as f32;
-            println!("start={}=stop={}", start_seconds, stop_seconds);
-            vad.pop();
+        if vad.is_speech() {
+            while !vad.is_empty() {
+                let segment = vad.front();
+                // let start = segment.start / sample_rate;
+                // let duration = segment.samples.len() as i32 / sample_rate;
+                let start_seconds = (segment.start as f32) / sample_rate as f32;
+                let duration_seconds = (segment.samples.len() as f32) / sample_rate as f32;
+                println!("start={}s duration={}s", start_seconds, duration_seconds);
+                vad.pop();
+            }
         }
         samples = samples[window_size..].to_vec(); // Move the remaining samples to the next iteration
     }

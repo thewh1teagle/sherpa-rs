@@ -40,7 +40,7 @@ impl VadConfig {
         let cfg = sherpa_rs_sys::SherpaOnnxVadModelConfig {
             debug,
             provider: provider.into_raw(),
-            num_threads: num_threads.unwrap_or(2),
+            num_threads: num_threads.unwrap_or(1),
             sample_rate,
             silero_vad,
         };
@@ -55,8 +55,7 @@ impl VadConfig {
 #[derive(Debug)]
 pub struct SpeechSegment {
     pub start: i32,
-    pub stop: i32,
-    pub samples: *mut f32,
+    pub samples: Vec<f32>,
 }
 
 impl Vad {
@@ -71,38 +70,53 @@ impl Vad {
     }
 
     pub fn is_empty(&mut self) -> bool {
-        unsafe { sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorEmpty(self.vad) != 0 }
+        unsafe { sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorEmpty(self.vad) == 1 }
     }
 
-    pub fn front(&mut self, sample_rate: i32) -> SpeechSegment {
+    pub fn front(&mut self) -> SpeechSegment {
         unsafe {
             let segment_ptr = sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorFront(self.vad);
             let raw_segment = segment_ptr.read();
+            let samples: &[f32] =
+                std::slice::from_raw_parts(raw_segment.samples, raw_segment.n as usize);
+
+            let segment = SpeechSegment {
+                samples: samples.to_vec(),
+                start: raw_segment.start,
+            };
+
             // Free
             sherpa_rs_sys::SherpaOnnxDestroySpeechSegment(segment_ptr);
-            let stop = raw_segment.start + (raw_segment.n / sample_rate);
 
-            SpeechSegment {
-                samples: raw_segment.samples,
-                start: raw_segment.start,
-                stop: stop,
-            }
+            segment
         }
     }
 
-    pub fn accept_waveform(&mut self, samples: Vec<f32>) {
+    pub fn accept_waveform(&mut self, mut samples: Vec<f32>) {
+        let samples_ptr = samples.as_mut_ptr();
+        let samples_length = samples.len();
         unsafe {
             sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorAcceptWaveform(
                 self.vad,
-                samples.as_ptr(),
-                samples.len().try_into().unwrap(),
-            )
+                samples_ptr,
+                samples_length.try_into().unwrap(),
+            );
         };
     }
 
     pub fn pop(&mut self) {
         unsafe {
             sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorPop(self.vad);
+        }
+    }
+
+    pub fn is_speech(&mut self) -> bool {
+        unsafe { sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorDetected(self.vad) == 1 }
+    }
+
+    pub fn clear(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorClear(self.vad);
         }
     }
 }
