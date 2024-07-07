@@ -143,17 +143,23 @@ impl OfflineTts {
                 bail!("audio is null")
             }
             let audio = audio_ptr.read();
-            let n_samples = audio.n;
-            if n_samples.is_negative() {
+
+            if audio.n.is_negative() {
                 bail!("no samples found")
             }
-            // Free
-            sherpa_rs_sys::SherpaOnnxDestroyOfflineTtsGeneratedAudio(audio_ptr);
-            let samples: &[f32] = std::slice::from_raw_parts(audio.samples, n_samples as usize);
+            if audio.samples.is_null() {
+                bail!("audio samples are null")
+            }
+            let samples: &[f32] = std::slice::from_raw_parts(audio.samples, audio.n as usize);
+            let samples = samples.to_vec();
             let sample_rate = audio.sample_rate;
             let duration = samples.len() as i32 / sample_rate;
+
+            // Free
+            sherpa_rs_sys::SherpaOnnxDestroyOfflineTtsGeneratedAudio(audio_ptr);
+
             Ok(TtsSample {
-                samples: samples.to_vec(),
+                samples,
                 sample_rate,
                 duration,
             })

@@ -29,4 +29,5 @@ fn main() {
     let speed = 1.0;
     let audio = tts.generate(text.into(), 0, speed).unwrap();
     audio.write_to_wav("audio.wav").unwrap();
+    println!("created audio.wav");
 }
