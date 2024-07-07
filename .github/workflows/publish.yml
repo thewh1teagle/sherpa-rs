@@ -24,16 +24,10 @@ jobs:
           toolchain: stable
           override: true
 
-      # Publish the sys crate
-      - name: Publish sys crate
-        uses: katyo/publish-crates@v2
+      # Publish
+      - name: Publish
+        run: |
+          cargo publish -p sherpa-rs-sys
+          cargo publish -p sherpa-rs
         with:
-          args: -p sherpa-rs-sys
-          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-
-      # Publish the main crate
-      - name: Publish main crate
-        uses: katyo/publish-crates@v2
-        with:
-          args: -p sherpa-rs
-          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
