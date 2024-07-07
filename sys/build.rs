@@ -1,7 +1,6 @@
 use cmake::Config;
 use std::env;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 fn main() {
     let out = PathBuf::from(env::var("OUT_DIR").unwrap());
@@ -29,7 +28,7 @@ fn main() {
         // There's some invalid files. better to use cp
         #[cfg(unix)]
         {
-            Command::new("cp")
+            std::process::Command::new("cp")
                 .arg("-rf")
                 .arg(sherpa_onnx_path.clone())
                 .arg(out.clone())
