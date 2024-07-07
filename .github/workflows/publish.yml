@@ -29,5 +29,5 @@ jobs:
         run: |
           cargo publish -p sherpa-rs-sys
           cargo publish -p sherpa-rs
-        with:
+        env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
