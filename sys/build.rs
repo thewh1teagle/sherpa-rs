@@ -70,7 +70,10 @@ fn main() {
         .define("BUILD_SHARED_LIBS", "OFF")
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
-        .define("SHERPA_ONNX_ENABLE_BINARY", "OFF");
+        .define(
+            "SHERPA_ONNX_ENABLE_BINARY",
+            if cfg!(windows) { "ON" } else { "OFF" },
+        );
 
     // TTS
     config.define(
