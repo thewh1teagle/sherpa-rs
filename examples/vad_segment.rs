@@ -42,11 +42,9 @@ fn main() -> Result<()> {
         if vad.is_speech() {
             while !vad.is_empty() {
                 let segment = vad.front();
-                // let start = segment.start / sample_rate;
-                // let duration = segment.samples.len() as i32 / sample_rate;
-                let start_seconds = (segment.start as f32) / sample_rate as f32;
-                let duration_seconds = (segment.samples.len() as f32) / sample_rate as f32;
-                println!("start={}s duration={}s", start_seconds, duration_seconds);
+                let start_sec = (segment.start as f32) / sample_rate as f32;
+                let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
+                println!("start={}s duration={}s", start_sec, duration_sec);
                 vad.pop();
             }
         }
