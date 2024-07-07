@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 /// wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-amy-low.tar.bz2
 /// tar xf vits-piper-en_US-amy-low.tar.bz2
-/// cargo run --features="tts" --example tts
+/// cargo run --example tts --features="tts"
 
 fn main() {
     let assets = PathBuf::from("vits-piper-en_US-amy-low");
