@@ -1,6 +1,6 @@
 [package]
 name = "sherpa-rs"
-version = "0.1.3"
+version = "0.1.4-beta.0"
 edition = "2021"
 authors = ["thewh1teagle"]
 license = "MIT"
@@ -19,7 +19,7 @@ keywords = [
 eyre = "0.6.12"
 hound = "3.5.1"
 log = "0.4.22"
-sherpa-rs-sys = { path = "sys", version = "0.1.3" }
+sherpa-rs-sys = { path = "sys", version = "0.1.4-beta.0" }
 env_logger = { version = "0.11.3", features = ["color"] }
 
 [workspace]
