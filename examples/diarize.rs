@@ -41,8 +41,8 @@ fn main() -> Result<()> {
     let window_size: usize = 512;
     let config = VadConfig::new(
         vad_model,
-        0.5,
-        0.5,
+        0.4,
+        0.4,
         0.5,
         sample_rate,
         window_size.try_into().unwrap(),
@@ -78,6 +78,7 @@ fn main() -> Result<()> {
                 println!("({}) start={}s duration={}s", name, start_sec, duration_sec);
                 vad.pop();
             }
+            vad.clear();
         }
         samples = samples[window_size..].to_vec(); // Move the remaining samples to the next iteration
     }
