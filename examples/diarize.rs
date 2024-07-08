@@ -51,7 +51,7 @@ fn main() -> Result<()> {
         window_size.try_into().unwrap(),
         None,
         None,
-        Some(true),
+        Some(false),
     );
 
     let mut vad = Vad::new_from_config(config, 3.0).unwrap();

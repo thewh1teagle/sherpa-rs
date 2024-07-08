@@ -1,4 +1,5 @@
 /*
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
 cargo run --example speaker_id
 */
 use eyre::{bail, Result};
