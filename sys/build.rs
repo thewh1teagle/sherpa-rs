@@ -12,19 +12,6 @@ fn main() {
     if !sherpa_root.exists() {
         std::fs::create_dir_all(&sherpa_root).expect("Failed to create sherpa-onnx directory");
 
-        #[cfg(windows)]
-        {
-            fs_extra::dir::copy(sherpa_onnx_path.clone(), &out, &Default::default())
-                .unwrap_or_else(|e| {
-                    panic!(
-                        "Failed to copy sherpa sources from {} into {}: {}",
-                        sherpa_onnx_path.display(),
-                        sherpa_root.display(),
-                        e
-                    )
-                });
-        }
-
         // There's some invalid files. better to use cp
         #[cfg(unix)]
         {
@@ -34,6 +21,21 @@ fn main() {
                 .arg(out.clone())
                 .status()
                 .expect("Failed to execute cp command");
+        }
+
+        #[cfg(windows)]
+        {
+            std::process::Command::new("cmd")
+                .args(&[
+                    "/C",
+                    "xcopy",
+                    "/E",
+                    "/Y",
+                    sherpa_onnx_path.as_str(),
+                    out.as_str(),
+                ])
+                .status()
+                .expect("Failed to execute xcopy command");
         }
     }
 
@@ -70,14 +72,7 @@ fn main() {
         .define("BUILD_SHARED_LIBS", "OFF")
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
-        .define(
-            "SHERPA_ONNX_ENABLE_BINARY",
-            if cfg!(any(windows, target_os = "linux")) {
-                "ON"
-            } else {
-                "OFF"
-            },
-        );
+        .define("SHERPA_ONNX_ENABLE_BINARY", "OFF");
 
     // TTS
     config.define(
