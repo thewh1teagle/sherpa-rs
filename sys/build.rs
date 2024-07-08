@@ -69,10 +69,11 @@ fn main() {
 
     config
         .profile("Release")
-        .define("BUILD_SHARED_LIBS", "OFF")
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
-        .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
-        .define("SHERPA_ONNX_ENABLE_BINARY", "OFF");
+        .define("SHERPA_ONNX_ENABLE_BINARY", "ON")
+        .define("BUILD_SHARED_LIBS", "OFF")
+        .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF");
+        
 
     // TTS
     config.define(
@@ -87,7 +88,7 @@ fn main() {
         config.define("SHERPA_ONNX_ENABLE_GPU", "ON")
     }
 
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "linux"))]
     {
         config.define("SHERPA_ONNX_ENABLE_PORTAUDIO", "ON");
     }
@@ -95,22 +96,24 @@ fn main() {
     let destination = config.very_verbose(true).build();
 
     // Common
-    println!("cargo:rustc-link-search=native={}", destination.display());
     println!("cargo:rustc-link-search={}", out.join("lib").display());
-    println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
-    println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
+    println!("cargo:rustc-link-search=native={}", destination.display());
     println!("cargo:rustc-link-lib=static=onnxruntime");
     println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
+    println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
+    println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
+    
+
 
     // macOS
     #[cfg(target_os = "macos")]
     {
         println!("cargo:rustc-link-lib=framework=Foundation");
+        println!("cargo:rustc-link-lib=c++");
         println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
         println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
         println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
         println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
-        println!("cargo:rustc-link-lib=c++");
         println!("cargo:rustc-link-lib=static=ssentencepiece_core");
     }
 

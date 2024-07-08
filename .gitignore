@@ -1,5 +1,7 @@
 target/
 *.onnx
+*.onnx.*
+tokens.txt
 .DS_Store
 venv/
 vits-piper*
