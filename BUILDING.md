@@ -33,3 +33,9 @@ cargo build --release
 5. Run `where.exe clang`, then `setx LIBCLANG_PATH "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\Llvm\x64\bin"` or something like that
 6. Restart your shell!!!
 7. Cargo build
+
+### Resample wav file for 16khz
+
+```console
+ffmpeg -i <file> -ar 16000 -ac 1 -c:a pcm_s16le <out>
+```
