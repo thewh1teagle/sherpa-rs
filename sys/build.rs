@@ -72,7 +72,11 @@ fn main() {
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
         .define(
             "SHERPA_ONNX_ENABLE_BINARY",
-            if cfg!(windows) { "ON" } else { "OFF" },
+            if cfg!(any(windows, target_os = "linux")) {
+                "ON"
+            } else {
+                "OFF"
+            },
         );
 
     // TTS
