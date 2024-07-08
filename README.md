@@ -29,6 +29,10 @@ cargo add sherpa-rs
 
 Please see [BUILDING.md](BUILDING.md).
 
+## Feature flags
+
+- `cuda`: enable CUDA support. Implicitly enables hidden GPU flag at runtime.
+
 ## Docs
 
 See [sherpa/intro.html](https://k2-fsa.github.io/sherpa/intro.html)
