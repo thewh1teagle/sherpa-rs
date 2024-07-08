@@ -34,12 +34,13 @@ fn main() {
                     "/Y",
                     "/H",
                     sherpa_onnx_path.to_str().unwrap(),
-                    out.join(sherpa_onnx_path.file_name().unwrap()).to_str().unwrap(),
+                    out.join(sherpa_onnx_path.file_name().unwrap())
+                        .to_str()
+                        .unwrap(),
                 ])
                 .status()
                 .expect("Failed to execute xcopy command");
         }
-
     }
 
     // Speed up build
@@ -76,7 +77,6 @@ fn main() {
         .define("SHERPA_ONNX_ENABLE_BINARY", "ON")
         .define("BUILD_SHARED_LIBS", "OFF")
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF");
-        
 
     // TTS
     config.define(
@@ -88,7 +88,7 @@ fn main() {
     // https://k2-fsa.github.io/k2/installation/cuda-cudnn.html
     #[cfg(feature = "cuda")]
     {
-        config.define("SHERPA_ONNX_ENABLE_GPU", "ON")
+        config.define("SHERPA_ONNX_ENABLE_GPU", "ON");
     }
 
     #[cfg(any(windows, target_os = "linux"))]
@@ -105,8 +105,6 @@ fn main() {
     println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
-    
-
 
     // macOS
     #[cfg(target_os = "macos")]
