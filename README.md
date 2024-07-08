@@ -13,6 +13,11 @@ Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 - Text to speech
 - Voice activity detection
 
+## Supported Platforms
+- Windows
+- Linux
+- macOS
+
 ## Install
 
 ```console
