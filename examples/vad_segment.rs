@@ -1,5 +1,7 @@
-/// wget https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx
-/// cargo run --example vad_segment
+/*
+wget https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx
+cargo run --example vad_segment
+*/
 use eyre::{bail, Result};
 use sherpa_rs::vad::{Vad, VadConfig};
 use std::io::Cursor;

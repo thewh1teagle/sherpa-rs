@@ -1,12 +1,14 @@
-/// Piper English model
-/// wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-amy-low.tar.bz2
-/// tar xf vits-piper-en_US-amy-low.tar.bz2
-/// cargo run --example tts --features="tts" -- --text 'Hello world!' --output audio.wav --tokens 'vits-piper-en_US-amy-low/tokens.txt' --model 'vits-piper-en_US-amy-low/en_US-amy-low.onnx' --data-dir 'vits-piper-en_US-amy-low/espeak-ng-data'
-///
-/// MMS Hebrew model
-/// wget https://huggingface.co/thewh1teagle/mms-tts-heb/resolve/main/model_sherpa.onnx
-/// wget https://huggingface.co/thewh1teagle/mms-tts-heb/resolve/main/tokens.txt
-/// cargo run --example tts --features="tts" -- --text 'שלום, מה שלומך היום?' --output audio.wav --tokens 'tokens.txt' --model 'model_sherpa.onnx'
+/*
+Piper English model
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-amy-low.tar.bz2
+tar xf vits-piper-en_US-amy-low.tar.bz2
+cargo run --example tts --features="tts" -- --text 'Hello world!' --output audio.wav --tokens 'vits-piper-en_US-amy-low/tokens.txt' --model 'vits-piper-en_US-amy-low/en_US-amy-low.onnx' --data-dir 'vits-piper-en_US-amy-low/espeak-ng-data'
+
+MMS Hebrew model
+wget https://huggingface.co/thewh1teagle/mms-tts-heb/resolve/main/model_sherpa.onnx
+wget https://huggingface.co/thewh1teagle/mms-tts-heb/resolve/main/tokens.txt
+cargo run --example tts --features="tts" -- --text 'שלום, מה שלומך היום?' --output audio.wav --tokens 'tokens.txt' --model 'model_sherpa.onnx'
+*/
 use clap::Parser;
 
 /// TTS

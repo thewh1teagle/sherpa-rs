@@ -1,3 +1,6 @@
+/*
+cargo run --example speaker_id
+*/
 use eyre::{bail, Result};
 use sherpa_rs::{embedding_manager, speaker_id};
 use std::collections::HashMap;

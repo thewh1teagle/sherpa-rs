@@ -1,6 +1,9 @@
-/// wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
-/// tar xvf sherpa-onnx-whisper-tiny.tar.bz2
-/// cargo run --example transcribe
+/*
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
+tar xvf sherpa-onnx-whisper-tiny.tar.bz2
+cargo run --example transcribe
+*/
+
 use eyre::{bail, Result};
 use sherpa_rs::transcribe::whisper::WhisperRecognizer;
 

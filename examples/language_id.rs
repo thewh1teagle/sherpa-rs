@@ -1,7 +1,10 @@
-/// wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
-/// tar xvf sherpa-onnx-whisper-tiny.tar.bz2
-/// rm sherpa-onnx-whisper-tiny.tar.bz2
-/// cargo run --example language_id
+/*
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
+tar xvf sherpa-onnx-whisper-tiny.tar.bz2
+rm sherpa-onnx-whisper-tiny.tar.bz2
+cargo run --example language_id
+*/
+
 use eyre::{bail, Result};
 use sherpa_rs::language_id;
 use std::io::Cursor;

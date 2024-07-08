@@ -1,6 +1,9 @@
-/// wget https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx
-/// /// wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
-/// cargo run --example diarize
+/*
+wget https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
+cargo run --example diarize
+*/
+
 use eyre::{bail, Result};
 use sherpa_rs::{
     embedding_manager, speaker_id,
