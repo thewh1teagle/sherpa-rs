@@ -30,13 +30,16 @@ fn main() {
                     "/C",
                     "xcopy",
                     "/E",
+                    "/I",
                     "/Y",
-                    sherpa_onnx_path.as_str(),
-                    out.as_str(),
+                    "/H",
+                    sherpa_onnx_path.to_str().unwrap(),
+                    out.join(sherpa_onnx_path.file_name().unwrap()).to_str().unwrap(),
                 ])
                 .status()
                 .expect("Failed to execute xcopy command");
         }
+
     }
 
     // Speed up build
