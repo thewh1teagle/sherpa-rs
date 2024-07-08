@@ -28,6 +28,11 @@ fn main() -> Result<()> {
         .map(|s| s.unwrap() as f32 / i16::MAX as f32)
         .collect();
 
+    // Pad with 3 seconds of slience so vad will able to detect stop
+    for _ in 0..3 * sample_rate {
+        samples.push(0.0);
+    }
+
     let extractor_config = speaker_id::ExtractorConfig::new(
         "nemo_en_speakerverification_speakernet.onnx".into(),
         None,
@@ -54,9 +59,10 @@ fn main() -> Result<()> {
         Some(false),
     );
 
-    let mut vad = Vad::new_from_config(config, 3.0).unwrap();
-    while samples.len() > window_size {
-        let window = &samples[..window_size];
+    let mut vad = Vad::new_from_config(config, 60.0 * 10.0).unwrap();
+    let mut index = 0;
+    while index + window_size <= samples.len() {
+        let window = &samples[index..index + window_size];
         vad.accept_waveform(window.to_vec()); // Convert slice to Vec
         if vad.is_speech() {
             while !vad.is_empty() {
@@ -65,7 +71,7 @@ fn main() -> Result<()> {
                 let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
 
                 // Compute the speaker embedding
-                let embedding =
+                let mut embedding =
                     extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
 
                 let name = if let Some(speaker_name) = embedding_manager.search(&embedding, 0.45) {
@@ -73,7 +79,7 @@ fn main() -> Result<()> {
                 } else {
                     // Register a new speaker and add the embedding
                     let name = format!("speaker {}", speaker_counter);
-                    embedding_manager.add(name.clone(), &mut embedding.clone())?;
+                    embedding_manager.add(name.clone(), &mut embedding)?;
 
                     speaker_counter += 1;
                     name
@@ -81,9 +87,35 @@ fn main() -> Result<()> {
                 println!("({}) start={}s duration={}s", name, start_sec, duration_sec);
                 vad.pop();
             }
-            vad.clear();
         }
-        samples = samples[window_size..].to_vec(); // Move the remaining samples to the next iteration
+        index += window_size;
+    }
+
+    if index < samples.len() {
+        let remaining_samples = &samples[index..];
+        vad.accept_waveform(remaining_samples.to_vec());
+        while !vad.is_empty() {
+            let segment = vad.front();
+            let start_sec = (segment.start as f32) / sample_rate as f32;
+            let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
+
+            // Compute the speaker embedding
+            let mut embedding =
+                extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
+
+            let name = if let Some(speaker_name) = embedding_manager.search(&embedding, 0.45) {
+                speaker_name
+            } else {
+                // Register a new speaker and add the embedding
+                let name = format!("speaker {}", speaker_counter);
+                embedding_manager.add(name.clone(), &mut embedding)?;
+
+                speaker_counter += 1;
+                name
+            };
+            println!("({}) start={}s duration={}s", name, start_sec, duration_sec);
+            vad.pop();
+        }
     }
     Ok(())
 }
