@@ -14,6 +14,7 @@ Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 - Voice activity detection
 
 ## Supported Platforms
+
 - Windows
 - Linux
 - macOS
@@ -24,15 +25,9 @@ Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 cargo add sherpa-rs
 ```
 
-## Usage
+## Build
 
-```console
-git clone --recursive https://github.com/thewh1teagle/sherpa-rs.git
-
-cd sherpa-rs
-
-cargo run --example speaker_id
-```
+Please see [BUILDING.md](BUILDING.md).
 
 ## Docs
 
