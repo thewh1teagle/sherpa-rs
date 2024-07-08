@@ -22,6 +22,9 @@ log = "0.4.22"
 sherpa-rs-sys = { path = "sys", version = "0.1.4-beta.2" }
 env_logger = { version = "0.11.3", features = ["color"] }
 
+[dev-dependencies]
+clap = { version = "4.5.8", features = ["derive"] }
+
 [workspace]
 members = ["sys"]
 
