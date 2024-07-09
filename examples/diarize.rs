@@ -1,5 +1,5 @@
 /*
-wget https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
 cargo run --example diarize
 */
@@ -13,7 +13,7 @@ use std::io::Cursor;
 
 fn main() -> Result<()> {
     // Read audio data from the file
-    let audio_data: &[u8] = include_bytes!("../samples/o.wav");
+    let audio_data: &[u8] = include_bytes!("../samples/motivation.wav");
 
     let cursor = Cursor::new(audio_data);
     let mut reader = hound::WavReader::new(cursor)?;
@@ -84,7 +84,12 @@ fn main() -> Result<()> {
                     speaker_counter += 1;
                     name
                 };
-                println!("({}) start={}s end={}s", name, start_sec, start_sec + duration_sec);
+                println!(
+                    "({}) start={}s end={}s",
+                    name,
+                    start_sec,
+                    start_sec + duration_sec
+                );
                 vad.pop();
             }
         }
