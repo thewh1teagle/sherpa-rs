@@ -3,22 +3,21 @@ use std::env;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    let out = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let sherpa_root = out.join("sherpa-onnx");
-
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let sherpa_dst = out_dir.join("sherpa-onnx");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
+    let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
 
-    let sherpa_onnx_path = Path::new(&manifest_dir).join("sherpa-onnx");
-    if !sherpa_root.exists() {
-        std::fs::create_dir_all(&sherpa_root).expect("Failed to create sherpa-onnx directory");
+    if !sherpa_dst.exists() {
+        std::fs::create_dir_all(&sherpa_dst).expect("Failed to create sherpa-onnx directory");
 
         // There's some invalid files. better to use cp
         #[cfg(unix)]
         {
             std::process::Command::new("cp")
                 .arg("-rf")
-                .arg(sherpa_onnx_path.clone())
-                .arg(out.clone())
+                .arg(sherpa_src.clone())
+                .arg(out_dir.clone())
                 .status()
                 .expect("Failed to execute cp command");
         }
@@ -33,10 +32,8 @@ fn main() {
                     "/I",
                     "/Y",
                     "/H",
-                    sherpa_onnx_path.to_str().unwrap(),
-                    out.join(sherpa_onnx_path.file_name().unwrap())
-                        .to_str()
-                        .unwrap(),
+                    sherpa_src.to_str().unwrap(),
+                    sherpa_dst.to_str().unwrap(),
                 ])
                 .status()
                 .expect("Failed to execute xcopy command");
@@ -55,21 +52,21 @@ fn main() {
     // Set up bindgen builder
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
-        .clang_arg(format!("-I{}", sherpa_root.display()))
+        .clang_arg(format!("-I{}", sherpa_dst.display()))
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Failed to generate bindings");
 
     // Write the generated bindings to an output file
-    let out_path = out.join("bindings.rs");
+    let bindings_path = out_dir.join("bindings.rs");
     bindings
-        .write_to_file(out_path)
+        .write_to_file(bindings_path)
         .expect("Failed to write bindings");
 
     println!("cargo:rerun-if-changed=wrapper.h");
     println!("cargo:rerun-if-changed=./sherpa-onnx");
 
-    let mut config = Config::new(&sherpa_root);
+    let mut config = Config::new(&sherpa_dst);
 
     config
         .profile("Release")
@@ -96,11 +93,11 @@ fn main() {
         config.define("SHERPA_ONNX_ENABLE_PORTAUDIO", "ON");
     }
 
-    let destination = config.very_verbose(true).build();
+    let bindings_dir = config.very_verbose(true).build();
 
     // Common
-    println!("cargo:rustc-link-search={}", out.join("lib").display());
-    println!("cargo:rustc-link-search=native={}", destination.display());
+    println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
+    println!("cargo:rustc-link-search=native={}", bindings_dir.display());
     println!("cargo:rustc-link-lib=static=onnxruntime");
     println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
