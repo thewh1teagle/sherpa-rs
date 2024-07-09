@@ -13,7 +13,7 @@ use std::io::Cursor;
 
 fn main() -> Result<()> {
     // Read audio data from the file
-    let audio_data: &[u8] = include_bytes!("../samples/motivation.wav");
+    let audio_data: &[u8] = include_bytes!("../samples/o.wav");
 
     let cursor = Cursor::new(audio_data);
     let mut reader = hound::WavReader::new(cursor)?;
@@ -84,7 +84,7 @@ fn main() -> Result<()> {
                     speaker_counter += 1;
                     name
                 };
-                println!("({}) start={}s duration={}s", name, start_sec, duration_sec);
+                println!("({}) start={}s end={}s", name, start_sec, start_sec + duration_sec);
                 vad.pop();
             }
         }
