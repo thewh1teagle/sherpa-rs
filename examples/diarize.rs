@@ -11,6 +11,63 @@ use sherpa_rs::{
 };
 use std::io::Cursor;
 
+fn get_speaker_name(
+    embedding_manager: &mut embedding_manager::EmbeddingManager,
+    embedding: &mut [f32],
+    speaker_counter: &mut i32,
+) -> String {
+    let max_speakers = 2;
+    let mut name = String::from("unknown");
+
+    if *speaker_counter == 0 {
+        name = format!("speaker {}", speaker_counter);
+        embedding_manager.add(name.clone(), embedding).unwrap();
+        *speaker_counter += 1;
+    } else if *speaker_counter <= max_speakers {
+        if let Some(search_result) = embedding_manager.search(embedding, 0.5) {
+            name = search_result;
+        } else {
+            name = format!("speaker {}", speaker_counter);
+            embedding_manager.add(name.clone(), embedding).unwrap();
+            *speaker_counter += 1;
+        }
+    } else {
+        let matches = embedding_manager.get_best_matches(embedding, 0.2, *speaker_counter);
+        if let Some(name_match) = matches.first().map(|m| m.name.clone()) {
+            name = name_match;
+        }
+    }
+
+    name
+}
+
+fn process_speech_segment(
+    vad: &mut Vad,
+    sample_rate: i32,
+    mut embedding_manager: &mut embedding_manager::EmbeddingManager,
+    extractor: &mut speaker_id::EmbeddingExtractor,
+    speaker_counter: &mut i32,
+) -> Result<()> {
+    while !vad.is_empty() {
+        let segment = vad.front();
+        let start_sec = (segment.start as f32) / sample_rate as f32;
+        let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
+
+        // Compute the speaker embedding
+        let mut embedding = extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
+
+        let name = get_speaker_name(&mut embedding_manager, &mut embedding, speaker_counter);
+        println!(
+            "({}) start={}s end={}s",
+            name,
+            start_sec,
+            start_sec + duration_sec
+        );
+        vad.pop();
+    }
+    Ok(())
+}
+
 fn main() -> Result<()> {
     // Read audio data from the file
     let audio_data: &[u8] = include_bytes!("../samples/motivation.wav");
@@ -43,14 +100,14 @@ fn main() -> Result<()> {
     let mut embedding_manager =
         embedding_manager::EmbeddingManager::new(extractor.embedding_size.try_into().unwrap()); // Assuming dimension 512 for embeddings
 
-    let mut speaker_counter = 0;
+    let mut speaker_counter = 1;
 
     let vad_model = "silero_vad.onnx".into();
     let window_size: usize = 512;
     let config = VadConfig::new(
         vad_model,
-        0.4,
-        0.4,
+        0.5,
+        0.5,
         0.5,
         sample_rate,
         window_size.try_into().unwrap(),
@@ -66,61 +123,29 @@ fn main() -> Result<()> {
         vad.accept_waveform(window.to_vec()); // Convert slice to Vec
         if vad.is_speech() {
             while !vad.is_empty() {
-                let segment = vad.front();
-                let start_sec = (segment.start as f32) / sample_rate as f32;
-                let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
-
-                // Compute the speaker embedding
-                let mut embedding =
-                    extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
-
-                let name = if let Some(speaker_name) = embedding_manager.search(&embedding, 0.45) {
-                    speaker_name
-                } else {
-                    // Register a new speaker and add the embedding
-                    let name = format!("speaker {}", speaker_counter);
-                    embedding_manager.add(name.clone(), &mut embedding)?;
-
-                    speaker_counter += 1;
-                    name
-                };
-                println!(
-                    "({}) start={}s end={}s",
-                    name,
-                    start_sec,
-                    start_sec + duration_sec
-                );
-                vad.pop();
+                process_speech_segment(
+                    &mut vad,
+                    sample_rate,
+                    &mut embedding_manager,
+                    &mut extractor,
+                    &mut speaker_counter,
+                )?;
             }
         }
+
         index += window_size;
     }
-
-    if index < samples.len() {
-        let remaining_samples = &samples[index..];
-        vad.accept_waveform(remaining_samples.to_vec());
-        while !vad.is_empty() {
-            let segment = vad.front();
-            let start_sec = (segment.start as f32) / sample_rate as f32;
-            let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
-
-            // Compute the speaker embedding
-            let mut embedding =
-                extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
-
-            let name = if let Some(speaker_name) = embedding_manager.search(&embedding, 0.45) {
-                speaker_name
-            } else {
-                // Register a new speaker and add the embedding
-                let name = format!("speaker {}", speaker_counter);
-                embedding_manager.add(name.clone(), &mut embedding)?;
-
-                speaker_counter += 1;
-                name
-            };
-            println!("({}) start={}s duration={}s", name, start_sec, duration_sec);
-            vad.pop();
-        }
+    vad.flush();
+    // process reamaining
+    while !vad.is_empty() {
+        process_speech_segment(
+            &mut vad,
+            sample_rate,
+            &mut embedding_manager,
+            &mut extractor,
+            &mut speaker_counter,
+        )?;
     }
+
     Ok(())
 }
