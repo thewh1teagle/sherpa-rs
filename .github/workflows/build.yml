@@ -24,15 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-
-      - name: Setup submodules
-        run: |
-          git submodule init
-          git submodule update
-
-      - name: ls
-        run: cd sys\sherpa-onnx\sherpa-onnx && pwd && ls
+          submodules: "true"
 
       - uses: jwlawson/actions-setup-cmake@v2
         if: matrix.platform == 'windows-latest'
