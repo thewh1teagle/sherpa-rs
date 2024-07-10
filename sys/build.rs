@@ -24,14 +24,9 @@ fn main() {
 
         #[cfg(windows)]
         {
-            std::process::Command::new("cmd")
+            std::process::Command::new("robocopy.exe")
                 .args(&[
-                    "/C",
-                    "xcopy",
-                    "/E",
-                    "/I",
-                    "/Y",
-                    "/H",
+                    "/e",
                     sherpa_src.to_str().unwrap(),
                     sherpa_dst.to_str().unwrap(),
                 ])
