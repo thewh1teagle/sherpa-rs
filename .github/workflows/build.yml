@@ -26,6 +26,9 @@ jobs:
         with:
           submodules: "true"
 
+      - name: ls
+        run: pwd && ls && cd sys/sherpa-onnx && ls
+
       - uses: jwlawson/actions-setup-cmake@v2
         if: matrix.platform == 'windows-latest'
 
