@@ -26,6 +26,9 @@ jobs:
         with:
           submodules: "true"
 
+      - uses: jwlawson/actions-setup-cmake@v2
+        if: matrix.platform == 'windows-latest'
+
       - uses: Jimver/cuda-toolkit@v0.2.16
         if: contains(matrix.options, 'cuda')
 
