@@ -27,9 +27,6 @@ jobs:
         with:
           submodules: "true"
 
-      - uses: jwlawson/actions-setup-cmake@v2
-        if: matrix.platform == 'windows-latest'
-
       - name: Setup cuda
         run: scripts/setup_cuda.ps1
         env:
