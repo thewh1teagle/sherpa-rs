@@ -21,6 +21,7 @@ jobs:
             options: ""
           - platform: "windows-latest"
             options: '--features "cuda"'
+            cuda-version: "12.5.0"
     steps:
       - uses: actions/checkout@v3
         with:
@@ -29,7 +30,10 @@ jobs:
       - uses: jwlawson/actions-setup-cmake@v2
         if: matrix.platform == 'windows-latest'
 
-      - uses: Jimver/cuda-toolkit@v0.2.16
+      - name: Setup cuda
+        run: scripts/setup_cuda.ps1
+        env:
+          INPUT_CUDA_VERSION: ${{ matrix.cuda-version }}
         if: contains(matrix.options, 'cuda')
 
       - uses: Swatinem/rust-cache@v2
