@@ -71,7 +71,7 @@ fn main() {
     config
         .profile("Release")
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
-        .define("SHERPA_ONNX_ENABLE_BINARY", "ON")
+        .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
         .define("BUILD_SHARED_LIBS", "OFF")
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF");
 
