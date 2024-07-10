@@ -32,7 +32,7 @@ jobs:
           git submodule update
 
       - name: ls
-        run: cd sys\sherpa-onnx\sherpa-onnx && pwd
+        run: cd sys\sherpa-onnx\sherpa-onnx && pwd && ls
 
       - uses: jwlawson/actions-setup-cmake@v2
         if: matrix.platform == 'windows-latest'
