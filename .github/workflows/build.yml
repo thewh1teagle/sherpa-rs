@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest"
+            options: ""
+          - platform: "ubuntu-22.04"
+            options: ""
+          - platform: "windows-latest"
+            options: ""
+          - platform: "windows-latest"
+            options: '--features "cuda"'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: "true"
+
+      - uses: Jimver/cuda-toolkit@v0.2.16
+        if: contains(matrix.options, 'cuda')
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      # Publish
+      - name: Build
+        run: |
+          cargo build ${{ matrix.options }}
