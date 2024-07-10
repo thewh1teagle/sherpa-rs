@@ -23,8 +23,11 @@ jobs:
             options: '--features "cuda"'
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: "true"
+
+      - name: Setup submodules
+        run: |
+          git submodule init
+          git submodule update
 
       - name: ls
         run: pwd && ls && cd sys/sherpa-onnx && ls
