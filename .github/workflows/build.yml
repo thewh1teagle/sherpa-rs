@@ -1,0 +1,51 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest"
+            options: ""
+          - platform: "ubuntu-22.04"
+            options: ""
+          - platform: "windows-latest"
+            options: ""
+          - platform: "windows-latest"
+            options: '--features "cuda"'
+            cuda-version: "12.5.0"
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: "true"
+
+      - name: Setup cuda
+        run: scripts/setup_cuda.ps1
+        env:
+          INPUT_CUDA_VERSION: ${{ matrix.cuda-version }}
+        if: contains(matrix.options, 'cuda')
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      # Publish
+      - name: Build
+        run: |
+          cargo build ${{ matrix.options }}
+        continue-on-error: true
+      - name: Find ONNX Runtime Libraries
+        if: matrix.platform == 'windows-latest'
+        run: |
+          C:\msys64\usr\bin\find -name "onnxruntime*.lib"
