@@ -9,3 +9,4 @@ vits-piper*
 !samples/*.wav
 *.bz2
 sherpa-onnx-whisper*
+*.txt
