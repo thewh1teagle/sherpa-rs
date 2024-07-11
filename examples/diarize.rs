@@ -1,7 +1,8 @@
 /*
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
-cargo run --example diarize
+wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
+cargo run --example diarize motivation.wav
 */
 
 use eyre::{bail, Result};
@@ -15,8 +16,8 @@ fn get_speaker_name(
     embedding_manager: &mut embedding_manager::EmbeddingManager,
     embedding: &mut [f32],
     speaker_counter: &mut i32,
+    max_speakers: i32,
 ) -> String {
-    let max_speakers = 2;
     let mut name = String::from("unknown");
 
     if *speaker_counter == 0 {
@@ -47,6 +48,7 @@ fn process_speech_segment(
     mut embedding_manager: &mut embedding_manager::EmbeddingManager,
     extractor: &mut speaker_id::EmbeddingExtractor,
     speaker_counter: &mut i32,
+    max_speakers: i32,
 ) -> Result<()> {
     while !vad.is_empty() {
         let segment = vad.front();
@@ -56,7 +58,12 @@ fn process_speech_segment(
         // Compute the speaker embedding
         let mut embedding = extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
 
-        let name = get_speaker_name(&mut embedding_manager, &mut embedding, speaker_counter);
+        let name = get_speaker_name(
+            &mut embedding_manager,
+            &mut embedding,
+            speaker_counter,
+            max_speakers,
+        );
         println!(
             "({}) start={}s end={}s",
             name,
@@ -69,8 +76,9 @@ fn process_speech_segment(
 }
 
 fn main() -> Result<()> {
-    // Read audio data from the file
-    let audio_data: &[u8] = include_bytes!("../samples/motivation.wav");
+    let file_path = std::env::args().nth(1).expect("Missing file path argument");
+    let audio_data = std::fs::read(file_path)?;
+    let max_speakers = 2;
 
     let cursor = Cursor::new(audio_data);
     let mut reader = hound::WavReader::new(cursor)?;
@@ -129,6 +137,7 @@ fn main() -> Result<()> {
                     &mut embedding_manager,
                     &mut extractor,
                     &mut speaker_counter,
+                    max_speakers,
                 )?;
             }
         }
@@ -144,6 +153,7 @@ fn main() -> Result<()> {
             &mut embedding_manager,
             &mut extractor,
             &mut speaker_counter,
+            max_speakers,
         )?;
     }
 
