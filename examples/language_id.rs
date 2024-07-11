@@ -2,7 +2,8 @@
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
 tar xvf sherpa-onnx-whisper-tiny.tar.bz2
 rm sherpa-onnx-whisper-tiny.tar.bz2
-cargo run --example language_id
+wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/16hz_mono_pcm_s16le.wav -O 16hz_mono_pcm_s16le.wav
+cargo run --example language_id 16hz_mono_pcm_s16le.wav
 */
 
 use eyre::{bail, Result};
@@ -10,8 +11,8 @@ use sherpa_rs::language_id;
 use std::io::Cursor;
 
 fn main() -> Result<()> {
-    // Read audio data from the file
-    let audio_data: &[u8] = include_bytes!("../samples/16hz_mono_pcm_s16le.wav");
+    let file_path = std::env::args().nth(1).expect("Missing file path argument");
+    let audio_data = std::fs::read(file_path)?;
 
     let cursor = Cursor::new(audio_data);
     let mut reader = hound::WavReader::new(cursor)?;

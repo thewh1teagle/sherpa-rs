@@ -92,6 +92,12 @@ impl Vad {
         }
     }
 
+    pub fn flush(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxVoiceActivityDetectorFlush(self.vad);
+        }
+    }
+
     pub fn accept_waveform(&mut self, mut samples: Vec<f32>) {
         let samples_ptr = samples.as_mut_ptr();
         let samples_length = samples.len();

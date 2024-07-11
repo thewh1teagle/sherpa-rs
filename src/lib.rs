@@ -24,3 +24,10 @@ macro_rules! cstr {
         CString::new($s).expect("Failed to create CString")
     };
 }
+
+#[macro_export]
+macro_rules! cstr_to_string {
+    ($ptr:expr) => {
+        std::ffi::CStr::from_ptr($ptr).to_string_lossy().to_string()
+    };
+}

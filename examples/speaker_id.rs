@@ -1,5 +1,7 @@
 /*
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
+wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/biden.wav -O biden.wav
+wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/obama.wav -O obama.wav
 cargo run --example speaker_id
 */
 use eyre::{bail, Result};
@@ -29,12 +31,7 @@ fn main() -> Result<()> {
     env_logger::init();
 
     // Define paths to the audio files
-    let audio_files = vec![
-        "samples/obama.wav",
-        "samples/trump.wav",
-        "samples/biden.wav",
-        "samples/biden1.wav",
-    ];
+    let audio_files = vec!["samples/obama.wav", "biden.wav"];
 
     // Create the extractor configuration and extractor
     let mut model_path = PathBuf::from(std::env::current_dir()?);
