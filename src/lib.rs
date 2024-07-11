@@ -10,8 +10,7 @@ pub mod tts;
 pub fn get_default_provider() -> String {
     if cfg!(feature = "cuda") {
         "cuda"
-    }
-    else if cfg!(target_os = "macos") {
+    } else if cfg!(target_os = "macos") {
         "coreml"
     } else {
         "cpu"
