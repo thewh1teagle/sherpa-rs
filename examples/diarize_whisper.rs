@@ -3,7 +3,7 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-o
 wget https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
 tar xvf sherpa-onnx-whisper-tiny.tar.bz2
-wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/sam_altman.wav -O samples/sam_altman.wav
+wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/sam_altman.wav -O sam_altman.wav
 cargo run --example diarize_whisper
 */
 
@@ -34,7 +34,7 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
 
 fn main() -> Result<()> {
     // Read audio data from the file
-    let (sample_rate, mut samples) = read_audio_file("samples/sam_altman.wav")?;
+    let (sample_rate, mut samples) = read_audio_file("sam_altman.wav")?;
 
     // Pad with 3 seconds of slience so vad will able to detect stop
     for _ in 0..3 * sample_rate {
