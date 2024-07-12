@@ -28,7 +28,10 @@ struct Args {
     model: String,
 
     #[arg(long)]
-    text: String,
+    text: Option<String>,
+
+    #[arg(long)]
+    text_file_input: Option<String>,
 
     #[arg(short, long)]
     output: String,
@@ -52,6 +55,12 @@ struct Args {
 fn main() {
     // Parse command-line arguments into `Args` struct
     let args = Args::parse();
+    let text;
+    if args.text.is_some() {
+        text = args.text.unwrap();
+    } else {
+        text = std::fs::read_to_string(args.text_file_input.unwrap()).unwrap();
+    }
 
     let vits_cfg = sherpa_rs::tts::TtsVitsModelConfig::new(
         args.model,
@@ -70,7 +79,7 @@ fn main() {
         sherpa_rs::tts::OfflineTtsConfig::new(model_cfg, max_num_sentences, "".into(), "".into());
     let mut tts = sherpa_rs::tts::OfflineTts::new(tts_cfg);
     let speed = 1.0;
-    let audio = tts.generate(args.text, 0, speed).unwrap();
+    let audio = tts.generate(text, 0, speed).unwrap();
     audio.write_to_wav(&args.output).unwrap(); // Use the provided output path
     println!("Created {}", args.output);
 }
