@@ -41,6 +41,7 @@ jobs:
         uses: Jimver/cuda-toolkit@master
         with:
           cuda: "${{ matrix.cuda-version }}"
+          method: "network"
         if: contains(matrix.platform, 'ubuntu') && contains(matrix.options, 'cuda')
 
       - name: Cache Rust
