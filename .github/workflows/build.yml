@@ -13,16 +13,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-latest"
+          - platform: "macos-latest" # ARM
             options: ""
-          - platform: "ubuntu-22.04"
+          - platform: "macos-latest" # Intel
+            options: "--target x86_64-apple-darwin"
+          - platform: "ubuntu-22.04" # Linux
             options: ""
-          - platform: "windows-latest"
+          - platform: "windows-latest" # Windows
             options: ""
-          - platform: "windows-latest"
+          - platform: "windows-latest" # Windows Cuda
             options: '--features "cuda"'
             cuda-version: "12.5.0"
-          - platform: "ubuntu-22.04"
+          - platform: "ubuntu-22.04" # Linux Cuda
             options: '--features "cuda"'
             cuda-version: "12.4.1"
 
