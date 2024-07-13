@@ -64,6 +64,9 @@ impl SpokenLanguageId {
     }
 }
 
+unsafe impl Send for SpokenLanguageId {}
+unsafe impl Sync for SpokenLanguageId {}
+
 impl Drop for SpokenLanguageId {
     fn drop(&mut self) {
         unsafe {

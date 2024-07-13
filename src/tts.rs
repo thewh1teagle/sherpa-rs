@@ -167,6 +167,9 @@ impl OfflineTts {
     }
 }
 
+unsafe impl Send for OfflineTts {}
+unsafe impl Sync for OfflineTts {}
+
 impl Drop for OfflineTts {
     fn drop(&mut self) {
         unsafe {

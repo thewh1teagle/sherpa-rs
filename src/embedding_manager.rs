@@ -85,6 +85,9 @@ impl EmbeddingManager {
     }
 }
 
+unsafe impl Send for EmbeddingManager {}
+unsafe impl Sync for EmbeddingManager {}
+
 impl Drop for EmbeddingManager {
     fn drop(&mut self) {
         unsafe {

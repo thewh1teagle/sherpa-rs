@@ -116,6 +116,9 @@ impl EmbeddingExtractor {
     }
 }
 
+unsafe impl Send for EmbeddingExtractor {}
+unsafe impl Sync for EmbeddingExtractor {}
+
 impl Drop for EmbeddingExtractor {
     fn drop(&mut self) {
         unsafe {

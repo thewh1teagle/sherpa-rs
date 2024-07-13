@@ -115,6 +115,9 @@ impl WhisperRecognizer {
     }
 }
 
+unsafe impl Send for WhisperRecognizer {}
+unsafe impl Sync for WhisperRecognizer {}
+
 impl Drop for WhisperRecognizer {
     fn drop(&mut self) {
         unsafe {

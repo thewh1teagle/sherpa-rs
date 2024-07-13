@@ -127,6 +127,9 @@ impl Vad {
     }
 }
 
+unsafe impl Send for Vad {}
+unsafe impl Sync for Vad {}
+
 impl Drop for Vad {
     fn drop(&mut self) {
         unsafe {
