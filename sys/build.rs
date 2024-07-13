@@ -105,11 +105,19 @@ fn main() {
         );
     }
 
-    if cfg!(feature = "cuda") && cfg!(windows) {
-        println!(
-            "cargo:rustc-link-search=native={}",
-            out_dir.join("build\\_deps\\onnxruntime-src\\lib").display()
-        );
+    if cfg!(feature = "cuda") {
+        if cfg!(windows) {
+            println!(
+                "cargo:rustc-link-search=native={}",
+                out_dir.join("build\\_deps\\onnxruntime-src\\lib").display()
+            );
+        }
+        if cfg!(target_os = "linux") {
+            println!(
+                "cargo:rustc-link-search=native={}",
+                out_dir.join("build/lib").display()
+            );
+        }
     }
 
     // Link libraries
