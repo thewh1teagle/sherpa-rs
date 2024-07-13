@@ -59,7 +59,12 @@ jobs:
           cargo build ${{ matrix.options }}
         continue-on-error: ${{ contains(matrix.options, 'cuda') }}
 
-      - name: Find Runtime Libraries
-        if: matrix.platform == 'windows-latest'
+      - name: Find Runtime Libraries Windows
+        if: contains(matrix.platform, 'windows')
         run: |
           C:\msys64\usr\bin\find -name "*.lib"
+
+      - name: Find Runtime Libraries Linux
+        if: contains(matrix.platform, 'ubuntu')
+        run: |
+          find -name "*.a"
