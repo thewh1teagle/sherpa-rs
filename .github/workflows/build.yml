@@ -24,7 +24,7 @@ jobs:
             cuda-version: "12.5.0"
           - platform: "ubuntu-22.04"
             options: '--features "cuda"'
-            cuda-version: "12.5.0"
+            cuda-version: "12.4.1"
 
     steps:
       - uses: actions/checkout@v3
