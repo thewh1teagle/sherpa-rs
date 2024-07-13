@@ -10,12 +10,12 @@ fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
 
+    // Prepare sherpa-onnx source
     if !sherpa_dst.exists() {
         std::fs::create_dir_all(&sherpa_dst).expect("Failed to create sherpa-onnx directory");
 
         // There's some invalid files. better to use cp
-        #[cfg(unix)]
-        {
+        if cfg!(unix) {
             std::process::Command::new("cp")
                 .arg("-rf")
                 .arg(sherpa_src.clone())
@@ -24,8 +24,7 @@ fn main() {
                 .expect("Failed to execute cp command");
         }
 
-        #[cfg(windows)]
-        {
+        if cfg!(windows) {
             std::process::Command::new("robocopy.exe")
                 .args(&[
                     "/e",
@@ -46,7 +45,8 @@ fn main() {
             .to_string(),
     );
 
-    // Set up bindgen builder
+    // Bindings
+
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
         .clang_arg(format!("-I{}", sherpa_dst.display()))
@@ -62,6 +62,8 @@ fn main() {
 
     println!("cargo:rerun-if-changed=wrapper.h");
     println!("cargo:rerun-if-changed=./sherpa-onnx");
+
+    // Build with Cmake
 
     let mut config = Config::new(&sherpa_dst);
 
@@ -80,63 +82,62 @@ fn main() {
 
     // Cuda
     // https://k2-fsa.github.io/k2/installation/cuda-cudnn.html
-    #[cfg(feature = "cuda")]
-    {
+    if cfg!(feature = "cuda") {
         config.define("SHERPA_ONNX_ENABLE_GPU", "ON");
+        config.define("BUILD_SHARED_LIBS", "ON");
     }
 
-    #[cfg(any(windows, target_os = "linux"))]
-    {
+    if cfg!(any(windows, target_os = "linux")) {
         config.define("SHERPA_ONNX_ENABLE_PORTAUDIO", "ON");
     }
 
     let bindings_dir = config.very_verbose(true).build();
 
-    // Common
+    // Search paths
     println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
     println!("cargo:rustc-link-search=native={}", bindings_dir.display());
+
+    if cfg!(feature = "cuda") && cfg!(windows) {
+        println!(
+            "cargo:rustc-link-search=native={}",
+            out_dir.join("build\\_deps\\onnxruntime-src\\lib").display()
+        );
+    }
+
+    // Link libraries
+
     println!("cargo:rustc-link-lib=static=onnxruntime");
+
+    // Sherpa API
     println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
+    println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
+    println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
+    println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
+    println!("cargo:rustc-link-lib=static=ssentencepiece_core");
+
+    // Cuda
+    if cfg!(feature = "cuda") && cfg!(windows) {
+        println!("cargo:rustc-link-lib=static=onnxruntime_providers_cuda");
+        println!("cargo:rustc-link-lib=static=onnxruntime_providers_shared");
+        println!("cargo:rustc-link-lib=static=onnxruntime_providers_tensorrt");
+    }
 
     // macOS
-    #[cfg(target_os = "macos")]
-    {
+    if cfg!(target_os = "macos") {
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=c++");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
-        println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
-        println!("cargo:rustc-link-lib=static=ssentencepiece_core");
     }
 
     // Linux
-    #[cfg(target_os = "linux")]
-    {
+    if cfg!(target_os = "linux") {
         println!("cargo:rustc-link-lib=dylib=stdc++");
     }
 
-    // Linux and Windows
-    #[cfg(any(target_os = "linux", windows))]
-    {
-        println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
-        println!("cargo:rustc-link-lib=static=ssentencepiece_core");
-    }
-
     // TTS
-    #[cfg(feature = "tts")]
-    {
+    if cfg!(feature = "tts") {
         println!("cargo:rustc-link-lib=static=espeak-ng");
-        println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
-        println!("cargo:rustc-link-lib=static=ssentencepiece_core");
         println!("cargo:rustc-link-lib=static=piper_phonemize");
         println!("cargo:rustc-link-lib=static=ucd");
     }

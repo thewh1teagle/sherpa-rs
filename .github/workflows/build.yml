@@ -22,20 +22,32 @@ jobs:
           - platform: "windows-latest"
             options: '--features "cuda"'
             cuda-version: "12.5.0"
+          - platform: "ubuntu-22.04"
+            options: '--features "cuda"'
+            cuda-version: "12.5.0"
+
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: "true"
 
-      - name: Setup cuda
+      - name: Setup cuda for Windows
         run: scripts/setup_cuda.ps1
         env:
           INPUT_CUDA_VERSION: ${{ matrix.cuda-version }}
-        if: contains(matrix.options, 'cuda')
+        if: matrix.platform == 'windows-latest' && contains(matrix.options, 'cuda')
 
-      - uses: Swatinem/rust-cache@v2
+      - name: Setup cuda for Ubuntu
+        uses: Jimver/cuda-toolkit@master
+        with:
+          cuda: "${{ matrix.cuda-version }}"
+        if: contains(matrix.platform, 'ubuntu') && contains(matrix.options, 'cuda')
 
-      - uses: actions-rs/toolchain@v1
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
@@ -44,8 +56,7 @@ jobs:
       - name: Build
         run: |
           cargo build ${{ matrix.options }}
-        continue-on-error: true
-      - name: Find ONNX Runtime Libraries
+      - name: Find Runtime Libraries
         if: matrix.platform == 'windows-latest'
         run: |
-          C:\msys64\usr\bin\find -name "onnxruntime*.lib"
+          C:\msys64\usr\bin\find -name "*.lib"
