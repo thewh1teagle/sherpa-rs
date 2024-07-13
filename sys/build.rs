@@ -97,6 +97,14 @@ fn main() {
     println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
     println!("cargo:rustc-link-search=native={}", bindings_dir.display());
 
+    // Cuda
+    if cfg!(feature = "cuda") {
+        println!(
+            "cargo:rustc-link-search={}",
+            out_dir.join("build\\lib\\Release").display()
+        );
+    }
+
     if cfg!(feature = "cuda") && cfg!(windows) {
         println!(
             "cargo:rustc-link-search=native={}",
