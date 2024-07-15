@@ -133,6 +133,11 @@ fn main() {
     println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
     println!("cargo:rustc-link-lib=static=ssentencepiece_core");
 
+    if cfg!(target_os = "macos") {
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
+    }
+    
+
     // Cuda
     if cfg!(feature = "cuda") && cfg!(windows) {
         println!("cargo:rustc-link-lib=static=onnxruntime_providers_cuda");
