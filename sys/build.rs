@@ -68,7 +68,6 @@ fn main() {
     let mut config = Config::new(&sherpa_dst);
 
     config
-        .profile("Release")
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
         .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
         .define("BUILD_SHARED_LIBS", "OFF")
@@ -91,7 +90,13 @@ fn main() {
         config.define("SHERPA_ONNX_ENABLE_PORTAUDIO", "ON");
     }
 
-    let bindings_dir = config.very_verbose(true).build();
+    // General
+    config
+        .profile("Release")
+        .very_verbose(false)
+        .always_configure(false);
+
+    let bindings_dir = config.build();
 
     // Search paths
     println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
@@ -132,10 +137,7 @@ fn main() {
     println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
     println!("cargo:rustc-link-lib=static=ssentencepiece_core");
-
-    if cfg!(target_os = "macos") {
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
-    }
+    println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
     
 
     // Cuda
