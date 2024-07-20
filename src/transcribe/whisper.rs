@@ -48,6 +48,16 @@ impl WhisperRecognizer {
             task: task_c.into_raw(),
             tail_paddings,
         };
+
+
+        let sense_voice_model_c = cstr!("".to_string());
+        let sense_voice_language_c = cstr!("".to_string());
+        let sense_voice = sherpa_rs_sys::SherpaOnnxOfflineSenseVoiceModelConfig {
+            model: sense_voice_model_c.into_raw(),
+            language: sense_voice_language_c.into_raw(),
+            use_itn: 0,
+        };
+
         let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
             bpe_vocab: bpe_vocab_c.into_raw(),
             debug,
@@ -66,6 +76,7 @@ impl WhisperRecognizer {
                 joiner: null(),
             },
             whisper,
+            sense_voice,
         };
         let decoding_method_c = CString::new("greedy_search").unwrap();
         let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
