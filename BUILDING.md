@@ -39,3 +39,10 @@ cargo build --release
 ```console
 ffmpeg -i <file> -ar 16000 -ac 1 -c:a pcm_s16le <out>
 ```
+
+### Update sherpa-onnx
+
+```console
+cd sys/sherpa-onnx
+git pull origin master
+```
