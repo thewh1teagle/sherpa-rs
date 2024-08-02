@@ -3,6 +3,27 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+fn copy_folder(src: &Path, dst: &Path) {
+    std::fs::create_dir_all(dst).expect("Failed to create dst directory");
+    if cfg!(unix) {
+        std::process::Command::new("cp")
+            .arg("-rf")
+            .arg(src)
+            .arg(dst)
+            .status()
+            .expect("Failed to execute cp command");
+    }
+
+    if cfg!(windows) {
+        std::process::Command::new("robocopy.exe")
+            .arg("/e")
+            .arg(src)
+            .arg(dst)
+            .status()
+            .expect("Failed to execute xcopy command");
+    }
+}
+
 fn main() {
     let target = env::var("TARGET").unwrap();
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
@@ -12,30 +33,8 @@ fn main() {
 
     // Prepare sherpa-onnx source
     if !sherpa_dst.exists() {
-        std::fs::create_dir_all(&sherpa_dst).expect("Failed to create sherpa-onnx directory");
-
-        // There's some invalid files. better to use cp
-        if cfg!(unix) {
-            std::process::Command::new("cp")
-                .arg("-rf")
-                .arg(sherpa_src.clone())
-                .arg(out_dir.clone())
-                .status()
-                .expect("Failed to execute cp command");
-        }
-
-        if cfg!(windows) {
-            std::process::Command::new("robocopy.exe")
-                .args(&[
-                    "/e",
-                    sherpa_src.to_str().unwrap(),
-                    sherpa_dst.to_str().unwrap(),
-                ])
-                .status()
-                .expect("Failed to execute xcopy command");
-        }
+        copy_folder(&sherpa_src, &sherpa_dst);
     }
-
     // Speed up build
     env::set_var(
         "CMAKE_BUILD_PARALLEL_LEVEL",
@@ -46,7 +45,6 @@ fn main() {
     );
 
     // Bindings
-
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
         .clang_arg(format!("-I{}", sherpa_dst.display()))
@@ -138,7 +136,6 @@ fn main() {
     println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
     println!("cargo:rustc-link-lib=static=ssentencepiece_core");
     println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
-    
 
     // Cuda
     if cfg!(feature = "cuda") && cfg!(windows) {
