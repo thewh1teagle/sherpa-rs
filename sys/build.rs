@@ -30,6 +30,12 @@ fn main() {
     let sherpa_dst = out_dir.join("sherpa-onnx");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
+    let build_shared_libs = cfg!(feature = "directml") || cfg!(feature = "cuda");
+    let profile = if cfg!(debug_assertions) {
+        "Debug"
+    } else {
+        "Release"
+    };
 
     // Prepare sherpa-onnx source
     if !sherpa_dst.exists() {
@@ -77,10 +83,15 @@ fn main() {
         if cfg!(feature = "tts") { "ON" } else { "OFF" },
     );
 
-    // Cuda
-    // https://k2-fsa.github.io/k2/installation/cuda-cudnn.html
+    // Cuda https://k2-fsa.github.io/k2/installation/cuda-cudnn.html
     if cfg!(feature = "cuda") {
         config.define("SHERPA_ONNX_ENABLE_GPU", "ON");
+        config.define("BUILD_SHARED_LIBS", "ON");
+    }
+
+    // DirectML https://onnxruntime.ai/docs/execution-providers/DirectML-ExecutionProvider.html
+    if cfg!(feature = "directml") {
+        config.define("SHERPA_ONNX_ENABLE_DIRECTML", "ON");
         config.define("BUILD_SHARED_LIBS", "ON");
     }
 
@@ -90,7 +101,7 @@ fn main() {
 
     // General
     config
-        .profile("Release")
+        .profile(profile)
         .very_verbose(false)
         .always_configure(false);
 
@@ -104,7 +115,7 @@ fn main() {
     if cfg!(feature = "cuda") {
         println!(
             "cargo:rustc-link-search={}",
-            out_dir.join("build\\lib\\Release").display()
+            out_dir.join(format!("build/lib/{}", profile)).display()
         );
     }
 
@@ -112,7 +123,7 @@ fn main() {
         if cfg!(windows) {
             println!(
                 "cargo:rustc-link-search=native={}",
-                out_dir.join("build\\_deps\\onnxruntime-src\\lib").display()
+                out_dir.join("build/_deps/onnxruntime-src/lib").display()
             );
         }
         if cfg!(target_os = "linux") {
@@ -126,16 +137,27 @@ fn main() {
     // Link libraries
 
     println!("cargo:rustc-link-lib=static=onnxruntime");
+    println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
 
     // Sherpa API
-    println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
-    println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
-    println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
-    println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
-    println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
-    println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
-    println!("cargo:rustc-link-lib=static=ssentencepiece_core");
-    println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
+    if !build_shared_libs {
+        println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
+        println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
+        println!("cargo:rustc-link-lib=static=ssentencepiece_core");
+        println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
+    }
+
+    // TTS
+    if cfg!(feature = "tts") {
+        if !build_shared_libs {
+            println!("cargo:rustc-link-lib=static=espeak-ng");
+            println!("cargo:rustc-link-lib=static=piper_phonemize");
+            println!("cargo:rustc-link-lib=static=ucd");
+        }
+    }
 
     // Cuda
     if cfg!(feature = "cuda") && cfg!(windows) {
@@ -155,13 +177,6 @@ fn main() {
         println!("cargo:rustc-link-lib=dylib=stdc++");
     }
 
-    // TTS
-    if cfg!(feature = "tts") {
-        println!("cargo:rustc-link-lib=static=espeak-ng");
-        println!("cargo:rustc-link-lib=static=piper_phonemize");
-        println!("cargo:rustc-link-lib=static=ucd");
-    }
-
     if target.contains("apple") {
         // On (older) OSX we need to link against the clang runtime,
         // which is hidden in some non-default path.
@@ -170,6 +185,30 @@ fn main() {
         if let Some(path) = macos_link_search_path() {
             println!("cargo:rustc-link-lib=clang_rt.osx");
             println!("cargo:rustc-link-search={}", path);
+        }
+    }
+
+    // copy DLLs to target
+    if build_shared_libs {
+        let suffix = if cfg!(windows) {
+            ".dll"
+        } else if cfg!(target_os = "macos") {
+            ".dylib"
+        } else {
+            ".so"
+        };
+        for entry in glob::glob(&format!(
+            "{}/*{}",
+            out_dir.join("lib").to_str().unwrap(),
+            suffix
+        ))
+        .unwrap()
+        .flatten()
+        {
+            let target_dir = out_dir.parent().unwrap().parent().unwrap().parent().unwrap();
+            let dst = target_dir.join(entry.file_name().unwrap());
+            println!("cargo:warning=copy from {} to {}", entry.display(), dst.display());
+            std::fs::copy(entry, dst).unwrap();
         }
     }
 }

@@ -441,6 +441,7 @@ version = "0.1.7-beta.0"
 dependencies = [
  "bindgen",
  "cmake",
+ "glob",
 ]
 
 [[package]]

@@ -35,8 +35,10 @@ include = [
 [build-dependencies]
 bindgen = "0.69.4"
 cmake = "0.1"
+glob = "0.3.1"
 
 [features]
 default = []
 tts = []
 cuda = []
+directml = []

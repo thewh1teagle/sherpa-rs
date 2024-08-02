@@ -40,7 +40,7 @@ fn main() -> Result<()> {
         "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
         "en".into(),
         Some(true),
-        None,
+        Some("directml".into()),
         None,
         None,
     );

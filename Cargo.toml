@@ -32,6 +32,7 @@ members = ["sys"]
 default = ["tts"]
 tts = ["sherpa-rs-sys/tts"]
 cuda = ["sherpa-rs-sys/cuda"]
+directml = ["sherpa-rs-sys/directml"]
 
 
 [[example]]
