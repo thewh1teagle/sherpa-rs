@@ -207,7 +207,6 @@ fn main() {
         {
             let target_dir = out_dir.parent().unwrap().parent().unwrap().parent().unwrap();
             let dst = target_dir.join(entry.file_name().unwrap());
-            println!("cargo:warning=copy from {} to {}", entry.display(), dst.display());
             std::fs::copy(entry, dst).unwrap();
         }
     }
