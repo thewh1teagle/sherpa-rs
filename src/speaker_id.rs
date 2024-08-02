@@ -75,13 +75,13 @@ impl EmbeddingExtractor {
                 bail!("Failed to create SherpaOnnxOnlineStream");
             }
 
-            sherpa_rs_sys::AcceptWaveform(
+            sherpa_rs_sys::SherpaOnnxOnlineStreamAcceptWaveform(
                 stream,
                 sample_rate,
                 samples.as_ptr(),
                 samples.len() as i32,
             );
-            sherpa_rs_sys::InputFinished(stream);
+            sherpa_rs_sys::SherpaOnnxOnlineStreamInputFinished(stream);
 
             if !self.is_ready(stream) {
                 bail!("Embedding extractor is not ready");
@@ -97,7 +97,7 @@ impl EmbeddingExtractor {
             log::debug!("using dimensions {}", self.embedding_size);
             let embedding = std::slice::from_raw_parts(embedding_ptr, self.embedding_size).to_vec();
             // Free
-            sherpa_rs_sys::DestroyOnlineStream(stream);
+            sherpa_rs_sys::SherpaOnnxDestroyOnlineStream(stream);
             sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorDestroyEmbedding(embedding_ptr);
             Ok(embedding)
         }

@@ -49,7 +49,6 @@ impl WhisperRecognizer {
             tail_paddings,
         };
 
-
         let sense_voice_model_c = cstr!("".to_string());
         let sense_voice_language_c = cstr!("".to_string());
         let sense_voice = sherpa_rs_sys::SherpaOnnxOfflineSenseVoiceModelConfig {
@@ -96,22 +95,22 @@ impl WhisperRecognizer {
             rule_fars: null(),
             rule_fsts: null(),
         };
-        let recognizer = unsafe { sherpa_rs_sys::CreateOfflineRecognizer(&config) };
+        let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };
 
         Self { recognizer }
     }
 
     pub fn transcribe(&mut self, sample_rate: i32, samples: Vec<f32>) -> WhisperRecognizerResult {
         unsafe {
-            let stream = sherpa_rs_sys::CreateOfflineStream(self.recognizer);
-            sherpa_rs_sys::AcceptWaveformOffline(
+            let stream = sherpa_rs_sys::SherpaOnnxCreateOfflineStream(self.recognizer);
+            sherpa_rs_sys::SherpaOnnxAcceptWaveformOffline(
                 stream,
                 sample_rate,
                 samples.as_ptr(),
                 samples.len().try_into().unwrap(),
             );
-            sherpa_rs_sys::DecodeOfflineStream(self.recognizer, stream);
-            let result_ptr = sherpa_rs_sys::GetOfflineStreamResult(stream);
+            sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
+            let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
             let text = CStr::from_ptr(raw_result.text);
             let text = text.to_str().unwrap().to_string();
@@ -119,8 +118,8 @@ impl WhisperRecognizer {
             // std::slice::from_raw_parts(raw_result.timestamps, raw_result.count as usize);
             let result = WhisperRecognizerResult { text };
             // Free
-            sherpa_rs_sys::DestroyOfflineRecognizerResult(result_ptr);
-            sherpa_rs_sys::DestroyOfflineStream(stream);
+            sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizerResult(result_ptr);
+            sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
             return result;
         }
     }
@@ -132,7 +131,7 @@ unsafe impl Sync for WhisperRecognizer {}
 impl Drop for WhisperRecognizer {
     fn drop(&mut self) {
         unsafe {
-            sherpa_rs_sys::DestroyOfflineRecognizer(self.recognizer);
+            sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizer(self.recognizer);
         }
     }
 }

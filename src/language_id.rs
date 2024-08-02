@@ -41,7 +41,7 @@ impl SpokenLanguageId {
         unsafe {
             let stream =
                 sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationCreateOfflineStream(self.slid);
-            sherpa_rs_sys::AcceptWaveformOffline(
+            sherpa_rs_sys::SherpaOnnxAcceptWaveformOffline(
                 stream,
                 sample_rate,
                 samples.as_ptr(),
@@ -57,7 +57,7 @@ impl SpokenLanguageId {
             let language = c_language.to_str().unwrap().to_string();
             // Free
             sherpa_rs_sys::SherpaOnnxDestroySpokenLanguageIdentificationResult(language_result_ptr);
-            sherpa_rs_sys::DestroyOfflineStream(stream);
+            sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
 
             Ok(language)
         }
