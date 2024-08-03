@@ -25,11 +25,14 @@ fn copy_folder(src: &Path, dst: &Path) {
     }
 }
 
-fn extract_lib_names(out_dir: &Path) -> Vec<String> {
+fn extract_lib_names(out_dir: &Path, profile: &str) -> Vec<String> {
     // Construct the pattern based on the target platform
     let lib_suffix = if cfg!(windows) { "*.lib" } else { "*.a" };
-    let pattern = out_dir.join(format!("build/lib/{}", lib_suffix));
-
+    let pattern = if cfg!(windows) {
+        out_dir.join(format!("build/lib/{}/{}", profile, lib_suffix))
+    } else {
+        out_dir.join(format!("build/lib/{}", lib_suffix))
+    };
     let mut lib_names = Vec::new();
 
     // Process the libraries based on the pattern
@@ -197,11 +200,17 @@ fn main() {
         "cargo:rustc-link-search={}",
         out_dir.join("build/lib").display()
     );
+    if cfg!(windows) {
+        println!(
+            "cargo:rustc-link-search={}",
+            out_dir.join("build").join("lib").join(profile).display()
+        );  
+    }
     println!("cargo:rustc-link-search={}", bindings_dir.display());
 
     // Link libraries
     let sherpa_libs_kind = if build_shared_libs { "dylib" } else { "static" };
-    let sherpa_libs = extract_lib_names(&out_dir);
+    let sherpa_libs = extract_lib_names(&out_dir, profile);
     for lib in sherpa_libs {
         println!(
             "{}",
