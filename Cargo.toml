@@ -17,7 +17,7 @@ keywords = [
 
 [dependencies]
 eyre = "0.6.12"
-hound = { version = "3.5.1", optional = true }
+hound = { version = "3.5.1" }
 log = "0.4.22"
 sherpa-rs-sys = { path = "sys", version = "0.1.7-beta.0" }
 
@@ -29,7 +29,7 @@ members = ["sys"]
 
 [features]
 default = []
-tts = ["sherpa-rs-sys/tts", "dep:hound"]
+tts = ["sherpa-rs-sys/tts"]
 cuda = ["sherpa-rs-sys/cuda"]
 directml = ["sherpa-rs-sys/directml"]
 
