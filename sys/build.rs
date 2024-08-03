@@ -21,7 +21,7 @@ fn copy_folder(src: &Path, dst: &Path) {
             .arg(src)
             .arg(dst)
             .status()
-            .expect("Failed to execute xcopy command");
+            .expect("Failed to execute robocopy command");
     }
 }
 
@@ -77,6 +77,30 @@ fn extract_lib_assets(out_dir: &Path) -> Vec<PathBuf> {
     }
 
     files
+}
+
+fn macos_link_search_path() -> Option<String> {
+    let output = Command::new("clang")
+        .arg("--print-search-dirs")
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        println!(
+            "failed to run 'clang --print-search-dirs', continuing without a link search path"
+        );
+        return None;
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    for line in stdout.lines() {
+        if line.contains("libraries: =") {
+            let path = line.split('=').nth(1)?;
+            return Some(format!("{}/lib/darwin", path));
+        }
+    }
+
+    println!("failed to determine link search path, continuing without it");
+    None
 }
 
 fn main() {
@@ -143,7 +167,7 @@ fn main() {
         config.define("SHERPA_ONNX_ENABLE_TTS", "ON");
     }
 
-    // Cuda https://k2-fsa.github.io/k2/installation/cuda-cudnn.html
+    // Cuda https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html
     if cfg!(feature = "cuda") {
         config.define("SHERPA_ONNX_ENABLE_GPU", "ON");
         config.define("BUILD_SHARED_LIBS", "ON");
@@ -223,28 +247,4 @@ fn main() {
             std::fs::copy(asset.clone(), dst).unwrap();
         }
     }
-}
-
-fn macos_link_search_path() -> Option<String> {
-    let output = Command::new("clang")
-        .arg("--print-search-dirs")
-        .output()
-        .ok()?;
-    if !output.status.success() {
-        println!(
-            "failed to run 'clang --print-search-dirs', continuing without a link search path"
-        );
-        return None;
-    }
-
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    for line in stdout.lines() {
-        if line.contains("libraries: =") {
-            let path = line.split('=').nth(1)?;
-            return Some(format!("{}/lib/darwin", path));
-        }
-    }
-
-    println!("failed to determine link search path, continuing without it");
-    None
 }
