@@ -27,6 +27,7 @@ fn copy_folder(src: &Path, dst: &Path) {
 fn main() {
     let target = env::var("TARGET").unwrap();
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let target_dir = out_dir.join("../../../").canonicalize().unwrap();
     let sherpa_dst = out_dir.join("sherpa-onnx");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
@@ -35,6 +36,47 @@ fn main() {
         "Debug"
     } else {
         "Release"
+    };
+
+    let shared_lib_suffix = if cfg!(windows) {
+        ".dll"
+    } else if cfg!(target_os = "macos") {
+        ".dylib"
+    } else {
+        ".so"
+    };
+    let sherpa_libs_kind = if build_shared_libs { "dylib" } else { "static" };
+    let sherpa_libs: &[&str] = if build_shared_libs {
+        // shared
+        &["sherpa-onnx-c-api", "onnxruntime"]
+    } else if cfg!(feature = "tts") {
+        // static with tts
+        &[
+            "sherpa-onnx-c-api",
+            "sherpa-onnx-core",
+            "kaldi-decoder-core",
+            "sherpa-onnx-kaldifst-core",
+            "sherpa-onnx-fstfar",
+            "sherpa-onnx-fst",
+            "kaldi-native-fbank-core",
+            "piper_phonemize",
+            "espeak-ng",
+            "ucd",
+            "onnxruntime",
+            "ssentencepiece_core",
+        ]
+    } else {
+        // static without tts
+        &[
+            "sherpa-onnx-c-api",
+            "sherpa-onnx-core",
+            "kaldi-decoder-core",
+            "sherpa-onnx-kaldifst-core",
+            "sherpa-onnx-fst",
+            "kaldi-native-fbank-core",
+            "onnxruntime",
+            "ssentencepiece_core",
+        ]
     };
 
     // Prepare sherpa-onnx source
@@ -75,13 +117,17 @@ fn main() {
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
         .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
         .define("BUILD_SHARED_LIBS", "OFF")
-        .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF");
+        .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
+        .define("SHERPA_ONNX_ENABLE_TTS", "OFF");
+
+    if cfg!(windows) {
+        config.static_crt(true);
+    }
 
     // TTS
-    config.define(
-        "SHERPA_ONNX_ENABLE_TTS",
-        if cfg!(feature = "tts") { "ON" } else { "OFF" },
-    );
+    if cfg!(feature = "tts") {
+        config.define("SHERPA_ONNX_ENABLE_TTS", "ON");
+    }
 
     // Cuda https://k2-fsa.github.io/k2/installation/cuda-cudnn.html
     if cfg!(feature = "cuda") {
@@ -117,9 +163,6 @@ fn main() {
             "cargo:rustc-link-search={}",
             out_dir.join(format!("build/lib/{}", profile)).display()
         );
-    }
-
-    if cfg!(feature = "cuda") {
         if cfg!(windows) {
             println!(
                 "cargo:rustc-link-search=native={}",
@@ -135,28 +178,16 @@ fn main() {
     }
 
     // Link libraries
-
-    println!("cargo:rustc-link-lib=static=onnxruntime");
-    println!("cargo:rustc-link-lib=static=sherpa-onnx-c-api");
-
-    // Sherpa API
-    if !build_shared_libs {
-        println!("cargo:rustc-link-lib=static=kaldi-native-fbank-core");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-core");
-        println!("cargo:rustc-link-lib=static=kaldi-decoder-core");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-kaldifst-core");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-fstfar");
-        println!("cargo:rustc-link-lib=static=ssentencepiece_core");
-        println!("cargo:rustc-link-lib=static=sherpa-onnx-fst");
+    for lib in sherpa_libs {
+        println!(
+            "{}",
+            format!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib)
+        );
     }
 
-    // TTS
-    if cfg!(feature = "tts") {
-        if !build_shared_libs {
-            println!("cargo:rustc-link-lib=static=espeak-ng");
-            println!("cargo:rustc-link-lib=static=piper_phonemize");
-            println!("cargo:rustc-link-lib=static=ucd");
-        }
+    // Windows debug
+    if cfg!(all(debug_assertions, windows)) {
+        println!("cargo:rustc-link-lib=dylib=msvcrtd");
     }
 
     // Cuda
@@ -190,22 +221,14 @@ fn main() {
 
     // copy DLLs to target
     if build_shared_libs {
-        let suffix = if cfg!(windows) {
-            ".dll"
-        } else if cfg!(target_os = "macos") {
-            ".dylib"
-        } else {
-            ".so"
-        };
         for entry in glob::glob(&format!(
             "{}/*{}",
             out_dir.join("lib").to_str().unwrap(),
-            suffix
+            shared_lib_suffix
         ))
         .unwrap()
         .flatten()
         {
-            let target_dir = out_dir.parent().unwrap().parent().unwrap().parent().unwrap();
             let dst = target_dir.join(entry.file_name().unwrap());
             std::fs::copy(entry, dst).unwrap();
         }

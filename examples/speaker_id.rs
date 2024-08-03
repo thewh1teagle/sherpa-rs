@@ -28,8 +28,6 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
 }
 
 fn main() -> Result<()> {
-    env_logger::init();
-
     // Define paths to the audio files
     let audio_files = vec!["samples/obama.wav", "biden.wav"];
 
