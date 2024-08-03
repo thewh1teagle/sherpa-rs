@@ -2,18 +2,18 @@
 Piper English model
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-amy-low.tar.bz2
 tar xf vits-piper-en_US-amy-low.tar.bz2
-cargo run --example tts --features="tts" -- --text 'liliana, the most beautiful and lovely assistant of our team!' --output audio.wav --tokens 'vits-piper-en_US-amy-low/tokens.txt' --model 'vits-piper-en_US-amy-low/en_US-amy-low.onnx' --data-dir 'vits-piper-en_US-amy-low/espeak-ng-data'
+cargo run --example tts --features="tts" -- --text "liliana, the most beautiful and lovely assistant of our team!" --output audio.wav --tokens "vits-piper-en_US-amy-low/tokens.txt" --model "vits-piper-en_US-amy-low/en_US-amy-low.onnx" --data-dir "vits-piper-en_US-amy-low/espeak-ng-data"
 
 High quality vits-ljs with emotions voice
 wget https://huggingface.co/csukuangfj/vits-ljs/resolve/main/vits-ljs.onnx
 wget https://huggingface.co/csukuangfj/vits-ljs/resolve/main/lexicon.txt
 wget https://huggingface.co/csukuangfj/vits-ljs/resolve/main/tokens.txt
-cargo run --example tts --features="tts" -- --text 'liliana, the most beautiful and lovely assistant of our team!' --output audio.wav --tokens 'tokens.txt' --model 'vits-ljs.onnx' --lexicon lexicon.txt
+cargo run --example tts --features="tts" -- --text "liliana, the most beautiful and lovely assistant of our team!"" --output audio.wav --tokens "tokens.txt" --model "vits-ljs.onnx" --lexicon lexicon.txt
 
 MMS Hebrew model
 wget https://huggingface.co/thewh1teagle/mms-tts-heb/resolve/main/model_sherpa.onnx
 wget https://huggingface.co/thewh1teagle/mms-tts-heb/resolve/main/tokens.txt
-cargo run --example tts --features="tts" -- --text 'שלום וברכה, ניפרד בשמחה' --output audio.wav --tokens 'tokens.txt' --model 'model_sherpa.onnx'
+cargo run --example tts --features="tts" -- --text "שלום וברכה, ניפרד בשמחה" --output audio.wav --tokens "tokens.txt" --model "model_sherpa.onnx"
 */
 use clap::Parser;
 
