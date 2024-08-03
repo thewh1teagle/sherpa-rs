@@ -56,15 +56,15 @@ fn extract_lib_names(out_dir: &Path) -> Vec<String> {
 }
 
 fn extract_lib_assets(out_dir: &Path) -> Vec<PathBuf> {
-    let shared_lib_suffix = if cfg!(windows) {
-        ".dll"
+    let shared_lib_pattern = if cfg!(windows) {
+        "*.dll"
     } else if cfg!(target_os = "macos") {
-        ".dylib"
+        "*.dylib"
     } else {
-        ".so"
+        "*.so"
     };
 
-    let pattern = out_dir.join(format!("lib/{}", shared_lib_suffix));
+    let pattern = out_dir.join(format!("lib/{}", shared_lib_pattern));
     let mut files = Vec::new();
 
     for entry in glob(pattern.to_str().unwrap()).unwrap() {
