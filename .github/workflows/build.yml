@@ -24,6 +24,8 @@ jobs:
           - platform: "windows-latest" # Windows Cuda
             options: '--features "cuda"'
             cuda-version: "12.5.0"
+          - platform: "windows-latest" # Windows DirectML
+            options: '--features "directml"'
           - platform: "ubuntu-22.04" # Linux Cuda
             options: '--features "cuda"'
             cuda-version: "12.4.1"
