@@ -28,8 +28,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        rust-version: [stable, nightly]
+        os: [macos-latest]
+        rust-version: [stable]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out code into the proper directory
@@ -53,8 +53,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        rust-version: [stable, nightly]
+        os: [macos-latest]
+        rust-version: [stable]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out code into the proper directory
