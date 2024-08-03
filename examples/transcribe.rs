@@ -2,7 +2,7 @@
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
 tar xvf sherpa-onnx-whisper-tiny.tar.bz2
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
-cargo run --example transcribe
+cargo run --example transcribe motivation.wav
 */
 
 use eyre::{bail, Result};
@@ -27,7 +27,8 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
 }
 
 fn main() -> Result<()> {
-    let (sample_rate, samples) = read_audio_file("motivation.wav")?;
+    let path = std::env::args().nth(1).expect("Missing file path argument");
+    let (sample_rate, samples) = read_audio_file(&path)?;
 
     // Check if the sample rate is 16000
     if sample_rate != 16000 {

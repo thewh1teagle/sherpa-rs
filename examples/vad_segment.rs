@@ -8,8 +8,8 @@ use sherpa_rs::vad::{Vad, VadConfig};
 use std::io::Cursor;
 
 fn main() -> Result<()> {
-    let file_path = std::env::args().nth(1).expect("Missing file path argument");
-    let audio_data = std::fs::read(file_path)?;
+    let path = std::env::args().nth(1).expect("Missing file path argument");
+    let audio_data = std::fs::read(path)?;
 
     let cursor = Cursor::new(audio_data);
     let mut reader = hound::WavReader::new(cursor)?;
