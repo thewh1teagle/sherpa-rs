@@ -9,7 +9,7 @@ fn copy_folder(src: &Path, dst: &Path) {
         std::process::Command::new("cp")
             .arg("-rf")
             .arg(src)
-            .arg(dst)
+            .arg(dst.parent().unwrap())
             .status()
             .expect("Failed to execute cp command");
     }
