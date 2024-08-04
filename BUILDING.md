@@ -46,3 +46,20 @@ ffmpeg -i <file> -ar 16000 -ac 1 -c:a pcm_s16le <out>
 cd sys/sherpa-onnx
 git pull origin master
 ```
+
+### Gotachas
+
+---
+
+When running `--example` with dynamic libraries eg. with `directml` or `cuda` you need to have the DLLs from `target` folder in PATH.
+Example:
+
+```console
+cargo build --features "directml" --example transcribe
+copy target\debug\examples\transcribe.exe target\debug
+target\debug\transcribe.exe motivation.wav
+```
+
+---
+
+Currently whisper can transcribe only chunks of 30s max.
