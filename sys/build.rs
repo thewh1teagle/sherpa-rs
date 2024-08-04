@@ -4,6 +4,14 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+macro_rules! debug_log {
+    ($($arg:tt)*) => {
+        if std::env::var("DEBUG").is_ok() {
+            println!("cargo:warning=[DEBUG] {}", format!($($arg)*));
+        }
+    };
+}
+
 fn copy_folder(src: &Path, dst: &Path) {
     std::fs::create_dir_all(dst).expect("Failed to create dst directory");
     if cfg!(unix) {
@@ -120,8 +128,13 @@ fn main() {
         "Release"
     };
 
+    debug_log!("TARGET: {}", target_dir.display());
+    debug_log!("OUT: {}", target_dir.display());
+    debug_log!("BUILD_SHARED: {}", build_shared_libs);
+
     // Prepare sherpa-onnx source
     if !sherpa_dst.exists() {
+        debug_log!("Copy {} to {}", sherpa_src.display(), sherpa_dst.display());
         copy_folder(&sherpa_src, &sherpa_dst);
     }
     // Speed up build
@@ -150,6 +163,8 @@ fn main() {
     println!("cargo:rerun-if-changed=wrapper.h");
     println!("cargo:rerun-if-changed=./sherpa-onnx");
 
+    debug_log!("Bindings Created");
+
     // Build with Cmake
 
     let mut config = Config::new(&sherpa_dst);
@@ -172,12 +187,14 @@ fn main() {
 
     // Cuda https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html
     if cfg!(feature = "cuda") {
+        debug_log!("Cuda enabled");
         config.define("SHERPA_ONNX_ENABLE_GPU", "ON");
         config.define("BUILD_SHARED_LIBS", "ON");
     }
 
     // DirectML https://onnxruntime.ai/docs/execution-providers/DirectML-ExecutionProvider.html
     if cfg!(feature = "directml") {
+        debug_log!("DirectML enabled");
         config.define("SHERPA_ONNX_ENABLE_DIRECTML", "ON");
         config.define("BUILD_SHARED_LIBS", "ON");
     }
@@ -204,7 +221,7 @@ fn main() {
         println!(
             "cargo:rustc-link-search={}",
             out_dir.join("build").join("lib").join(profile).display()
-        );  
+        );
     }
     println!("cargo:rustc-link-search={}", bindings_dir.display());
 
@@ -212,6 +229,10 @@ fn main() {
     let sherpa_libs_kind = if build_shared_libs { "dylib" } else { "static" };
     let sherpa_libs = extract_lib_names(&out_dir, profile);
     for lib in sherpa_libs {
+        debug_log!(
+            "LINK {}",
+            format!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib)
+        );
         println!(
             "{}",
             format!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib)
@@ -253,6 +274,7 @@ fn main() {
             let filename = asset_clone.file_name().unwrap();
             let filename = filename.to_str().unwrap();
             let dst = target_dir.join(filename);
+            debug_log!("COPY {} TO {}", asset.display(), dst.display());
             std::fs::copy(asset.clone(), dst).unwrap();
         }
     }
