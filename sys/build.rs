@@ -12,6 +12,22 @@ macro_rules! debug_log {
     };
 }
 
+fn get_cargo_target_dir() -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
+    let out_dir = std::path::PathBuf::from(std::env::var("OUT_DIR")?);
+    let profile = std::env::var("PROFILE")?;
+    let mut target_dir = None;
+    let mut sub_path = out_dir.as_path();
+    while let Some(parent) = sub_path.parent() {
+        if parent.ends_with(&profile) {
+            target_dir = Some(parent);
+            break;
+        }
+        sub_path = parent;
+    }
+    let target_dir = target_dir.ok_or("not found")?;
+    Ok(target_dir.to_path_buf())
+}
+
 fn copy_folder(src: &Path, dst: &Path) {
     std::fs::create_dir_all(dst).expect("Failed to create dst directory");
     if cfg!(unix) {
@@ -35,11 +51,7 @@ fn copy_folder(src: &Path, dst: &Path) {
 
 fn extract_lib_names(out_dir: &Path, build_shared_libs: bool) -> Vec<String> {
     let lib_pattern = if cfg!(windows) {
-        if build_shared_libs {
-            "*.dll"
-        } else {
-            "*.lib"
-        }
+        "*.lib"
     } else if cfg!(target_os = "macos") {
         if build_shared_libs {
             "*.dylib"
@@ -53,8 +65,11 @@ fn extract_lib_names(out_dir: &Path, build_shared_libs: bool) -> Vec<String> {
             "*.a"
         }
     };
-    let pattern = out_dir.join(format!("lib/{}", lib_pattern));
-    let mut lib_names = Vec::new();
+    let libs_dir = out_dir.join("lib");
+    let pattern = libs_dir.join(lib_pattern);
+    debug_log!("Extract libs {}", pattern.display());
+    
+    let mut lib_names: Vec<String> = Vec::new();
 
     // Process the libraries based on the pattern
     for entry in glob(pattern.to_str().unwrap()).unwrap() {
@@ -69,13 +84,11 @@ fn extract_lib_names(out_dir: &Path, build_shared_libs: bool) -> Vec<String> {
                 } else {
                     stem_str
                 };
-
                 lib_names.push(lib_name.to_string());
             }
             Err(e) => println!("cargo:warning=error={}", e),
         }
     }
-
     lib_names
 }
 
@@ -88,7 +101,9 @@ fn extract_lib_assets(out_dir: &Path) -> Vec<PathBuf> {
         "*.so"
     };
 
-    let pattern = out_dir.join(format!("lib/{}", shared_lib_pattern));
+    let libs_dir = out_dir.join("lib");
+    let pattern = libs_dir.join(shared_lib_pattern);
+    debug_log!("Extract lib assets {}", pattern.display());
     let mut files = Vec::new();
 
     for entry in glob(pattern.to_str().unwrap()).unwrap() {
@@ -130,7 +145,8 @@ fn macos_link_search_path() -> Option<String> {
 fn main() {
     let target = env::var("TARGET").unwrap();
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let target_dir = out_dir.join("../../../").canonicalize().unwrap();
+    
+    let target_dir = get_cargo_target_dir().unwrap();
     let sherpa_dst = out_dir.join("sherpa-onnx");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
@@ -233,6 +249,7 @@ fn main() {
     // Link libraries
     let sherpa_libs_kind = if build_shared_libs { "dylib" } else { "static" };
     let sherpa_libs = extract_lib_names(&out_dir, build_shared_libs);
+
     for lib in sherpa_libs {
         debug_log!(
             "LINK {}",
@@ -281,6 +298,13 @@ fn main() {
             let dst = target_dir.join(filename);
             debug_log!("COPY {} TO {}", asset.display(), dst.display());
             std::fs::copy(asset.clone(), dst).unwrap();
+
+            // Copy DLLs to examples as well
+            if target_dir.join("examples").exists() {
+                let dst = target_dir.join("examples").join(filename);
+                debug_log!("COPY {} TO {}", asset.display(), dst.display());
+                std::fs::copy(asset.clone(), dst).unwrap();
+            }
         }
     }
 }
