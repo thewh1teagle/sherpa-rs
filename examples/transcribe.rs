@@ -29,6 +29,7 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
 
 fn main() -> Result<()> {
     let path = std::env::args().nth(1).expect("Missing file path argument");
+    let provider = std::env::args().nth(2).unwrap_or("cpu".into());
     let (sample_rate, samples) = read_audio_file(&path)?;
 
     // Check if the sample rate is 16000
@@ -42,7 +43,7 @@ fn main() -> Result<()> {
         "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
         "en".into(),
         Some(true),
-        Some("directml".into()),
+        Some(provider),
         None,
         None,
     );
