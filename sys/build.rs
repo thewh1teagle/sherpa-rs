@@ -128,8 +128,10 @@ fn main() {
         "Release"
     };
 
-    debug_log!("TARGET: {}", target_dir.display());
-    debug_log!("OUT: {}", target_dir.display());
+    debug_log!("TARGET: {}", target);
+    debug_log!("CARGO_MANIFEST_DIR: {}", manifest_dir);
+    debug_log!("TARGET_DIR: {}", target_dir.display());
+    debug_log!("OUT_DIR: {}", out_dir.display());
     debug_log!("BUILD_SHARED: {}", build_shared_libs);
 
     // Prepare sherpa-onnx source
