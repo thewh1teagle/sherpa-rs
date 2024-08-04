@@ -31,7 +31,8 @@ Please see [BUILDING.md](BUILDING.md).
 
 ## Feature flags
 
-- `cuda`: enable CUDA support. Implicitly enables hidden GPU flag at runtime.
+- `cuda`: enable CUDA support..
+- `directml`: enable DirectML support..
 
 ## Docs
 
