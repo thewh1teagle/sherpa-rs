@@ -6,7 +6,7 @@ use std::process::Command;
 
 macro_rules! debug_log {
     ($($arg:tt)*) => {
-        if std::env::var("DEBUG").is_ok() {
+        if std::env::var("BUILD_DEBUG").is_ok() {
             println!("cargo:warning=[DEBUG] {}", format!($($arg)*));
         }
     };

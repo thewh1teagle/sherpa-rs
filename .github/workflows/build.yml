@@ -3,7 +3,7 @@ name: Build
 on:
   workflow_dispatch:
     inputs:
-      debug:
+      build_debug:
         required: false
         default: "0"
 
@@ -65,4 +65,4 @@ jobs:
         run: |
           cargo build ${{ matrix.options }}
         env:
-          DEBUG: ${{ github.event.inputs.debug }}
+          BUILD_DEBUG: ${{ github.event.inputs.build_debug }}
