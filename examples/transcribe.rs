@@ -7,6 +7,7 @@ cargo run --example transcribe motivation.wav
 
 use eyre::{bail, Result};
 use sherpa_rs::transcribe::whisper::WhisperRecognizer;
+use std::time::Instant;
 
 fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
     let mut reader = hound::WavReader::open(path)?;
@@ -45,7 +46,10 @@ fn main() -> Result<()> {
         None,
         None,
     );
+
+    let start_t = Instant::now();
     let result = recognizer.transcribe(sample_rate, samples);
     println!("{:?}", result);
+    println!("Time taken for transcription: {:?}", start_t.elapsed());
     Ok(())
 }
