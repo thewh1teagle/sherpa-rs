@@ -61,3 +61,7 @@ target\debug\transcribe.exe motivation.wav
 ---
 
 Currently whisper can transcribe only chunks of 30s max.
+
+### Debug build
+
+For debug the build process of sherpa-onnx, please set `BUILD_DEBUG=1` environment variable before build.
