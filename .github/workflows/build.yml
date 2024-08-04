@@ -6,6 +6,9 @@ on:
       build_debug:
         required: false
         default: "0"
+      cargo_args:
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -63,6 +66,6 @@ jobs:
 
       - name: Build
         run: |
-          cargo build ${{ matrix.options }}
+          cargo build ${{ matrix.options }} ${{ github.event.inputs.cargo_args }}
         env:
           BUILD_DEBUG: ${{ github.event.inputs.build_debug }}
