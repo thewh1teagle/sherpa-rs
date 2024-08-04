@@ -35,11 +35,11 @@ fn copy_folder(src: &Path, dst: &Path) {
 
 fn extract_lib_names(out_dir: &Path, profile: &str) -> Vec<String> {
     // Construct the pattern based on the target platform
-    let lib_suffix = if cfg!(windows) { "*.lib" } else { "*.a" };
+    let lib_pattern = if cfg!(windows) { "*.lib" } else { "*.a" };
     let pattern = if cfg!(windows) {
-        out_dir.join(format!("build/lib/{}/{}", profile, lib_suffix))
+        out_dir.join(format!("build/lib/{}/{}", profile, lib_pattern))
     } else {
-        out_dir.join(format!("build/lib/{}", lib_suffix))
+        out_dir.join(format!("lib/{}", lib_pattern))
     };
     let mut lib_names = Vec::new();
 
