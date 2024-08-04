@@ -33,9 +33,26 @@ fn copy_folder(src: &Path, dst: &Path) {
     }
 }
 
-fn extract_lib_names(out_dir: &Path, profile: &str) -> Vec<String> {
-    // Construct the pattern based on the target platform
-    let lib_pattern = if cfg!(windows) { "*.lib" } else { "*.a" };
+fn extract_lib_names(out_dir: &Path, profile: &str, build_shared_libs: bool) -> Vec<String> {
+    let lib_pattern = if cfg!(windows) {
+        if build_shared_libs {
+            "*.dll"
+        } else {
+            "*.lib"
+        }
+    } else if cfg!(target_os = "macos") {
+        if build_shared_libs {
+            "*.dylib"
+        } else {
+            "*.a"
+        }
+    } else {
+        if build_shared_libs {
+            "*.so"
+        } else {
+            "*.a"
+        }
+    };
     let pattern = if cfg!(windows) {
         out_dir.join(format!("build/lib/{}/{}", profile, lib_pattern))
     } else {
@@ -229,7 +246,7 @@ fn main() {
 
     // Link libraries
     let sherpa_libs_kind = if build_shared_libs { "dylib" } else { "static" };
-    let sherpa_libs = extract_lib_names(&out_dir, profile);
+    let sherpa_libs = extract_lib_names(&out_dir, profile, build_shared_libs);
     for lib in sherpa_libs {
         debug_log!(
             "LINK {}",
