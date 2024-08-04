@@ -1,6 +1,6 @@
 [package]
 name = "sherpa-rs-sys"
-version = "0.1.7"
+version = "0.1.8-beta.0"
 edition = "2021"
 authors = ["thewh1teagle"]
 homepage = "https://github.com/thewh1teagle/sherpa-rs"
