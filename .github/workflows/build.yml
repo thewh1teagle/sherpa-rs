@@ -6,6 +6,9 @@ on:
       build_debug:
         required: false
         default: "0"
+      cmake_verbose:
+        required: false
+        default: ""
       cargo_args:
         required: false
         default: ""
@@ -69,3 +72,4 @@ jobs:
           cargo build ${{ matrix.options }} ${{ github.event.inputs.cargo_args }}
         env:
           BUILD_DEBUG: ${{ github.event.inputs.build_debug }}
+          CMAKE_VERBOSE: ${{ github.event.inputs.cmake_verbose }}

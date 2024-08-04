@@ -237,7 +237,7 @@ fn main() {
     // General
     config
         .profile(profile)
-        .very_verbose(false)
+        .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default 
         .always_configure(false);
 
     let bindings_dir = config.build();
