@@ -33,7 +33,7 @@ fn copy_folder(src: &Path, dst: &Path) {
     }
 }
 
-fn extract_lib_names(out_dir: &Path, profile: &str, build_shared_libs: bool) -> Vec<String> {
+fn extract_lib_names(out_dir: &Path, build_shared_libs: bool) -> Vec<String> {
     let lib_pattern = if cfg!(windows) {
         if build_shared_libs {
             "*.dll"
@@ -53,11 +53,7 @@ fn extract_lib_names(out_dir: &Path, profile: &str, build_shared_libs: bool) -> 
             "*.a"
         }
     };
-    let pattern = if cfg!(windows) {
-        out_dir.join(format!("build/lib/{}/{}", profile, lib_pattern))
-    } else {
-        out_dir.join(format!("lib/{}", lib_pattern))
-    };
+    let pattern = out_dir.join(format!("lib/{}", lib_pattern));
     let mut lib_names = Vec::new();
 
     // Process the libraries based on the pattern
@@ -232,21 +228,11 @@ fn main() {
 
     // Search paths
     println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
-    println!(
-        "cargo:rustc-link-search={}",
-        out_dir.join("build/lib").display()
-    );
-    if cfg!(windows) {
-        println!(
-            "cargo:rustc-link-search={}",
-            out_dir.join("build").join("lib").join(profile).display()
-        );
-    }
     println!("cargo:rustc-link-search={}", bindings_dir.display());
 
     // Link libraries
     let sherpa_libs_kind = if build_shared_libs { "dylib" } else { "static" };
-    let sherpa_libs = extract_lib_names(&out_dir, profile, build_shared_libs);
+    let sherpa_libs = extract_lib_names(&out_dir, build_shared_libs);
     for lib in sherpa_libs {
         debug_log!(
             "LINK {}",
