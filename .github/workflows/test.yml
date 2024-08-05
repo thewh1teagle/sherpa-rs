@@ -94,6 +94,8 @@ jobs:
           echo "LD_LIBRARY_PATH=$PWD/target/debug:$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
       - name: Test Whisper
+        # Github actions doesn't have Nvidia GPUs
+        if: contains(matrix.options, 'cuda') != true
         run: |
           wget -q https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
           wget -q https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
