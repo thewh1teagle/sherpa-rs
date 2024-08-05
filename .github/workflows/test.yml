@@ -80,7 +80,7 @@ jobs:
           cargo build ${{ matrix.options }} ${{ github.event.inputs.cargo_args }}
 
       - name: Modify shared libraries path
-        if: contains(matrix.platform, 'linux')
+        if: contains(matrix.platform, 'ubuntu') && contains(matrix.options, 'cuda')
         run: |
           echo "LD_LIBRARY_PATH=$PWD/target/debug:$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
