@@ -31,8 +31,9 @@ Please see [BUILDING.md](BUILDING.md).
 
 ## Feature flags
 
-- `cuda`: enable CUDA support..
-- `directml`: enable DirectML support..
+- `cuda`: enable CUDA support
+- `directml`: enable DirectML support
+- `tts`: enable TTS
 
 ## Docs
 
