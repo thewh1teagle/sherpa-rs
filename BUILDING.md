@@ -62,6 +62,11 @@ target\debug\transcribe.exe motivation.wav
 
 Currently whisper can transcribe only chunks of 30s max.
 
+---
+
+When building with cuda you should use cuda `11.x`
+In addition install `cudnn` with `sudo apt install nvidia-cudnn`
+
 ### Debug build
 
 For debug the build process of sherpa-onnx, please set `BUILD_DEBUG=1` environment variable before build.
