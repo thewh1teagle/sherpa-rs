@@ -79,6 +79,11 @@ jobs:
         run: |
           cargo build ${{ matrix.options }} ${{ github.event.inputs.cargo_args }}
 
+      - name: Modify shared libraries path
+        if: contains(matrix.platform, 'linux')
+        run: |
+          echo "LD_LIBRARY_PATH=$PWD/target/debug:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+
       - name: Test Whisper
         run: |
           wget -q https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
