@@ -205,7 +205,8 @@ fn main() {
         .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
         .define("BUILD_SHARED_LIBS", "OFF")
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
-        .define("SHERPA_ONNX_ENABLE_TTS", "OFF");
+        .define("SHERPA_ONNX_ENABLE_TTS", "OFF")
+        .define("SHERPA_ONNX_BUILD_C_API_EXAMPLES", "OFF");
 
     if cfg!(windows) {
         config.static_crt(true);
