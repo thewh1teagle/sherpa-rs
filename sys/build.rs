@@ -68,7 +68,7 @@ fn extract_lib_names(out_dir: &Path, build_shared_libs: bool) -> Vec<String> {
     let libs_dir = out_dir.join("lib");
     let pattern = libs_dir.join(lib_pattern);
     debug_log!("Extract libs {}", pattern.display());
-    
+
     let mut lib_names: Vec<String> = Vec::new();
 
     // Process the libraries based on the pattern
@@ -145,7 +145,7 @@ fn macos_link_search_path() -> Option<String> {
 fn main() {
     let target = env::var("TARGET").unwrap();
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    
+
     let target_dir = get_cargo_target_dir().unwrap();
     let sherpa_dst = out_dir.join("sherpa-onnx");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
@@ -237,7 +237,7 @@ fn main() {
     // General
     config
         .profile(profile)
-        .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default 
+        .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default
         .always_configure(false);
 
     let bindings_dir = config.build();
@@ -296,14 +296,26 @@ fn main() {
             let filename = asset_clone.file_name().unwrap();
             let filename = filename.to_str().unwrap();
             let dst = target_dir.join(filename);
-            debug_log!("COPY {} TO {}", asset.display(), dst.display());
-            std::fs::copy(asset.clone(), dst).unwrap();
+            debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
+            if !dst.exists() {
+                std::fs::hard_link(asset.clone(), dst).unwrap();
+            }
+            
 
             // Copy DLLs to examples as well
             if target_dir.join("examples").exists() {
                 let dst = target_dir.join("examples").join(filename);
-                debug_log!("COPY {} TO {}", asset.display(), dst.display());
-                std::fs::copy(asset.clone(), dst).unwrap();
+                debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
+                if !dst.exists() {
+                    std::fs::hard_link(asset.clone(), dst).unwrap();
+                }
+            }
+
+            // Copy DLLs to target/profile/deps as well for tests
+            let dst = target_dir.join("deps").join(filename);
+            debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
+            if !dst.exists() {
+                std::fs::hard_link(asset.clone(), dst).unwrap();
             }
         }
     }
