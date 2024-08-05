@@ -135,3 +135,37 @@ impl Drop for WhisperRecognizer {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::read_audio_file;
+    use std::time::Instant;
+
+    #[test]
+    fn test_whisper_transcribe() {
+        let path = "motivation.wav";
+        let (sample_rate, samples) = read_audio_file(&path).expect("file not found");
+
+        // Check if the sample rate is 16000
+        if sample_rate != 16000 {
+            panic!("The sample rate must be 16000.");
+        }
+
+        let mut recognizer = WhisperRecognizer::new(
+            "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),
+            "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
+            "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
+            "en".into(),
+            Some(true),
+            None,
+            None,
+            None,
+        );
+
+        let start_t = Instant::now();
+        let result = recognizer.transcribe(sample_rate, samples);
+        println!("{:?}", result);
+        println!("Time taken for transcription: {:?}", start_t.elapsed());
+    }
+}

@@ -1,4 +1,4 @@
-name: Build
+name: Test
 
 on:
   workflow_dispatch:
@@ -19,6 +19,9 @@ permissions:
 jobs:
   build:
     runs-on: ${{ matrix.platform }}
+    env:
+      BUILD_DEBUG: ${{ github.event.inputs.build_debug }}
+      CMAKE_VERBOSE: ${{ github.event.inputs.cmake_verbose }}
     strategy:
       fail-fast: false
       matrix:
@@ -67,9 +70,18 @@ jobs:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
+      - name: Add MSYS2 to PATH
+        if: contains(matrix.platform, 'windows')
+        run: echo "C:\msys64\usr\bin" >> $env:GITHUB_PATH
+        shell: powershell
+
       - name: Build
         run: |
           cargo build ${{ matrix.options }} ${{ github.event.inputs.cargo_args }}
-        env:
-          BUILD_DEBUG: ${{ github.event.inputs.build_debug }}
-          CMAKE_VERBOSE: ${{ github.event.inputs.cmake_verbose }}
+
+      - name: Test Whisper
+        run: |
+          wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
+          wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
+          tar xvf sherpa-onnx-whisper-tiny.tar.bz2
+          cargo test whisper ${{ matrix.options }} ${{ github.event.inputs.cargo_args }} -- --nocapture
