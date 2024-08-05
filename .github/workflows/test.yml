@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
     runs-on: ${{ matrix.platform }}
     env:
       BUILD_DEBUG: ${{ github.event.inputs.build_debug }}
