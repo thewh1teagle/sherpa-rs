@@ -151,11 +151,14 @@ fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
     let build_shared_libs = cfg!(feature = "directml") || cfg!(feature = "cuda");
-    let profile = if cfg!(debug_assertions) {
-        "Debug"
-    } else {
-        "Release"
-    };
+
+    let build_shared_libs = std::env::var("SHERPA_BUILD_SHARED_LIBS")
+        .map(|v| v == "1")
+        .unwrap_or(build_shared_libs);
+    let profile = env::var("SHERPA_LIB_PROFILE").unwrap_or("Release".to_string());
+    let static_crt = env::var("SHERPA_STATIC_CRT")
+        .map(|v| v == "1")
+        .unwrap_or(true);
 
     debug_log!("TARGET: {}", target);
     debug_log!("CARGO_MANIFEST_DIR: {}", manifest_dir);
@@ -203,13 +206,16 @@ fn main() {
     config
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
         .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
-        .define("BUILD_SHARED_LIBS", "OFF")
+        .define(
+            "BUILD_SHARED_LIBS",
+            if build_shared_libs { "ON" } else { "OFF" },
+        )
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
         .define("SHERPA_ONNX_ENABLE_TTS", "OFF")
         .define("SHERPA_ONNX_BUILD_C_API_EXAMPLES", "OFF");
 
     if cfg!(windows) {
-        config.static_crt(true);
+        config.static_crt(static_crt);
     }
 
     // TTS
@@ -237,7 +243,7 @@ fn main() {
 
     // General
     config
-        .profile(profile)
+        .profile(&profile)
         .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default
         .always_configure(false);
 
