@@ -47,6 +47,9 @@ git pull origin master
 
 ### Gotachas
 
+<details>
+<summary>When using GPU such as DirectML or Cuda</summary>
+
 ---
 
 When running `--example` with dynamic libraries eg. with `directml` or `cuda` you need to have the DLLs from `target` folder in PATH.
@@ -58,14 +61,23 @@ copy target\debug\examples\transcribe.exe target\debug
 target\debug\transcribe.exe motivation.wav
 ```
 
+When building with cuda you should use cuda `11.x`
+In addition install `cudnn` with `sudo apt install nvidia-cudnn`
+
+</details>
+
+<details>
+<summary>Whisper limits</summary>
+
+
 ---
 
 Currently whisper can transcribe only chunks of 30s max.
 
 ---
 
-When building with cuda you should use cuda `11.x`
-In addition install `cudnn` with `sudo apt install nvidia-cudnn`
+</details>
+
 
 <details>
 <summary>Static linking failed on Windows</summary>
@@ -97,12 +109,18 @@ cargo build -vv >log.txt 2>&1
 
 Look for the flags `/MD` (Meaning it links it dynamically) and `/MT` or `-MT` (Meaning it links it statically). See [MSVC_RUNTIME_LIBRARY](https://cmake.org/cmake/help/latest/prop_tgt/MSVC_RUNTIME_LIBRARY.html) and [pyannote-rs/issues/1](https://github.com/thewh1teagle/pyannote-rs/issues/1)
 
-## </details>
+</details>
+
+<details>
+<summary>Fix build issues with build flags</summary>
 
 Controlling build flags
 Please see `env::var` calls in `build.rs`.
 
----
+</details>
+
+<details>
+<summary>Cmake error: path exceeded</summary>
 
 Cmake filed with error about maxium paths exceeded. eg. `The fully qualified file name must be less than 260 characters.`
 
@@ -114,6 +132,8 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
 ```
 
 2. Restart PC
+
+</details>
 
 
 ### Debug build
