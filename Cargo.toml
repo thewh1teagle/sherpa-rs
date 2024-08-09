@@ -20,6 +20,9 @@ eyre = "0.6.12"
 hound = { version = "3.5.1" }
 log = "0.4.22"
 sherpa-rs-sys = { path = "sys", version = "0.1.8-beta.0" }
+pyannote-rs = { version = "0.2.3", optional = true, features = [
+    "load-dynamic", # Since both sherpa-onnx and pyannote-rs uses onnxruntime
+] }
 
 [dev-dependencies]
 clap = { version = "4.5.8", features = ["derive"] }
@@ -33,7 +36,12 @@ tts = ["sherpa-rs-sys/tts"]
 cuda = ["sherpa-rs-sys/cuda"]
 directml = ["sherpa-rs-sys/directml"]
 
+example-pyannote = ["dep:pyannote-rs"]
 
 [[example]]
 name = "tts"
 required-features = ["tts"]
+
+[[example]]
+name = "pyannote"
+required-features = ["example-pyannote"]
