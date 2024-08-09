@@ -102,6 +102,20 @@ Look for the flags `/MD` (Meaning it links it dynamically) and `/MT` or `-MT` (M
 Controlling build flags
 Please see `env::var` calls in `build.rs`.
 
+---
+
+Cmake filed with error about maxium paths exceeded. eg. `The fully qualified file name must be less than 260 characters.`
+
+1. Open PowerShell as admin and execute:
+
+```powershell
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
+-Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+```
+
+2. Restart PC
+
+
 ### Debug build
 
 For debug the build process of sherpa-onnx, please set `BUILD_DEBUG=1` environment variable before build.
