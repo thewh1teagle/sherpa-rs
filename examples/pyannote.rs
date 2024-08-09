@@ -8,13 +8,13 @@ tar xvf sherpa-onnx-whisper-tiny.tar.bz2
 wget https://github.com/pengzhendong/pyannote-onnx/raw/master/pyannote_onnx/segmentation-3.0.onnx
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/wespeaker_en_voxceleb_CAM++.onnx
 
-*Prepare DLLs for pyannote's onnxruntime (18.x)*
-https://github.com/microsoft/onnxruntime/releases
-Place them in target/debug/examples/ AND target/debug/
-
 *Run example*
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/6_speakers.wav
 cargo run --features example-pyannote --example pyannote
+
+*Prepare DLLs for pyannote's onnxruntime (18.x) since pyannote-rs load them dynamic and sherpa load static*
+https://github.com/microsoft/onnxruntime/releases
+Place them in target/debug/examples/ AND target/debug/
 */
 use sherpa_rs::transcribe::whisper::WhisperRecognizer;
 use std::time::Instant;

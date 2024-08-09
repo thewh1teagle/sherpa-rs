@@ -784,7 +784,7 @@ dependencies = [
 
 [[package]]
 name = "sherpa-rs"
-version = "0.1.8-beta.0"
+version = "0.1.9"
 dependencies = [
  "clap",
  "eyre",
@@ -796,7 +796,7 @@ dependencies = [
 
 [[package]]
 name = "sherpa-rs-sys"
-version = "0.1.8-beta.0"
+version = "0.1.9"
 dependencies = [
  "bindgen",
  "cmake",
