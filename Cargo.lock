@@ -581,7 +581,6 @@ checksum = "86d83095ae3c1258738d70ae7a06195c94d966a8e546f0d3609dc90885fb61f5"
 dependencies = [
  "half",
  "js-sys",
- "libloading",
  "ndarray",
  "ort-sys",
  "thiserror",

@@ -10,7 +10,7 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition
 
 *Run example*
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/6_speakers.wav
-cargo run --features example-pyannote --example pyannote
+cargo run --features example-pyannote --example pyannote 6_speakers.wav
 
 *Prepare DLLs for pyannote's onnxruntime (18.x) since pyannote-rs load them dynamic and sherpa load static*
 https://github.com/microsoft/onnxruntime/releases
@@ -88,9 +88,8 @@ fn main() {
             "start = {:.2}, end = {:.2}, speaker = {}, text = {}",
             segment.start, segment.end, speaker, text
         );
-
-        // Show elapsed time
-        let elapsed = now.elapsed();
-        println!("Finished in {} seconds.", elapsed.as_secs());
     }
+    // Show elapsed time
+    let elapsed = now.elapsed();
+    println!("Finished in {} seconds.", elapsed.as_secs());
 }

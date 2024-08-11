@@ -20,9 +20,7 @@ eyre = "0.6.12"
 hound = { version = "3.5.1" }
 log = "0.4.22"
 sherpa-rs-sys = { path = "sys", version = "0.1.9" }
-pyannote-rs = { version = "0.2.3", optional = true, features = [
-    "load-dynamic", # Since both sherpa-onnx and pyannote-rs uses onnxruntime
-] }
+pyannote-rs = { version = "0.2.3", optional = true, features = [] }
 
 [dev-dependencies]
 clap = { version = "4.5.8", features = ["derive"] }
