@@ -31,6 +31,7 @@ fn main() -> Result<()> {
         0.5,
         0.5,
         0.5,
+        0.5,
         sample_rate,
         window_size.try_into().unwrap(),
         None,

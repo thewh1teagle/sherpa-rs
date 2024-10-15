@@ -4,7 +4,7 @@ wget https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
 tar xvf sherpa-onnx-whisper-tiny.tar.bz2
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/sam_altman.wav -O sam_altman.wav
-cargo run --example diarize_whisper sam_altman.wav
+cargo run --example vad_whisper sam_altman.wav
 */
 
 use eyre::{bail, Result};
@@ -71,6 +71,7 @@ fn main() -> Result<()> {
         vad_model,
         0.4,
         0.4,
+        0.5,
         0.5,
         sample_rate,
         window_size.try_into().unwrap(),

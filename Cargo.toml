@@ -1,3 +1,6 @@
+[workspace]
+members = ["sys"]
+
 [package]
 name = "sherpa-rs"
 version = "0.1.9"
@@ -24,9 +27,6 @@ pyannote-rs = { version = "0.2.3", optional = true, features = [] }
 
 [dev-dependencies]
 clap = { version = "4.5.8", features = ["derive"] }
-
-[workspace]
-members = ["sys"]
 
 [features]
 default = []

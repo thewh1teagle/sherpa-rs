@@ -94,6 +94,7 @@ impl WhisperRecognizer {
             model_config,
             rule_fars: null(),
             rule_fsts: null(),
+            blank_penalty: 0.0,
         };
         let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };
 

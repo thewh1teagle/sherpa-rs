@@ -17,6 +17,7 @@ impl VadConfig {
         model: String,
         min_silence_duration: f32,
         min_speech_duration: f32,
+        max_speech_duration: f32,
         threshold: f32,
         sample_rate: i32,
         window_size: i32,
@@ -34,6 +35,7 @@ impl VadConfig {
             min_speech_duration,
             threshold,
             window_size,
+            max_speech_duration,
         };
         let debug = debug.unwrap_or(false);
         let debug = if debug { 1 } else { 0 };
