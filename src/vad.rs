@@ -1,6 +1,6 @@
 use crate::get_default_provider;
 use eyre::Result;
-use std::ffi::CString;
+use std::{ffi::CString, path::Path};
 
 #[derive(Debug)]
 pub struct VadConfig {
@@ -12,38 +12,56 @@ pub struct Vad {
     pub(crate) vad: *mut sherpa_rs_sys::SherpaOnnxVoiceActivityDetector,
 }
 
+#[derive(Debug)]
+pub struct UserVadConfig {
+    pub min_silence_duration: f32,
+    pub min_speech_duration: f32,
+    pub max_speech_duration: f32,
+    pub threshold: f32,
+    pub sample_rate: i32,
+    pub window_size: i32,
+    pub provider: Option<String>,
+    pub num_threads: Option<i32>,
+    pub debug: Option<bool>,
+}
+
+impl Default for UserVadConfig {
+    fn default() -> Self {
+        Self {
+            min_silence_duration: 0.5,
+            min_speech_duration: 0.5,
+            max_speech_duration: 0.5,
+            threshold: 0.5,
+            sample_rate: 16000,
+            window_size: 512,
+            provider: None,
+            num_threads: Some(1),
+            debug: Some(false),
+        }
+    }
+}
+
 impl VadConfig {
-    pub fn new(
-        model: String,
-        min_silence_duration: f32,
-        min_speech_duration: f32,
-        max_speech_duration: f32,
-        threshold: f32,
-        sample_rate: i32,
-        window_size: i32,
-        provider: Option<String>,
-        num_threads: Option<i32>,
-        debug: Option<bool>,
-    ) -> Self {
-        let provider = provider.unwrap_or(get_default_provider());
+    pub fn new<P: AsRef<Path>>(model: P, user_config: UserVadConfig) -> Self {
+        let provider = user_config.provider.unwrap_or(get_default_provider());
         let provider = CString::new(provider).unwrap();
-        let model = CString::new(model).unwrap();
+        let model = CString::new(model.as_ref().to_str().unwrap()).unwrap();
 
         let silero_vad = sherpa_rs_sys::SherpaOnnxSileroVadModelConfig {
             model: model.into_raw(),
-            min_silence_duration,
-            min_speech_duration,
-            threshold,
-            window_size,
-            max_speech_duration,
+            min_silence_duration: user_config.min_silence_duration,
+            min_speech_duration: user_config.min_speech_duration,
+            threshold: user_config.threshold,
+            window_size: user_config.window_size,
+            max_speech_duration: user_config.max_speech_duration,
         };
-        let debug = debug.unwrap_or(false);
+        let debug = user_config.debug.unwrap_or(false);
         let debug = if debug { 1 } else { 0 };
         let cfg = sherpa_rs_sys::SherpaOnnxVadModelConfig {
             debug,
             provider: provider.into_raw(),
-            num_threads: num_threads.unwrap_or(1),
-            sample_rate,
+            num_threads: user_config.num_threads.unwrap_or(1),
+            sample_rate: user_config.sample_rate,
             silero_vad,
         };
         Self { cfg }

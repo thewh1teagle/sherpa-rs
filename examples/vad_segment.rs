@@ -24,19 +24,13 @@ fn main() -> Result<()> {
         .map(|s| s.unwrap() as f32 / i16::MAX as f32)
         .collect();
 
-    let model = "silero_vad.onnx".into();
+    let model = "silero_vad.onnx";
     let window_size: usize = 512;
     let config = VadConfig::new(
         model,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        sample_rate,
-        window_size.try_into().unwrap(),
-        None,
-        None,
-        Some(true),
+        sherpa_rs::vad::UserVadConfig {
+            ..Default::default()
+        },
     );
 
     let mut vad = Vad::new_from_config(config, 3.0).unwrap();

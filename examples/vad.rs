@@ -110,19 +110,13 @@ fn main() -> Result<()> {
 
     let mut speaker_counter = 1;
 
-    let vad_model = "silero_vad.onnx".into();
+    let vad_model = "silero_vad.onnx";
     let window_size: usize = 512;
     let config = VadConfig::new(
         vad_model,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        sample_rate,
-        window_size.try_into().unwrap(),
-        None,
-        None,
-        Some(false),
+        sherpa_rs::vad::UserVadConfig {
+            ..Default::default()
+        },
     );
 
     let mut vad = Vad::new_from_config(config, 60.0 * 10.0).unwrap();

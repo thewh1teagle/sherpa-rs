@@ -15,36 +15,54 @@ pub struct WhisperRecognizerResult {
     // pub timestamps: Vec<f32>,
 }
 
+#[derive(Debug)]
+pub struct WhisperConfig {
+    pub decoder: String,
+    pub encoder: String,
+    pub tokens: String,
+    pub language: String,
+    pub debug: Option<bool>,
+    pub provider: Option<String>,
+    pub num_threads: Option<i32>,
+    pub bpe_vocab: Option<String>,
+}
+
+impl Default for WhisperConfig {
+    fn default() -> Self {
+        Self {
+            decoder: String::from("default_decoder.onnx"),
+            encoder: String::from("default_encoder.onnx"),
+            tokens: String::from("default_tokens.onnx"),
+            language: String::from("en"),
+            debug: Some(false),
+            provider: None,
+            num_threads: Some(2),
+            bpe_vocab: Some("default_bpe_vocab".to_string()),
+        }
+    }
+}
+
 impl WhisperRecognizer {
-    pub fn new(
-        decoder: String,
-        encoder: String,
-        tokens: String,
-        language: String,
-        debug: Option<bool>,
-        provider: Option<String>,
-        num_threads: Option<i32>,
-        bpe_vocab: Option<String>,
-    ) -> Self {
-        let decoder_c = cstr!(decoder);
-        let encoder_c = cstr!(encoder);
-        let langauge_c = cstr!(language);
+    pub fn new(config: WhisperConfig) -> Self {
+        let decoder_c = cstr!(config.decoder);
+        let encoder_c = cstr!(config.encoder);
+        let language_c = cstr!(config.language);
         let task_c = cstr!("transcribe".to_string());
         let tail_paddings = 0;
-        let tokens_c = cstr!(tokens);
+        let tokens_c = cstr!(config.tokens);
 
-        let debug = debug.unwrap_or_default();
+        let debug = config.debug.unwrap_or_default();
         let debug = if debug { 1 } else { 0 };
-        let provider = provider.unwrap_or(get_default_provider());
+        let provider = config.provider.unwrap_or(get_default_provider());
         let provider_c = cstr!(provider);
-        let num_threads = num_threads.unwrap_or(2);
-        let bpe_vocab = bpe_vocab.unwrap_or("".into());
+        let num_threads = config.num_threads.unwrap_or(2);
+        let bpe_vocab = config.bpe_vocab.unwrap_or("".into());
         let bpe_vocab_c = cstr!(bpe_vocab);
 
         let whisper = sherpa_rs_sys::SherpaOnnxOfflineWhisperModelConfig {
             decoder: decoder_c.into_raw(),
             encoder: encoder_c.into_raw(),
-            language: langauge_c.into_raw(),
+            language: language_c.into_raw(),
             task: task_c.into_raw(),
             tail_paddings,
         };
@@ -77,6 +95,7 @@ impl WhisperRecognizer {
             whisper,
             sense_voice,
         };
+
         let decoding_method_c = CString::new("greedy_search").unwrap();
         let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
             decoding_method: decoding_method_c.into_raw(), // greedy_search, modified_beam_search
@@ -96,6 +115,7 @@ impl WhisperRecognizer {
             rule_fsts: null(),
             blank_penalty: 0.0,
         };
+
         let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };
 
         Self { recognizer }
@@ -121,7 +141,7 @@ impl WhisperRecognizer {
             // Free
             sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizerResult(result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
-            return result;
+            result
         }
     }
 }
@@ -153,16 +173,19 @@ mod tests {
             panic!("The sample rate must be 16000.");
         }
 
-        let mut recognizer = WhisperRecognizer::new(
-            "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),
-            "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
-            "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
-            "en".into(),
-            Some(true),
-            None,
-            None,
-            None,
-        );
+        let config = WhisperConfig {
+            decoder: "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),
+            encoder: "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
+            tokens: "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
+            language: "en".into(),
+            debug: Some(true),
+            provider: None,
+            num_threads: None,
+            bpe_vocab: None,
+            ..Default::default() // fill in any missing fields with defaults
+        };
+
+        let mut recognizer = WhisperRecognizer::new(config);
 
         let start_t = Instant::now();
         let result = recognizer.transcribe(sample_rate, samples);

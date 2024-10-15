@@ -6,7 +6,10 @@ cargo run --example transcribe motivation.wav
 */
 
 use eyre::{bail, Result};
-use sherpa_rs::{read_audio_file, transcribe::whisper::WhisperRecognizer};
+use sherpa_rs::{
+    read_audio_file,
+    transcribe::whisper::{WhisperConfig, WhisperRecognizer},
+};
 use std::time::Instant;
 
 fn main() -> Result<()> {
@@ -19,16 +22,19 @@ fn main() -> Result<()> {
         bail!("The sample rate must be 16000.");
     }
 
-    let mut recognizer = WhisperRecognizer::new(
-        "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),
-        "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
-        "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
-        "en".into(),
-        Some(true),
-        Some(provider),
-        None,
-        None,
-    );
+    let config = WhisperConfig {
+        decoder: "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),
+        encoder: "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
+        tokens: "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
+        language: "en".into(),
+        debug: Some(true),
+        provider: Some(provider),
+        num_threads: None,
+        bpe_vocab: None,
+        ..Default::default() // fill in any missing fields with defaults
+    };
+
+    let mut recognizer = WhisperRecognizer::new(config);
 
     let start_t = Instant::now();
     let result = recognizer.transcribe(sample_rate, samples);

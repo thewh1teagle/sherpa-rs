@@ -10,7 +10,7 @@ cargo run --example vad_whisper sam_altman.wav
 use eyre::{bail, Result};
 use sherpa_rs::{
     embedding_manager, speaker_id,
-    transcribe::whisper::WhisperRecognizer,
+    transcribe::whisper::{WhisperConfig, WhisperRecognizer},
     vad::{Vad, VadConfig},
 };
 
@@ -52,32 +52,29 @@ fn main() -> Result<()> {
     let mut embedding_manager =
         embedding_manager::EmbeddingManager::new(extractor.embedding_size.try_into().unwrap()); // Assuming dimension 512 for embeddings
 
-    let mut recognizer = WhisperRecognizer::new(
-        "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),
-        "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
-        "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
-        "en".into(),
-        Some(false),
-        None,
-        None,
-        None,
-    );
+    let config = WhisperConfig {
+        decoder: "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),
+        encoder: "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
+        tokens: "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
+        language: "en".into(),
+        debug: Some(false),
+        provider: None,
+        num_threads: None,
+        bpe_vocab: None,
+        ..Default::default() // fill in any missing fields with defaults
+    };
+
+    let mut recognizer = WhisperRecognizer::new(config);
 
     let mut speaker_counter = 0;
 
-    let vad_model = "silero_vad.onnx".into();
+    let vad_model = "silero_vad.onnx";
     let window_size: usize = 512;
     let config = VadConfig::new(
         vad_model,
-        0.4,
-        0.4,
-        0.5,
-        0.5,
-        sample_rate,
-        window_size.try_into().unwrap(),
-        None,
-        None,
-        Some(false),
+        sherpa_rs::vad::UserVadConfig {
+            ..Default::default()
+        },
     );
 
     let mut vad = Vad::new_from_config(config, 60.0 * 10.0).unwrap();
