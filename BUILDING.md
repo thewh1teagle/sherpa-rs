@@ -69,7 +69,6 @@ In addition install `cudnn` with `sudo apt install nvidia-cudnn`
 <details>
 <summary>Whisper limits</summary>
 
-
 ---
 
 Currently whisper can transcribe only chunks of 30s max.
@@ -77,7 +76,6 @@ Currently whisper can transcribe only chunks of 30s max.
 ---
 
 </details>
-
 
 <details>
 <summary>Static linking failed on Windows</summary>
@@ -135,7 +133,12 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
 
 </details>
 
-
 ### Debug build
 
 For debug the build process of sherpa-onnx, please set `BUILD_DEBUG=1` environment variable before build.
+
+## Release new version
+
+```console
+gh release create v0.2.0 --title v0.2.0
+```
