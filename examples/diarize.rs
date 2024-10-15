@@ -10,6 +10,7 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentatio
 
 cargo run --example diarize ./sherpa-onnx-pyannote-segmentation-3-0/model.onnx ./3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx ./0-four-speakers-zh.wav
 */
+
 fn main() {
     let segment_model_path = std::env::args()
         .nth(1)
@@ -26,6 +27,12 @@ fn main() {
         ..Default::default()
     };
 
+    let progress_callback = |n_computed_chunks: i32, n_total_chunks: i32| -> i32 {
+        let progress = 100 * n_computed_chunks / n_total_chunks;
+        println!("Progress: {}%", progress);
+        0
+    };
+
     let mut sd =
         sherpa_rs::diarize::Diarize::new(segment_model_path, embedding_model_path, config).unwrap();
 
@@ -39,7 +46,9 @@ fn main() {
         .map(|s| s.unwrap() as f32 / i16::MAX as f32)
         .collect();
 
-    let segments = sd.compute(samples).unwrap();
+    let segments = sd
+        .compute(samples, Some(Box::new(progress_callback)))
+        .unwrap();
     for segment in segments {
         println!(
             "start = {} end = {} speaker = {}",
