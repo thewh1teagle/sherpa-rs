@@ -1,5 +1,3 @@
-use std::io::{Cursor, Write};
-
 /*
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2
 tar xvf sherpa-onnx-pyannote-segmentation-3-0.tar.bz2
@@ -35,11 +33,7 @@ fn main() {
 
     let mut sd =
         sherpa_rs::diarize::Diarize::new(segment_model_path, embedding_model_path, config).unwrap();
-
-    let audio_data = std::fs::read(wav_path).unwrap();
-    let cursor = Cursor::new(audio_data);
-    let mut reader = hound::WavReader::new(cursor).unwrap();
-    let _sample_rate = reader.spec().sample_rate as i32;
+    let mut reader = hound::WavReader::open(wav_path).unwrap();
 
     let samples: Vec<f32> = reader
         .samples::<i16>()
