@@ -58,7 +58,7 @@ jobs:
           submodules: "true"
 
       - name: Setup cuda for Windows
-        run: scripts/setup_cuda.ps1
+        run: .github/scripts/setup_cuda.ps1
         env:
           INPUT_CUDA_VERSION: ${{ matrix.cuda-version }}
         if: matrix.platform == 'windows-latest' && contains(matrix.options, 'cuda')
