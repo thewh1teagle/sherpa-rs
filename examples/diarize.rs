@@ -1,4 +1,4 @@
-use std::io::Cursor;
+use std::io::{Cursor, Write};
 
 /*
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2
@@ -29,7 +29,12 @@ fn main() {
 
     let progress_callback = |n_computed_chunks: i32, n_total_chunks: i32| -> i32 {
         let progress = 100 * n_computed_chunks / n_total_chunks;
-        println!("Progress: {}%", progress);
+        if progress < 100 {
+            print!("\r🗣️ Diarizing... {}% 🎯", progress);
+        } else {
+            print!("\r");
+        }
+        std::io::stdout().flush().unwrap();
         0
     };
 
