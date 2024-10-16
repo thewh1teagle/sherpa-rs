@@ -46,6 +46,9 @@ struct Args {
     lexicon: Option<String>,
 
     #[arg(long)]
+    sid: Option<i32>,
+
+    #[arg(long)]
     provider: Option<String>,
 
     #[arg(long)]
@@ -77,7 +80,7 @@ fn main() {
     };
     let mut tts = sherpa_rs::tts::OfflineTts::new(tts_config, vits_config);
     let speed = 1.0;
-    let audio = tts.generate(text, 0, speed).unwrap();
+    let audio = tts.generate(text, args.sid.unwrap_or(0), speed).unwrap();
     audio.write_to_wav(&args.output).unwrap(); // Use the provided output path
     println!("Created {}", args.output);
 }
