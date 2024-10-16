@@ -24,7 +24,7 @@ winget install -e --id JernejSimoncic.Wget
 ### Prepare repository
 
 ```console
-git clone https://github.com/thewh1teagle/sherpa-rs --recursive
+git clone --recursive https://github.com/thewh1teagle/sherpa-rs
 cd sherpa-rs
 ```
 
