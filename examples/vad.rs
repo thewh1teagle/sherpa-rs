@@ -98,30 +98,26 @@ fn main() -> Result<()> {
         samples.push(0.0);
     }
 
-    let extractor_config = speaker_id::ExtractorConfig::new(
-        "nemo_en_speakerverification_speakernet.onnx".into(),
-        None,
-        None,
-        false,
-    );
-    let mut extractor = speaker_id::EmbeddingExtractor::new_from_config(extractor_config).unwrap();
+    let extractor_config = speaker_id::ExtractorConfig {
+        model: "nemo_en_speakerverification_speakernet.onnx".into(),
+        ..Default::default()
+    };
+    let mut extractor = speaker_id::EmbeddingExtractor::new(extractor_config).unwrap();
     let mut embedding_manager =
         embedding_manager::EmbeddingManager::new(extractor.embedding_size.try_into().unwrap()); // Assuming dimension 512 for embeddings
 
     let mut speaker_counter = 1;
 
-    let vad_model = "silero_vad.onnx";
-    let window_size: usize = 512;
-    let config = VadConfig::new(
-        vad_model,
-        sherpa_rs::vad::UserVadConfig {
-            ..Default::default()
-        },
-    );
+    let window_size = 512;
+    let vad_config = VadConfig {
+        model: "silero_vad.onnx".into(),
+        window_size: window_size as i32,
+        ..Default::default()
+    };
 
-    let mut vad = Vad::new_from_config(config, 60.0 * 10.0).unwrap();
+    let mut vad = Vad::new(vad_config, 60.0 * 10.0).unwrap();
     let mut index = 0;
-    while index + window_size <= samples.len() {
+    while index + window_size <= samples.len().try_into().unwrap() {
         let window = &samples[index..index + window_size];
         vad.accept_waveform(window.to_vec()); // Convert slice to Vec
         if vad.is_speech() {

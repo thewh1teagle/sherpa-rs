@@ -2,13 +2,13 @@
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
 tar xvf sherpa-onnx-whisper-tiny.tar.bz2
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
-cargo run --example transcribe motivation.wav
+cargo run --example whisper motivation.wav
 */
 
 use eyre::{bail, Result};
 use sherpa_rs::{
     read_audio_file,
-    transcribe::whisper::{WhisperConfig, WhisperRecognizer},
+    whisper::{WhisperConfig, WhisperRecognizer},
 };
 use std::time::Instant;
 
@@ -27,7 +27,6 @@ fn main() -> Result<()> {
         encoder: "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
         tokens: "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
         language: "en".into(),
-        debug: Some(true),
         provider: Some(provider),
         num_threads: None,
         bpe_vocab: None,

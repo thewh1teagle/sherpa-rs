@@ -7,33 +7,49 @@ pub struct SpokenLanguageId {
     slid: *const sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentification,
 }
 
+#[derive(Debug)]
+pub struct SpokenLanguageIdConfig {
+    pub encoder: String,
+    pub decoder: String,
+    pub debug: Option<bool>,
+    pub provider: Option<String>,
+    pub num_threads: Option<i32>,
+}
+
+impl Default for SpokenLanguageIdConfig {
+    fn default() -> Self {
+        Self {
+            encoder: String::new(),
+            decoder: String::new(),
+            debug: None,
+            provider: None,
+            num_threads: None,
+        }
+    }
+}
+
 impl SpokenLanguageId {
-    pub fn new(
-        encoder: String,
-        decoder: String,
-        debug: Option<bool>,
-        provider: Option<String>,
-        num_threads: Option<i32>,
-    ) -> Self {
-        let provider = provider.unwrap_or(get_default_provider());
+    pub fn new(config: SpokenLanguageIdConfig) -> Self {
+        let provider = config.provider.unwrap_or_else(get_default_provider);
         let provider_c = CString::new(provider).unwrap();
-        let debug = debug.unwrap_or_default();
+        let debug = config.debug.unwrap_or_default();
         let debug = if debug { 0 } else { 1 };
 
-        let encoder_c = CString::new(encoder).unwrap();
-        let decoder_c = CString::new(decoder).unwrap();
+        let encoder_c = CString::new(config.encoder).unwrap();
+        let decoder_c = CString::new(config.decoder).unwrap();
         let whisper = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationWhisperConfig {
             decoder: decoder_c.into_raw(),
             encoder: encoder_c.into_raw(),
             tail_paddings: 0,
         };
-        let config = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationConfig {
+        let sherpa_config = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationConfig {
             debug,
-            num_threads: num_threads.unwrap_or(2),
+            num_threads: config.num_threads.unwrap_or(2),
             provider: provider_c.into_raw(),
             whisper,
         };
-        let slid = unsafe { sherpa_rs_sys::SherpaOnnxCreateSpokenLanguageIdentification(&config) };
+        let slid =
+            unsafe { sherpa_rs_sys::SherpaOnnxCreateSpokenLanguageIdentification(&sherpa_config) };
         Self { slid }
     }
 

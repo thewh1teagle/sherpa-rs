@@ -24,16 +24,14 @@ fn main() -> Result<()> {
         .map(|s| s.unwrap() as f32 / i16::MAX as f32)
         .collect();
 
-    let model = "silero_vad.onnx";
     let window_size: usize = 512;
-    let config = VadConfig::new(
-        model,
-        sherpa_rs::vad::UserVadConfig {
-            ..Default::default()
-        },
-    );
+    let config = VadConfig {
+        model: "silero_vad.onnx".into(),
+        window_size: window_size as i32,
+        ..Default::default()
+    };
 
-    let mut vad = Vad::new_from_config(config, 3.0).unwrap();
+    let mut vad = Vad::new(config, 3.0).unwrap();
     while samples.len() > window_size {
         let window = &samples[..window_size];
         vad.accept_waveform(window.to_vec()); // Convert slice to Vec

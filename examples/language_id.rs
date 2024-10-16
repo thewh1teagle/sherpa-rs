@@ -27,9 +27,12 @@ fn main() -> Result<()> {
         .map(|s| s.unwrap() as f32 / i16::MAX as f32)
         .collect();
 
-    let encoder = "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into();
-    let decoder = "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into();
-    let mut extractor = language_id::SpokenLanguageId::new(encoder, decoder, None, None, None);
+    let config = language_id::SpokenLanguageIdConfig {
+        encoder: "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
+        decoder: "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),
+        ..Default::default()
+    };
+    let mut extractor = language_id::SpokenLanguageId::new(config);
 
     let language = extractor.compute(samples, sample_rate)?;
     println!("Spoken language: {}", language);

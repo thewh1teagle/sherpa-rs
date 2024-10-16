@@ -10,8 +10,8 @@ cargo run --example vad_whisper sam_altman.wav
 use eyre::{bail, Result};
 use sherpa_rs::{
     embedding_manager, speaker_id,
-    transcribe::whisper::{WhisperConfig, WhisperRecognizer},
     vad::{Vad, VadConfig},
+    whisper::{WhisperConfig, WhisperRecognizer},
 };
 
 fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
@@ -42,13 +42,11 @@ fn main() -> Result<()> {
         samples.push(0.0);
     }
 
-    let extractor_config = speaker_id::ExtractorConfig::new(
-        "nemo_en_speakerverification_speakernet.onnx".into(),
-        None,
-        None,
-        false,
-    );
-    let mut extractor = speaker_id::EmbeddingExtractor::new_from_config(extractor_config).unwrap();
+    let extractor_config = speaker_id::ExtractorConfig {
+        model: "nemo_en_speakerverification_speakernet.onnx".into(),
+        ..Default::default()
+    };
+    let mut extractor = speaker_id::EmbeddingExtractor::new(extractor_config).unwrap();
     let mut embedding_manager =
         embedding_manager::EmbeddingManager::new(extractor.embedding_size.try_into().unwrap()); // Assuming dimension 512 for embeddings
 
@@ -57,10 +55,6 @@ fn main() -> Result<()> {
         encoder: "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
         tokens: "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
         language: "en".into(),
-        debug: Some(false),
-        provider: None,
-        num_threads: None,
-        bpe_vocab: None,
         ..Default::default() // fill in any missing fields with defaults
     };
 
@@ -68,16 +62,14 @@ fn main() -> Result<()> {
 
     let mut speaker_counter = 0;
 
-    let vad_model = "silero_vad.onnx";
     let window_size: usize = 512;
-    let config = VadConfig::new(
-        vad_model,
-        sherpa_rs::vad::UserVadConfig {
-            ..Default::default()
-        },
-    );
+    let vad_config = VadConfig {
+        model: "silero_vad.onnx".into(),
+        window_size: window_size as i32,
+        ..Default::default()
+    };
 
-    let mut vad = Vad::new_from_config(config, 60.0 * 10.0).unwrap();
+    let mut vad = Vad::new(vad_config, 60.0 * 10.0).unwrap();
     let mut index = 0;
     while index + window_size <= samples.len() {
         let window = &samples[index..index + window_size];

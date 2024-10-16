@@ -8,8 +8,21 @@ pub const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.5;
 
 #[derive(Debug)]
 pub struct ExtractorConfig {
-    pub(crate) cfg: sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig,
-    model: String,
+    pub model: String,
+    pub provider: Option<String>,
+    pub num_threads: Option<usize>,
+    pub debug: Option<bool>,
+}
+
+impl Default for ExtractorConfig {
+    fn default() -> Self {
+        Self {
+            model: String::new(),
+            provider: None,
+            num_threads: None,
+            debug: None,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -18,40 +31,31 @@ pub struct EmbeddingExtractor {
     pub embedding_size: usize,
 }
 
-impl ExtractorConfig {
-    pub fn new(
-        model: String,
-        provider: Option<String>,
-        num_threads: Option<i32>,
-        debug: bool,
-    ) -> Self {
-        let provider = provider.unwrap_or(get_default_provider());
-        let num_threads = num_threads.unwrap_or(2);
-        let debug = if debug { 1 } else { 0 };
-        let model_cstr = CString::new(model.clone()).unwrap();
-        let provider = CString::new(provider).unwrap();
-        let cfg = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig {
-            debug,
-            model: model_cstr.into_raw(),
-            num_threads,
-            provider: provider.into_raw(),
-        };
-        Self { cfg, model }
-    }
-
-    pub fn as_ptr(&self) -> *const sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig {
-        &self.cfg
-    }
-}
-
 impl EmbeddingExtractor {
-    pub fn new_from_config(config: ExtractorConfig) -> Result<Self> {
+    pub fn new(config: ExtractorConfig) -> Result<Self> {
+        let provider = config.provider.unwrap_or(get_default_provider());
+        let provider = CString::new(provider).unwrap();
+
+        let num_threads = config.num_threads.unwrap_or(1);
+        let debug = if config.debug.unwrap_or_default() {
+            1
+        } else {
+            0
+        };
+        let model_cstr = CString::new(config.model.clone()).unwrap();
+
         let model_path = PathBuf::from(&config.model);
         if !model_path.exists() {
             bail!("model not found at {}", model_path.display())
         }
+        let extractor_config = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig {
+            debug,
+            model: model_cstr.into_raw(),
+            num_threads: num_threads as i32,
+            provider: provider.into_raw(),
+        };
         let extractor =
-            unsafe { sherpa_rs_sys::SherpaOnnxCreateSpeakerEmbeddingExtractor(config.as_ptr()) };
+            unsafe { sherpa_rs_sys::SherpaOnnxCreateSpeakerEmbeddingExtractor(&extractor_config) };
         // Assume embedding size is known or can be retrieved
         let embedding_size =
             unsafe { sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorDim(extractor) }

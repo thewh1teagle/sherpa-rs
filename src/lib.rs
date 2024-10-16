@@ -2,8 +2,8 @@ pub mod diarize;
 pub mod embedding_manager;
 pub mod language_id;
 pub mod speaker_id;
-pub mod transcribe;
 pub mod vad;
+pub mod whisper;
 
 use eyre::{bail, Result};
 

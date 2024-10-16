@@ -62,22 +62,20 @@ fn main() {
         text = std::fs::read_to_string(args.text_file_input.unwrap()).unwrap();
     }
 
-    let vits_cfg = sherpa_rs::tts::TtsVitsModelConfig::new(
-        args.model,
-        args.lexicon.unwrap_or_default(),
-        args.tokens,
-        args.data_dir.unwrap_or_default(),
-        0.0,
-        0.0,
-        args.dict_dir.unwrap_or_default(),
-        0.0,
-    );
-    let max_num_sentences = 2;
-    let model_cfg =
-        sherpa_rs::tts::OfflineTtsModelConfig::new(args.debug, vits_cfg, args.provider, 1);
-    let tts_cfg =
-        sherpa_rs::tts::OfflineTtsConfig::new(model_cfg, max_num_sentences, "".into(), "".into());
-    let mut tts = sherpa_rs::tts::OfflineTts::new(tts_cfg);
+    let vits_config = sherpa_rs::tts::VitsConfig {
+        lexicon: args.lexicon.unwrap_or_default(),
+        tokens: args.tokens,
+        data_dir: args.data_dir.unwrap_or_default(),
+        dict_dir: args.dict_dir.unwrap_or_default(),
+        ..Default::default()
+    };
+
+    let tts_config = sherpa_rs::tts::OfflineTtsConfig {
+        model: args.model,
+        max_num_sentences: 2,
+        ..Default::default()
+    };
+    let mut tts = sherpa_rs::tts::OfflineTts::new(tts_config, vits_config);
     let speed = 1.0;
     let audio = tts.generate(text, 0, speed).unwrap();
     audio.write_to_wav(&args.output).unwrap(); // Use the provided output path

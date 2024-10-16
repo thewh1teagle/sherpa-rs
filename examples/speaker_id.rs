@@ -7,7 +7,6 @@ cargo run --example speaker_id
 use eyre::{bail, Result};
 use sherpa_rs::{embedding_manager, speaker_id};
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
     let mut reader = hound::WavReader::open(path)?;
@@ -31,19 +30,11 @@ fn main() -> Result<()> {
     // Define paths to the audio files
     let audio_files = vec!["samples/obama.wav", "biden.wav"];
 
-    // Create the extractor configuration and extractor
-    let mut model_path = PathBuf::from(std::env::current_dir()?);
-    model_path.push("nemo_en_speakerverification_speakernet.onnx");
-
-    println!("🎤 Loading model from {}", model_path.display());
-
-    let config = speaker_id::ExtractorConfig::new(
-        model_path.into_os_string().into_string().unwrap(),
-        None,
-        None,
-        false,
-    );
-    let mut extractor = speaker_id::EmbeddingExtractor::new_from_config(config)?;
+    let config = speaker_id::ExtractorConfig {
+        model: "nemo_en_speakerverification_speakernet.onnx".into(),
+        ..Default::default()
+    };
+    let mut extractor = speaker_id::EmbeddingExtractor::new(config)?;
 
     // Read and process each audio file, compute embeddings
     let mut embeddings = Vec::new();

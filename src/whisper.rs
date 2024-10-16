@@ -30,14 +30,14 @@ pub struct WhisperConfig {
 impl Default for WhisperConfig {
     fn default() -> Self {
         Self {
-            decoder: String::from("default_decoder.onnx"),
-            encoder: String::from("default_encoder.onnx"),
-            tokens: String::from("default_tokens.onnx"),
+            decoder: String::new(),
+            encoder: String::new(),
+            tokens: String::new(),
             language: String::from("en"),
-            debug: Some(false),
+            debug: None,
             provider: None,
-            num_threads: Some(2),
-            bpe_vocab: Some("default_bpe_vocab".to_string()),
+            num_threads: Some(1),
+            bpe_vocab: None,
         }
     }
 }

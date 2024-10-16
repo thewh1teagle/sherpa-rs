@@ -7,7 +7,6 @@ cargo run --example speaker_embedding 16hz_mono_pcm_s16le.wav
 use eyre::{bail, Result};
 use sherpa_rs::speaker_id;
 use std::io::Cursor;
-use std::path::PathBuf;
 
 fn main() -> Result<()> {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
@@ -29,20 +28,11 @@ fn main() -> Result<()> {
         .map(|s| s.unwrap() as f32 / i16::MAX as f32)
         .collect();
 
-    // Create the extractor configuration and extractor
-    let mut model_path = PathBuf::from(std::env::current_dir()?);
-    model_path.push("nemo_en_speakerverification_speakernet.onnx");
-
-    println!("loading model from {}", model_path.display());
-
-    // Create the extractor configuration and extractor
-    let config = speaker_id::ExtractorConfig::new(
-        model_path.into_os_string().into_string().unwrap(),
-        None,
-        None,
-        false,
-    );
-    let mut extractor = speaker_id::EmbeddingExtractor::new_from_config(config).unwrap();
+    let config = speaker_id::ExtractorConfig {
+        model: "nemo_en_speakerverification_speakernet.onnx".into(),
+        ..Default::default()
+    };
+    let mut extractor = speaker_id::EmbeddingExtractor::new(config).unwrap();
 
     // Compute the speaker embedding
     let embedding = extractor.compute_speaker_embedding(sample_rate, samples)?;
