@@ -2,7 +2,7 @@
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
-cargo run --example diarize motivation.wav
+cargo run --example vad motivation.wav
 */
 
 use eyre::{bail, Result};

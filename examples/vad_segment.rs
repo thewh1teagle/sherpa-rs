@@ -1,7 +1,7 @@
 /*
-wget https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
-cargo run --example vad_segment
+cargo run --example vad_segment motivation.wav
 */
 use eyre::{bail, Result};
 use sherpa_rs::vad::{Vad, VadConfig};

@@ -28,7 +28,7 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
 
 fn main() -> Result<()> {
     // Define paths to the audio files
-    let audio_files = vec!["samples/obama.wav", "biden.wav"];
+    let audio_files = vec!["obama.wav", "biden.wav"];
 
     let config = speaker_id::ExtractorConfig {
         model: "nemo_en_speakerverification_speakernet.onnx".into(),

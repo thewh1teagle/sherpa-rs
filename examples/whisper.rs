@@ -37,7 +37,7 @@ fn main() -> Result<()> {
 
     let start_t = Instant::now();
     let result = recognizer.transcribe(sample_rate, samples);
-    println!("{:?}", result);
+    println!("Text: {}", result.text);
     println!("Time taken for transcription: {:?}", start_t.elapsed());
     Ok(())
 }
