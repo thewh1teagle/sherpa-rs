@@ -1,4 +1,6 @@
 /*
+Detect language spoken in audio file
+
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
 tar xvf sherpa-onnx-whisper-tiny.tar.bz2
 rm sherpa-onnx-whisper-tiny.tar.bz2

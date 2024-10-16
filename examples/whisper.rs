@@ -1,4 +1,6 @@
 /*
+Transcribe wav file using OpenAI Whisper
+
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
 tar xvf sherpa-onnx-whisper-tiny.tar.bz2
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
@@ -37,7 +39,7 @@ fn main() -> Result<()> {
 
     let start_t = Instant::now();
     let result = recognizer.transcribe(sample_rate as u32, samples);
-    println!("Text: {}", result.text);
-    println!("Time taken for transcription: {:?}", start_t.elapsed());
+    println!("✅ Text: {}", result.text);
+    println!("⏱️ Time taken for transcription: {:?}", start_t.elapsed());
     Ok(())
 }

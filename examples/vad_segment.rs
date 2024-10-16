@@ -1,4 +1,6 @@
 /*
+Detect speech in audio file and segment it (mark start and slow time)
+
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
 cargo run --example vad_segment motivation.wav

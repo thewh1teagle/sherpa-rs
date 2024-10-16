@@ -1,4 +1,6 @@
 /*
+Detect speech in audio file and transcribe it
+
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.tar.bz2
 wget https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
@@ -9,28 +11,11 @@ cargo run --example vad_whisper sam_altman.wav
 
 use eyre::{bail, Result};
 use sherpa_rs::{
+    read_audio_file,
     embedding_manager, speaker_id,
     vad::{Vad, VadConfig},
     whisper::{WhisperConfig, WhisperRecognizer},
 };
-
-fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
-    let mut reader = hound::WavReader::open(path)?;
-    let sample_rate = reader.spec().sample_rate as i32;
-
-    // Check if the sample rate is 16000
-    if sample_rate != 16000 {
-        bail!("The sample rate must be 16000.");
-    }
-
-    // Collect samples into a Vec<f32>
-    let samples: Vec<f32> = reader
-        .samples::<i16>()
-        .map(|s| s.unwrap() as f32 / i16::MAX as f32)
-        .collect();
-
-    Ok((sample_rate, samples))
-}
 
 fn main() -> Result<()> {
     // Read audio data from the file

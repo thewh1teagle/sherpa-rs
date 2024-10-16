@@ -1,4 +1,6 @@
 /*
+Use ASR models for extract text from audio
+
 English:
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-zipformer-small-en-2023-06-26.tar.bz2
 tar xvf sherpa-onnx-zipformer-small-en-2023-06-26.tar.bz2
@@ -22,9 +24,6 @@ cargo run --example zipformer -- \
     "sherpa-onnx-zipformer-ja-reazonspeech-2024-08-01/decoder-epoch-99-avg-1.onnx" \
     "sherpa-onnx-zipformer-ja-reazonspeech-2024-08-01/joiner-epoch-99-avg-1.onnx" \
     "sherpa-onnx-zipformer-ja-reazonspeech-2024-08-01/tokens.txt"
-
-# For Chinese users, you can use the following mirror
-# wget https://hub.nuaa.cf/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-zipformer-ja-reazonspeech-2024-08-01.tar.bz2
 */
 
 use sherpa_rs::zipformer::ZipFormer;
@@ -54,5 +53,5 @@ fn main() {
     };
     let mut zipformer = ZipFormer::new(config).unwrap();
     let text = zipformer.decode(sample_rate, samples);
-    println!("Text: {}", text);
+    println!("✅ Text: {}", text);
 }

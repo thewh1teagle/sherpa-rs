@@ -1,4 +1,6 @@
 /*
+Create voice embedding for voice in audio file
+
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/16hz_mono_pcm_s16le.wav -O 16hz_mono_pcm_s16le.wav
 cargo run --example speaker_embedding 16hz_mono_pcm_s16le.wav

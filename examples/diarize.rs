@@ -1,4 +1,6 @@
 /*
+Diarize audio file with pyannote-audio for segmentation (start and stop marks) and 3dspeaker for speaker recognition.
+
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2
 tar xvf sherpa-onnx-pyannote-segmentation-3-0.tar.bz2
 rm sherpa-onnx-pyannote-segmentation-3-0.tar.bz2
