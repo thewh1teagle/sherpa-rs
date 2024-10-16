@@ -36,7 +36,7 @@ fn main() -> Result<()> {
     let mut recognizer = WhisperRecognizer::new(config).unwrap();
 
     let start_t = Instant::now();
-    let result = recognizer.transcribe(sample_rate, samples);
+    let result = recognizer.transcribe(sample_rate as u32, samples);
     println!("Text: {}", result.text);
     println!("Time taken for transcription: {:?}", start_t.elapsed());
     Ok(())

@@ -10,4 +10,5 @@ vits-piper*
 *.bz2
 sherpa-onnx-whisper*
 sherpa-onnx-pyannote-*
+sherpa-onnx-zipformer-*
 *.txt

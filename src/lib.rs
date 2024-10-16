@@ -4,6 +4,7 @@ pub mod language_id;
 pub mod speaker_id;
 pub mod vad;
 pub mod whisper;
+pub mod zipformer;
 
 use eyre::{bail, Result};
 
@@ -23,9 +24,9 @@ pub fn get_default_provider() -> String {
     .into()
 }
 
-pub fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
+pub fn read_audio_file(path: &str) -> Result<(u32, Vec<f32>)> {
     let mut reader = hound::WavReader::open(path)?;
-    let sample_rate = reader.spec().sample_rate as i32;
+    let sample_rate = reader.spec().sample_rate as u32;
 
     // Check if the sample rate is 16000
     if sample_rate != 16000 {
