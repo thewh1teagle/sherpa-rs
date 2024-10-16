@@ -152,6 +152,9 @@ unsafe extern "C" fn progress_callback_wrapper(
     callback(num_processed_chunk, num_total_chunks)
 }
 
+unsafe impl Send for Diarize {}
+unsafe impl Sync for Diarize {}
+
 impl Drop for Diarize {
     fn drop(&mut self) {
         unsafe {
