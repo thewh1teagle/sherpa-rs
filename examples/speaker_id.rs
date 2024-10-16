@@ -8,24 +8,6 @@ use eyre::{bail, Result};
 use sherpa_rs::{embedding_manager, speaker_id};
 use std::collections::HashMap;
 
-fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
-    let mut reader = hound::WavReader::open(path)?;
-    let sample_rate = reader.spec().sample_rate as i32;
-
-    // Check if the sample rate is 16000
-    if sample_rate != 16000 {
-        bail!("The sample rate must be 16000.");
-    }
-
-    // Collect samples into a Vec<f32>
-    let samples: Vec<f32> = reader
-        .samples::<i16>()
-        .map(|s| s.unwrap() as f32 / i16::MAX as f32)
-        .collect();
-
-    Ok((sample_rate, samples))
-}
-
 fn main() -> Result<()> {
     // Define paths to the audio files
     let audio_files = vec!["obama.wav", "biden.wav"];
@@ -39,7 +21,15 @@ fn main() -> Result<()> {
     // Read and process each audio file, compute embeddings
     let mut embeddings = Vec::new();
     for file in &audio_files {
-        let (sample_rate, samples) = read_audio_file(file)?;
+        let mut reader = hound::WavReader::open(file)?;
+        let samples: Vec<f32> = reader
+            .samples::<i16>()
+            .map(|s| s.unwrap() as f32 / i16::MAX as f32)
+            .collect();
+        let sample_rate = reader.spec().sample_rate as i32;
+        if sample_rate != 16000 {
+            bail!("The sample rate must be 16000.");
+        }
         let embedding = extractor.compute_speaker_embedding(sample_rate, samples)?;
         embeddings.push((file.to_string(), embedding));
     }

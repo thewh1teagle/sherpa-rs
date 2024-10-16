@@ -49,6 +49,12 @@ struct Args {
     sid: Option<i32>,
 
     #[arg(long)]
+    speed: Option<i32>,
+
+    #[arg(long)]
+    max_num_sentences: Option<i32>,
+
+    #[arg(long)]
     provider: Option<String>,
 
     #[arg(long)]
@@ -73,14 +79,16 @@ fn main() {
         ..Default::default()
     };
 
+    let max_num_sentences = args.max_num_sentences.unwrap_or(2);
     let tts_config = sherpa_rs::tts::OfflineTtsConfig {
         model: args.model,
-        max_num_sentences: 2,
+        max_num_sentences,
         ..Default::default()
     };
     let mut tts = sherpa_rs::tts::OfflineTts::new(tts_config, vits_config);
-    let speed = 1.0;
-    let audio = tts.generate(text, args.sid.unwrap_or(0), speed).unwrap();
+    let speed = args.speed.unwrap_or(1.0);
+    let sid = args.sid.unwrap_or(0);
+    let audio = tts.generate(text, sid, speed).unwrap();
     audio.write_to_wav(&args.output).unwrap(); // Use the provided output path
     println!("Created {}", args.output);
 }
