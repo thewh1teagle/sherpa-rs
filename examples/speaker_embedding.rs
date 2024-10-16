@@ -6,15 +6,10 @@ cargo run --example speaker_embedding 16hz_mono_pcm_s16le.wav
 
 use eyre::{bail, Result};
 use sherpa_rs::speaker_id;
-use std::io::Cursor;
 
 fn main() -> Result<()> {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
-    let audio_data = std::fs::read(file_path)?;
-
-    // Use Cursor to create a reader from the byte slice
-    let cursor = Cursor::new(audio_data);
-    let mut reader = hound::WavReader::new(cursor)?;
+    let mut reader = hound::WavReader::open(file_path)?;
     let sample_rate = reader.spec().sample_rate as i32;
 
     // Check if the sample rate is 16000

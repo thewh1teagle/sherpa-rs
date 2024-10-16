@@ -8,14 +8,11 @@ cargo run --example language_id 16hz_mono_pcm_s16le.wav
 
 use eyre::{bail, Result};
 use sherpa_rs::language_id;
-use std::io::Cursor;
 
 fn main() -> Result<()> {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
-    let audio_data = std::fs::read(file_path)?;
 
-    let cursor = Cursor::new(audio_data);
-    let mut reader = hound::WavReader::new(cursor)?;
+    let mut reader = hound::WavReader::open(file_path)?;
     let sample_rate = reader.spec().sample_rate as i32;
 
     if sample_rate != 16000 {

@@ -5,14 +5,10 @@ cargo run --example vad_segment motivation.wav
 */
 use eyre::{bail, Result};
 use sherpa_rs::vad::{Vad, VadConfig};
-use std::io::Cursor;
 
 fn main() -> Result<()> {
-    let path = std::env::args().nth(1).expect("Missing file path argument");
-    let audio_data = std::fs::read(path)?;
-
-    let cursor = Cursor::new(audio_data);
-    let mut reader = hound::WavReader::new(cursor)?;
+    let file_path = std::env::args().nth(1).expect("Missing file path argument");
+    let mut reader = hound::WavReader::open(file_path)?;
     let sample_rate = reader.spec().sample_rate as i32;
 
     if sample_rate != 16000 {

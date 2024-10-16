@@ -10,7 +10,6 @@ use sherpa_rs::{
     embedding_manager, speaker_id,
     vad::{Vad, VadConfig},
 };
-use std::io::Cursor;
 
 fn get_speaker_name(
     embedding_manager: &mut embedding_manager::EmbeddingManager,
@@ -77,11 +76,9 @@ fn process_speech_segment(
 
 fn main() -> Result<()> {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
-    let audio_data = std::fs::read(file_path)?;
     let max_speakers = 2;
 
-    let cursor = Cursor::new(audio_data);
-    let mut reader = hound::WavReader::new(cursor)?;
+    let mut reader = hound::WavReader::open(file_path)?;
     let sample_rate = reader.spec().sample_rate as i32;
 
     if sample_rate != 16000 {

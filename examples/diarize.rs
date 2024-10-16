@@ -29,12 +29,7 @@ fn main() {
 
     let progress_callback = |n_computed_chunks: i32, n_total_chunks: i32| -> i32 {
         let progress = 100 * n_computed_chunks / n_total_chunks;
-        if progress < 100 {
-            print!("\r🗣️ Diarizing... {}% 🎯", progress);
-        } else {
-            print!("\r");
-        }
-        std::io::stdout().flush().unwrap();
+        println!("🗣️ Diarizing... {}% 🎯", progress);
         0
     };
 
