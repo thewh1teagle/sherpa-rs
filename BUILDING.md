@@ -11,6 +11,16 @@ sudo apt-get update
 sudo apt-get install -y pkg-config build-essential clang cmake
 ```
 
+### Windows
+
+For convenience, I recommend installing these packages.
+Additionally, when using wget to run examples, use `wget.exe`
+
+```console
+winget install -e --id GnuWin32.Tar
+winget install -e --id JernejSimoncic.Wget
+```
+
 ### Prepare repository
 
 ```console
