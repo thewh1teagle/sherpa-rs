@@ -49,7 +49,7 @@ struct Args {
     sid: Option<i32>,
 
     #[arg(long)]
-    speed: Option<i32>,
+    speed: Option<f32>,
 
     #[arg(long)]
     max_num_sentences: Option<i32>,
