@@ -26,7 +26,7 @@ pub fn get_default_provider() -> String {
 
 pub fn read_audio_file(path: &str) -> Result<(u32, Vec<f32>)> {
     let mut reader = hound::WavReader::open(path)?;
-    let sample_rate = reader.spec().sample_rate as u32;
+    let sample_rate = reader.spec().sample_rate;
 
     // Check if the sample rate is 16000
     if sample_rate != 16000 {

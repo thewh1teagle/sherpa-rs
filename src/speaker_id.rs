@@ -6,23 +6,12 @@ use crate::{cstr, get_default_provider};
 /// If similarity is greater or equal to thresold than it's a match!
 pub const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.5;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct ExtractorConfig {
     pub model: String,
     pub provider: Option<String>,
     pub num_threads: Option<usize>,
     pub debug: Option<bool>,
-}
-
-impl Default for ExtractorConfig {
-    fn default() -> Self {
-        Self {
-            model: String::new(),
-            provider: None,
-            num_threads: None,
-            debug: None,
-        }
-    }
 }
 
 #[derive(Debug)]

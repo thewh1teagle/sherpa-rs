@@ -2,7 +2,7 @@ use crate::{cstr, cstr_to_string, get_default_provider};
 use eyre::{bail, Result};
 use std::ptr::null;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct ZipFormerConfig {
     pub decoder: String,
     pub encoder: String,
@@ -11,20 +11,6 @@ pub struct ZipFormerConfig {
     pub debug: Option<bool>,
     pub num_threads: Option<i32>,
     pub provider: Option<String>,
-}
-
-impl Default for ZipFormerConfig {
-    fn default() -> Self {
-        Self {
-            decoder: String::new(),
-            encoder: String::new(),
-            joiner: String::new(),
-            tokens: String::new(),
-            debug: None,
-            num_threads: None,
-            provider: None,
-        }
-    }
 }
 
 pub struct ZipFormer {

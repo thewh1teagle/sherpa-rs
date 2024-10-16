@@ -6,25 +6,13 @@ pub struct SpokenLanguageId {
     slid: *const sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentification,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SpokenLanguageIdConfig {
     pub encoder: String,
     pub decoder: String,
     pub debug: Option<bool>,
     pub provider: Option<String>,
     pub num_threads: Option<i32>,
-}
-
-impl Default for SpokenLanguageIdConfig {
-    fn default() -> Self {
-        Self {
-            encoder: String::new(),
-            decoder: String::new(),
-            debug: None,
-            provider: None,
-            num_threads: None,
-        }
-    }
 }
 
 impl SpokenLanguageId {
