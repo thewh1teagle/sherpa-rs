@@ -33,7 +33,7 @@ fn main() -> Result<()> {
         ..Default::default() // fill in any missing fields with defaults
     };
 
-    let mut recognizer = WhisperRecognizer::new(config);
+    let mut recognizer = WhisperRecognizer::new(config).unwrap();
 
     let start_t = Instant::now();
     let result = recognizer.transcribe(sample_rate, samples);

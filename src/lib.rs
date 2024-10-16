@@ -44,7 +44,7 @@ pub fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
 #[macro_export]
 macro_rules! cstr {
     ($s:expr) => {
-        CString::new($s).expect("Failed to create CString")
+        std::ffi::CString::new($s).expect("Failed to create CString")
     };
 }
 

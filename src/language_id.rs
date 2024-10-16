@@ -1,6 +1,5 @@
-use crate::get_default_provider;
+use crate::{cstr, cstr_to_string, get_default_provider};
 use eyre::{bail, Result};
-use std::ffi::{CStr, CString};
 
 #[derive(Debug)]
 pub struct SpokenLanguageId {
@@ -30,22 +29,17 @@ impl Default for SpokenLanguageIdConfig {
 
 impl SpokenLanguageId {
     pub fn new(config: SpokenLanguageIdConfig) -> Self {
-        let provider = config.provider.unwrap_or_else(get_default_provider);
-        let provider_c = CString::new(provider).unwrap();
-        let debug = config.debug.unwrap_or_default();
-        let debug = if debug { 0 } else { 1 };
+        let debug = config.debug.unwrap_or_default().into();
 
-        let encoder_c = CString::new(config.encoder).unwrap();
-        let decoder_c = CString::new(config.decoder).unwrap();
         let whisper = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationWhisperConfig {
-            decoder: decoder_c.into_raw(),
-            encoder: encoder_c.into_raw(),
+            decoder: cstr!(config.decoder).into_raw(),
+            encoder: cstr!(config.encoder).into_raw(),
             tail_paddings: 0,
         };
         let sherpa_config = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationConfig {
             debug,
-            num_threads: config.num_threads.unwrap_or(2),
-            provider: provider_c.into_raw(),
+            num_threads: config.num_threads.unwrap_or(1),
+            provider: cstr!(config.provider.unwrap_or(get_default_provider())).into_raw(),
             whisper,
         };
         let slid =
@@ -69,8 +63,7 @@ impl SpokenLanguageId {
                 bail!("language ptr is null")
             }
             let language_ptr = (*language_result_ptr).lang;
-            let c_language = CStr::from_ptr(language_ptr);
-            let language = c_language.to_str().unwrap().to_string();
+            let language = cstr_to_string!(language_ptr);
             // Free
             sherpa_rs_sys::SherpaOnnxDestroySpokenLanguageIdentificationResult(language_result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);

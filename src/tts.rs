@@ -1,7 +1,6 @@
 use crate::{cstr, get_default_provider};
 use eyre::{bail, Result};
 use hound::{WavSpec, WavWriter};
-use std::ffi::CString;
 
 #[derive(Debug)]
 pub struct OfflineTtsConfig {
@@ -87,11 +86,10 @@ impl OfflineTts {
     }
 
     pub fn generate(&mut self, text: String, sid: i32, speed: f32) -> Result<TtsSample> {
-        let text_c = CString::new(text).unwrap();
         unsafe {
             let audio_ptr = sherpa_rs_sys::SherpaOnnxOfflineTtsGenerate(
                 self.tts,
-                text_c.into_raw(),
+                cstr!(text).into_raw(),
                 sid,
                 speed,
             );

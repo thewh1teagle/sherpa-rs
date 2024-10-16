@@ -58,7 +58,7 @@ fn main() -> Result<()> {
         ..Default::default() // fill in any missing fields with defaults
     };
 
-    let mut recognizer = WhisperRecognizer::new(config);
+    let mut recognizer = WhisperRecognizer::new(config).unwrap();
 
     let mut speaker_counter = 0;
 

@@ -1,7 +1,5 @@
+use crate::{cstr, cstr_to_string};
 use eyre::{bail, Result};
-use std::ffi::{CStr, CString};
-
-use crate::cstr_to_string;
 
 #[derive(Debug, Clone)]
 pub struct EmbeddingManager {
@@ -32,8 +30,8 @@ impl EmbeddingManager {
             if name.is_null() {
                 return None;
             }
-            let cstr = CStr::from_ptr(name);
-            Some(cstr.to_str().unwrap_or_default().to_string())
+            let name = cstr_to_string!(name);
+            Some(name)
         }
     }
 
@@ -69,12 +67,10 @@ impl EmbeddingManager {
     }
 
     pub fn add(&mut self, name: String, embedding: &mut [f32]) -> Result<()> {
-        let name_cstr = CString::new(name.clone())?;
-
         unsafe {
             let status = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerAdd(
                 self.manager,
-                name_cstr.into_raw(),
+                cstr!(name.clone()).into_raw(),
                 embedding.as_mut_ptr(),
             );
             if status.is_negative() {

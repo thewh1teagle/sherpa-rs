@@ -1,6 +1,6 @@
-use crate::get_default_provider;
+use crate::{cstr, get_default_provider};
 use eyre::{bail, Result};
-use std::{ffi::CString, path::Path};
+use std::path::Path;
 
 #[derive(Debug)]
 pub struct Diarize {
@@ -46,14 +46,12 @@ impl Diarize {
         config: DiarizeConfig,
     ) -> Result<Self> {
         let provider = config.provider.unwrap_or(get_default_provider());
-        let provider = CString::new(provider).unwrap();
 
         let debug = config.debug.unwrap_or(false);
         let debug = if debug { 1 } else { 0 };
 
-        let embedding_model = CString::new(embedding_model.as_ref().to_str().unwrap()).unwrap();
-        let segmentation_model =
-            CString::new(segmentation_model.as_ref().to_str().unwrap()).unwrap();
+        let embedding_model = embedding_model.as_ref().to_str().unwrap();
+        let segmentation_model = segmentation_model.as_ref().to_str().unwrap();
 
         let clustering_config = sherpa_rs_sys::SherpaOnnxFastClusteringConfig {
             num_clusters: config.num_clusters.unwrap_or(4),
@@ -62,21 +60,21 @@ impl Diarize {
 
         let config = sherpa_rs_sys::SherpaOnnxOfflineSpeakerDiarizationConfig {
             embedding: sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig {
-                model: embedding_model.into_raw(),
+                model: cstr!(embedding_model).into_raw(),
                 num_threads: 1,
                 debug,
-                provider: provider.clone().into_raw(),
+                provider: cstr!(provider.clone()).into_raw(),
             },
             clustering: clustering_config,
             min_duration_off: config.min_duration_off.unwrap_or(0.0),
             min_duration_on: config.min_duration_on.unwrap_or(0.0),
             segmentation: sherpa_rs_sys::SherpaOnnxOfflineSpeakerSegmentationModelConfig {
                 pyannote: sherpa_rs_sys::SherpaOnnxOfflineSpeakerSegmentationPyannoteModelConfig {
-                    model: segmentation_model.into_raw(),
+                    model: cstr!(segmentation_model).into_raw(),
                 },
                 num_threads: 1,
                 debug,
-                provider: provider.clone().into_raw(),
+                provider: cstr!(provider.clone()).into_raw(),
             },
         };
 

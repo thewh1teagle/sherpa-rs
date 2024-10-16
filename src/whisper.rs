@@ -1,8 +1,6 @@
-use crate::{cstr, get_default_provider};
-use std::{
-    ffi::{CStr, CString},
-    ptr::null,
-};
+use crate::{cstr, cstr_to_string, get_default_provider};
+use eyre::{bail, Result};
+use std::ptr::null;
 
 #[derive(Debug)]
 pub struct WhisperRecognizer {
@@ -43,7 +41,7 @@ impl Default for WhisperConfig {
 }
 
 impl WhisperRecognizer {
-    pub fn new(config: WhisperConfig) -> Self {
+    pub fn new(config: WhisperConfig) -> Result<Self> {
         let decoder_c = cstr!(config.decoder);
         let encoder_c = cstr!(config.encoder);
         let language_c = cstr!(config.language);
@@ -96,9 +94,8 @@ impl WhisperRecognizer {
             sense_voice,
         };
 
-        let decoding_method_c = CString::new("greedy_search").unwrap();
         let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
-            decoding_method: decoding_method_c.into_raw(), // greedy_search, modified_beam_search
+            decoding_method: cstr!("greedy_search").into_raw(), // greedy_search, modified_beam_search
             feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
                 sample_rate: 16000,
                 feature_dim: 512,
@@ -117,8 +114,11 @@ impl WhisperRecognizer {
         };
 
         let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };
+        if recognizer.is_null() {
+            bail!("Failed to create recognizer")
+        }
 
-        Self { recognizer }
+        Ok(Self { recognizer })
     }
 
     pub fn transcribe(&mut self, sample_rate: i32, samples: Vec<f32>) -> WhisperRecognizerResult {
@@ -133,8 +133,7 @@ impl WhisperRecognizer {
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
-            let text = CStr::from_ptr(raw_result.text);
-            let text = text.to_str().unwrap().to_string();
+            let text = cstr_to_string!(raw_result.text);
             // let timestamps: &[f32] =
             // std::slice::from_raw_parts(raw_result.timestamps, raw_result.count as usize);
             let result = WhisperRecognizerResult { text };
@@ -185,7 +184,7 @@ mod tests {
             ..Default::default() // fill in any missing fields with defaults
         };
 
-        let mut recognizer = WhisperRecognizer::new(config);
+        let mut recognizer = WhisperRecognizer::new(config).unwrap();
 
         let start_t = Instant::now();
         let result = recognizer.transcribe(sample_rate, samples);

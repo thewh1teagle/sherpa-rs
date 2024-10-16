@@ -1,6 +1,5 @@
-use crate::get_default_provider;
+use crate::{cstr, get_default_provider};
 use eyre::Result;
-use std::ffi::CString;
 
 #[derive(Debug)]
 pub struct Vad {
@@ -45,26 +44,23 @@ pub struct SpeechSegment {
 }
 
 impl Vad {
-    pub fn new(user_config: VadConfig, buffer_size_in_seconds: f32) -> Result<Self> {
-        let provider = user_config.provider.unwrap_or(get_default_provider());
-        let provider = CString::new(provider).unwrap();
-        let model = CString::new(user_config.model).unwrap();
+    pub fn new(config: VadConfig, buffer_size_in_seconds: f32) -> Result<Self> {
+        let provider = config.provider.unwrap_or(get_default_provider());
 
         let silero_vad = sherpa_rs_sys::SherpaOnnxSileroVadModelConfig {
-            model: model.clone().into_raw(),
-            min_silence_duration: user_config.min_silence_duration,
-            min_speech_duration: user_config.min_speech_duration,
-            threshold: user_config.threshold,
-            window_size: user_config.window_size,
-            max_speech_duration: user_config.max_speech_duration,
+            model: cstr!(config.model.clone()).into_raw(),
+            min_silence_duration: config.min_silence_duration,
+            min_speech_duration: config.min_speech_duration,
+            threshold: config.threshold,
+            window_size: config.window_size,
+            max_speech_duration: config.max_speech_duration,
         };
-        let debug = user_config.debug.unwrap_or(false);
-        let debug = if debug { 1 } else { 0 };
+        let debug = config.debug.unwrap_or(false).into();
         let vad_config = sherpa_rs_sys::SherpaOnnxVadModelConfig {
             debug,
-            provider: provider.clone().into_raw(),
-            num_threads: user_config.num_threads.unwrap_or(1),
-            sample_rate: user_config.sample_rate,
+            provider: cstr!(provider.clone()).into_raw(),
+            num_threads: config.num_threads.unwrap_or(1),
+            sample_rate: config.sample_rate,
             silero_vad,
         };
 
