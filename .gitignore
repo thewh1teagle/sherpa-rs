@@ -13,3 +13,5 @@ sherpa-onnx-pyannote-*
 sherpa-onnx-zipformer-*
 *.txt
 sherpa-onnx-v*
+jniLibs
+sys/src/bindings.rs

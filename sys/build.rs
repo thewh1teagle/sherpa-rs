@@ -197,23 +197,29 @@ fn main() {
     );
 
     // Bindings
-    let bindings = bindgen::Builder::default()
-        .header("wrapper.h")
-        .clang_arg(format!("-I{}", sherpa_dst.display()))
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
-        .generate()
-        .expect("Failed to generate bindings");
+    if env::var("SHERPA_SKIP_GENERATE_BINDINGS").is_ok() {
+        debug_log!("Skip generate bindings");
+        std::fs::copy("src/bindings.rs", out_dir.join("bindings.rs"))
+            .expect("Failed to copy bindings.rs");
+    } else {
+        let bindings = bindgen::Builder::default()
+            .header("wrapper.h")
+            .clang_arg(format!("-I{}", sherpa_dst.display()))
+            .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+            .generate()
+            .expect("Failed to generate bindings");
 
-    // Write the generated bindings to an output file
-    let bindings_path = out_dir.join("bindings.rs");
-    bindings
-        .write_to_file(bindings_path)
-        .expect("Failed to write bindings");
+        // Write the generated bindings to an output file
+        let bindings_path = out_dir.join("bindings.rs");
+        bindings
+            .write_to_file(bindings_path)
+            .expect("Failed to write bindings");
 
-    println!("cargo:rerun-if-changed=wrapper.h");
-    println!("cargo:rerun-if-changed=./sherpa-onnx");
+        println!("cargo:rerun-if-changed=wrapper.h");
+        println!("cargo:rerun-if-changed=./sherpa-onnx");
 
-    debug_log!("Bindings Created");
+        debug_log!("Bindings Created");
+    }
 
     // Build with Cmake
 
