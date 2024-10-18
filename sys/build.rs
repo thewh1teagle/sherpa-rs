@@ -141,6 +141,12 @@ fn macos_link_search_path() -> Option<String> {
     None
 }
 
+fn rerun_on_env_changes(vars: &[&str]) {
+    for env in vars {
+        println!("cargo::rerun-if-env-changed={}", env);
+    }
+}
+
 fn main() {
     let target = env::var("TARGET").unwrap();
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
@@ -150,6 +156,17 @@ fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
     let build_shared_libs = cfg!(feature = "directml") || cfg!(feature = "cuda");
+
+    // Rerun on these environment changes
+    rerun_on_env_changes(&[
+        "SHERPA_BUILD_SHARED_LIBS",
+        "CMAKE_BUILD_PARALLEL_LEVEL",
+        "CMAKE_VERBOSE",
+        "SHERPA_LIB_PATH",
+        "SHERPA_STATIC_CRT",
+        "SHERPA_LIB_PROFILE",
+        "BUILD_DEBUG",
+    ]);
 
     let build_shared_libs = std::env::var("SHERPA_BUILD_SHARED_LIBS")
         .map(|v| v == "1")
@@ -246,15 +263,27 @@ fn main() {
         .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default
         .always_configure(false);
 
-    let bindings_dir = config.build();
+    let sherpa_libs: Vec<String>;
+    let sherpa_libs_kind = if build_shared_libs { "dylib" } else { "static" };
+
+    if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
+        // Skip build if SHERPA_LIB_PATH specified
+        debug_log!("Skpping build with Cmake...");
+        println!(
+            "cargo:rustc-link-search={}",
+            Path::new(&sherpa_lib_path).join("lib").display()
+        );
+        sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), build_shared_libs);
+    } else {
+        // Build with CMake
+        let bindings_dir = config.build();
+        println!("cargo:rustc-link-search={}", bindings_dir.display());
+        // Link libraries
+        sherpa_libs = extract_lib_names(&out_dir, build_shared_libs);
+    }
 
     // Search paths
     println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
-    println!("cargo:rustc-link-search={}", bindings_dir.display());
-
-    // Link libraries
-    let sherpa_libs_kind = if build_shared_libs { "dylib" } else { "static" };
-    let sherpa_libs = extract_lib_names(&out_dir, build_shared_libs);
 
     for lib in sherpa_libs {
         debug_log!(
