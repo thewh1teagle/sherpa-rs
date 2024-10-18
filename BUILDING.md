@@ -44,6 +44,8 @@ cargo build --release
 
 ### Use prebuild sherpa-onnx (For fast compilation)
 
+Note: you should disable rust-analyzer while doing this. otherwise it will rebuild it with different environment variable on each save which will take long.... time.
+
 <details>
 <summary>macOS (arm64/x86-64)</summary>
 
