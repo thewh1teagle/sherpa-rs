@@ -12,6 +12,7 @@ fn main() {
     let model = "./sherpa-onnx-zipformer-audio-tagging-2024-04-09/model.int8.onnx";
     let labels_path = "./sherpa-onnx-zipformer-audio-tagging-2024-04-09/class_labels_indices.csv";
     let wav_path = "./sherpa-onnx-zipformer-audio-tagging-2024-04-09/test_wavs/1.wav";
+    let top_k = 5;
 
     let reader = hound::WavReader::open(&wav_path).expect("Failed to open WAV file");
     let spec = reader.spec();
@@ -24,7 +25,7 @@ fn main() {
     let config = sherpa_rs::audio_tag::AudioTagConfig {
         model: model.into(),
         labels: labels_path.into(),
-        top_k: 5,
+        top_k,
         ..Default::default()
     };
     let mut audio_tag = sherpa_rs::audio_tag::AudioTag::new(config).unwrap();
