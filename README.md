@@ -13,6 +13,7 @@ Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 - Speech to text
 - Text to speech
 - Voice activity detection
+- Audio tagging
 
 ## Supported Platforms
 
