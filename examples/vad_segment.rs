@@ -11,7 +11,7 @@ use sherpa_rs::vad::{Vad, VadConfig};
 fn main() -> Result<()> {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
     let mut reader = hound::WavReader::open(file_path)?;
-    let sample_rate = reader.spec().sample_rate as i32;
+    let sample_rate = reader.spec().sample_rate;
 
     if sample_rate != 16000 {
         bail!("The sample rate must be 16000.");
