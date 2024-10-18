@@ -45,7 +45,7 @@ fn get_speaker_name(
 
 fn process_speech_segment(
     vad: &mut Vad,
-    sample_rate: i32,
+    sample_rate: u32,
     mut embedding_manager: &mut embedding_manager::EmbeddingManager,
     extractor: &mut speaker_id::EmbeddingExtractor,
     speaker_counter: &mut i32,
@@ -57,7 +57,7 @@ fn process_speech_segment(
         let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
 
         // Compute the speaker embedding
-        let mut embedding = extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
+        let mut embedding = extractor.compute_speaker_embedding(segment.samples, sample_rate)?;
 
         let name = get_speaker_name(
             &mut embedding_manager,
@@ -81,7 +81,7 @@ fn main() -> Result<()> {
     let max_speakers = 2;
 
     let mut reader = hound::WavReader::open(file_path)?;
-    let sample_rate = reader.spec().sample_rate as i32;
+    let sample_rate = reader.spec().sample_rate;
 
     if sample_rate != 16000 {
         bail!("The sample rate must be 16000.");

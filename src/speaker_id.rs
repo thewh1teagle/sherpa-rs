@@ -56,8 +56,8 @@ impl EmbeddingExtractor {
 
     pub fn compute_speaker_embedding(
         &mut self,
-        sample_rate: i32,
         samples: Vec<f32>,
+        sample_rate: u32,
     ) -> Result<Vec<f32>> {
         unsafe {
             let stream =
@@ -68,7 +68,7 @@ impl EmbeddingExtractor {
 
             sherpa_rs_sys::SherpaOnnxOnlineStreamAcceptWaveform(
                 stream,
-                sample_rate,
+                sample_rate as i32,
                 samples.as_ptr(),
                 samples.len() as i32,
             );

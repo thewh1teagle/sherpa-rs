@@ -28,11 +28,11 @@ fn main() -> Result<()> {
             .samples::<i16>()
             .map(|s| s.unwrap() as f32 / i16::MAX as f32)
             .collect();
-        let sample_rate = reader.spec().sample_rate as i32;
+        let sample_rate = reader.spec().sample_rate;
         if sample_rate != 16000 {
             bail!("The sample rate must be 16000.");
         }
-        let embedding = extractor.compute_speaker_embedding(sample_rate, samples)?;
+        let embedding = extractor.compute_speaker_embedding(samples, sample_rate)?;
         embeddings.push((file.to_string(), embedding));
     }
 

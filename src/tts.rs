@@ -124,7 +124,7 @@ impl OfflineTts {
 #[derive(Debug)]
 pub struct TtsSample {
     pub samples: Vec<f32>,
-    pub sample_rate: i32,
+    pub sample_rate: u32,
     pub duration: i32,
 }
 

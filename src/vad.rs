@@ -13,7 +13,7 @@ pub struct VadConfig {
     pub min_speech_duration: f32,
     pub max_speech_duration: f32,
     pub threshold: f32,
-    pub sample_rate: i32,
+    pub sample_rate: u32,
     pub window_size: i32,
     pub provider: Option<String>,
     pub num_threads: Option<i32>,
@@ -60,7 +60,7 @@ impl Vad {
             debug,
             provider: cstr!(provider.clone()).into_raw(),
             num_threads: config.num_threads.unwrap_or(1),
-            sample_rate: config.sample_rate,
+            sample_rate: config.sample_rate as i32,
             silero_vad,
         };
 

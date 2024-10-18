@@ -9,7 +9,7 @@ wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/sam_altm
 cargo run --example vad_whisper sam_altman.wav
 */
 
-use eyre::{bail, Result};
+use eyre::Result;
 use sherpa_rs::{
     embedding_manager, read_audio_file, speaker_id,
     vad::{Vad, VadConfig},
@@ -67,7 +67,7 @@ fn main() -> Result<()> {
 
                 // Compute the speaker embedding
                 let mut embedding =
-                    extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
+                    extractor.compute_speaker_embedding(segment.samples, sample_rate)?;
                 let name = if let Some(speaker_name) = embedding_manager.search(&embedding, 0.4) {
                     speaker_name
                 } else {
@@ -102,7 +102,7 @@ fn main() -> Result<()> {
 
             // Compute the speaker embedding
             let mut embedding =
-                extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
+                extractor.compute_speaker_embedding(segment.samples, sample_rate)?;
 
             let name = if let Some(speaker_name) = embedding_manager.search(&embedding, 0.4) {
                 speaker_name

@@ -12,7 +12,7 @@ use sherpa_rs::speaker_id;
 fn main() -> Result<()> {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
     let mut reader = hound::WavReader::open(file_path)?;
-    let sample_rate = reader.spec().sample_rate as i32;
+    let sample_rate = reader.spec().sample_rate;
 
     // Check if the sample rate is 16000
     if sample_rate != 16000 {
@@ -32,7 +32,7 @@ fn main() -> Result<()> {
     let mut extractor = speaker_id::EmbeddingExtractor::new(config).unwrap();
 
     // Compute the speaker embedding
-    let embedding = extractor.compute_speaker_embedding(sample_rate, samples)?;
+    let embedding = extractor.compute_speaker_embedding(samples, sample_rate)?;
 
     // Use the embedding as needed
     println!("Speaker embedding: {:?}", embedding);

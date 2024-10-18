@@ -35,13 +35,13 @@ impl SpokenLanguageId {
         Self { slid }
     }
 
-    pub fn compute(&mut self, samples: Vec<f32>, sample_rate: i32) -> Result<String> {
+    pub fn compute(&mut self, samples: Vec<f32>, sample_rate: u32) -> Result<String> {
         unsafe {
             let stream =
                 sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationCreateOfflineStream(self.slid);
             sherpa_rs_sys::SherpaOnnxAcceptWaveformOffline(
                 stream,
-                sample_rate,
+                sample_rate as i32,
                 samples.as_ptr(),
                 samples.len().try_into().unwrap(),
             );
