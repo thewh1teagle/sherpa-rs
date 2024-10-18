@@ -191,5 +191,5 @@ For debug the build process of sherpa-onnx, please set `BUILD_DEBUG=1` environme
 ## Release new version
 
 ```console
-gh release create v0.4.0 --title v0.4.0 --generate-notes
+gh release create v0.4.1 --title v0.4.1 --generate-notes
 ```
