@@ -1,3 +1,4 @@
 [submodule "sys/sherpa-onnx"]
 	path = sys/sherpa-onnx
 	url = https://github.com/k2-fsa/sherpa-onnx
+	tag = v1.10.28
