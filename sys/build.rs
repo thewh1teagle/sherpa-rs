@@ -12,6 +12,10 @@ macro_rules! debug_log {
     };
 }
 
+fn hard_link(src: PathBuf, dst: PathBuf) {
+    std::fs::hard_link(src, dst).unwrap();
+}
+
 fn get_cargo_target_dir() -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
     let out_dir = std::path::PathBuf::from(std::env::var("OUT_DIR")?);
     let profile = std::env::var("PROFILE")?;
@@ -336,7 +340,7 @@ fn main() {
             let dst = target_dir.join(filename);
             debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
             if !dst.exists() {
-                std::fs::hard_link(asset.clone(), dst).unwrap();
+                hard_link(asset.clone(), dst);
             }
 
             // Copy DLLs to examples as well
@@ -344,7 +348,7 @@ fn main() {
                 let dst = target_dir.join("examples").join(filename);
                 debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
                 if !dst.exists() {
-                    std::fs::hard_link(asset.clone(), dst).unwrap();
+                    hard_link(asset.clone(), dst);
                 }
             }
 
@@ -352,7 +356,7 @@ fn main() {
             let dst = target_dir.join("deps").join(filename);
             debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
             if !dst.exists() {
-                std::fs::hard_link(asset.clone(), dst).unwrap();
+                hard_link(asset.clone(), dst);
             }
         }
     }
