@@ -114,7 +114,7 @@ impl OfflineTts {
 
             Ok(TtsSample {
                 samples,
-                sample_rate,
+                sample_rate: sample_rate as u32,
                 duration,
             })
         }
