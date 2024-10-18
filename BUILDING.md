@@ -42,6 +42,45 @@ cargo build --release
 4. Restart your shell!!!
 5. Cargo build
 
+### Use prebuild sherpa-onnx (For fast compilation)
+
+<details>
+<summary>macOS (arm64/x86-64)</summary>
+
+```console
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-osx-universal2-static.tar.bz2
+tar xf sherpa-onnx-v1.10.28-osx-universal2-static.tar.bz2
+export SHERPA_LIB_PATH="$(pwd)/sherpa-onnx-v1.10.28-osx-universal2-static"
+cargo build
+```
+
+</details>
+
+<details>
+<summary>Windows (x86-64)</summary>
+
+```console
+wget.exe https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-win-x64-static.tar.bz2
+tar.exe xf sherpa-onnx-v1.10.28-win-x64-static.tar.bz2
+$env:SHERPA_LIB_PATH="$pwd/sherpa-onnx-v1.10.28-win-x64-static"
+cargo build
+```
+
+</details>
+
+<details>
+<summary>Linux (x86-64)</summary>
+
+```console
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-linux-x64-static.tar.bz2
+tar xf sherpa-onnx-v1.10.28-linux-x64-static.tar.bz2
+export SHERPA_LIB_PATH="$(pwd)/sherpa-onnx-v1.10.28-linux-x64-static"
+export RUSTFLAGS="-C relocation-model=dynamic-no-pic"
+cargo build
+```
+
+</details>
+
 ### Resample wav file for 16khz
 
 ```console
