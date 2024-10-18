@@ -11,8 +11,7 @@ cargo run --example vad_whisper sam_altman.wav
 
 use eyre::{bail, Result};
 use sherpa_rs::{
-    read_audio_file,
-    embedding_manager, speaker_id,
+    embedding_manager, read_audio_file, speaker_id,
     vad::{Vad, VadConfig},
     whisper::{WhisperConfig, WhisperRecognizer},
 };
