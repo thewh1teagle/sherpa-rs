@@ -19,14 +19,13 @@ fn main() {
 
     let config = sherpa_rs::punctuate::PunctuationConfig {
         model: model.into(),
-        debug: true,
         ..Default::default()
     };
-    let mut audio_punctuation = sherpa_rs::punctuate::Punctuation::new(config).unwrap();
+    let mut punctuate = sherpa_rs::punctuate::Punctuation::new(config).unwrap();
 
     println!("--------------------");
     for sentence in sentences {
-        let punctuated = audio_punctuation.add_punctuation(&sentence);
+        let punctuated = punctuate.add_punctuation(&sentence);
         println!("Input text: {}", sentence);
         println!("Output text: {}", punctuated);
         println!("--------------------");
