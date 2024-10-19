@@ -6,7 +6,7 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/punctuation-models/
 tar xvf sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12.tar.bz2
 rm sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12.tar.bz2
 
-cargo run --example add_punctuation
+cargo run --example punctuate
 */
 
 fn main() {
@@ -17,12 +17,12 @@ fn main() {
         "The African blogosphere is rapidly expanding bringing more voices online in the form of commentaries opinions analyses rants and poetry"
     ];
 
-    let config = sherpa_rs::punctuation::PunctuationConfig {
+    let config = sherpa_rs::punctuate::PunctuationConfig {
         model: model.into(),
         debug: true,
         ..Default::default()
     };
-    let mut audio_punctuation = sherpa_rs::punctuation::Punctuation::new(config).unwrap();
+    let mut audio_punctuation = sherpa_rs::punctuate::Punctuation::new(config).unwrap();
 
     println!("--------------------");
     for sentence in sentences {
