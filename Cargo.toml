@@ -28,7 +28,7 @@ sherpa-rs-sys = { path = "sys", version = "0.4.1" }
 clap = { version = "4.5.8", features = ["derive"] }
 
 [features]
-default = ["download-binaries"]
+default = ["download-binaries", "tts"]
 download-binaries = ["sherpa-rs-sys/download-binaries"]
 tts = ["sherpa-rs-sys/tts"]
 cuda = ["sherpa-rs-sys/cuda"]
