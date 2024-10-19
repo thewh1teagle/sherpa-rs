@@ -1,7 +1,7 @@
 use eyre::{bail, Result};
 use std::path::PathBuf;
 
-use crate::{get_default_provider, RawCStr};
+use crate::{get_default_provider, utils::RawCStr};
 
 /// If similarity is greater or equal to thresold than it's a match!
 pub const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.5;
@@ -88,7 +88,7 @@ impl EmbeddingExtractor {
             if embedding_ptr.is_null() {
                 bail!("Failed to compute speaker embedding");
             }
-            log::debug!("using dimensions {}", self.embedding_size);
+            tracing::debug!("using dimensions {}", self.embedding_size);
             let embedding = std::slice::from_raw_parts(embedding_ptr, self.embedding_size).to_vec();
             // Free
             sherpa_rs_sys::SherpaOnnxDestroyOnlineStream(stream);

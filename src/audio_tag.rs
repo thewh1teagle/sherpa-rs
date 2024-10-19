@@ -1,6 +1,9 @@
 use eyre::{bail, Result};
 
-use crate::{cstr_to_string, get_default_provider, RawCStr};
+use crate::{
+    get_default_provider,
+    utils::{cstr_to_string, RawCStr},
+};
 
 #[derive(Debug, Default, Clone)]
 pub struct AudioTagConfig {

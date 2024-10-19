@@ -1,4 +1,4 @@
-use crate::{cstr_to_string, RawCStr};
+use crate::utils::{cstr_to_string, RawCStr};
 use eyre::{bail, Result};
 
 #[derive(Debug, Clone)]

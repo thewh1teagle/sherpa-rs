@@ -1,4 +1,4 @@
-use crate::{get_default_provider, RawCStr};
+use crate::{get_default_provider, utils::RawCStr};
 use eyre::Result;
 
 #[derive(Debug)]
