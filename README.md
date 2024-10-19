@@ -37,6 +37,7 @@ Please see [BUILDING.md](BUILDING.md).
 - `directml`: enable DirectML support
 - `tts`: enable TTS
 - `download-binaries`: use prebuilt sherpa-onnx libraries for faster builds. cached.
+- `static`: use static sherpa-onnx libraries and link them statically.
 
 ## Docs
 
