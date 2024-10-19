@@ -47,6 +47,7 @@ cargo build --release
 Note: sherpa-onnx already download and cache the sherpa-onnx binaries. You can do this manually instead.
 Note: to link sherpa-onnx libs dynamically set `SHERPA_BUILD_SHARED_LIBS` to `1`.
 Note: you should disable rust-analyzer while doing this. otherwise it will rebuild it with different environment variable on each save which will take long.... time.
+Note: on Linux when linking statically you should set this env: `RUSTFLAGS="-C relocation-model=dynamic-no-pic"`
 
 <details>
 <summary>macOS (arm64/x86-64)</summary>
