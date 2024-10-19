@@ -21,7 +21,6 @@ compile_error!(
     cargo build --features directml --no-default-features"
 );
 
-
 #[path = "src/internal/dirs.rs"]
 mod dirs;
 use self::dirs::cache_dir;
@@ -30,7 +29,7 @@ const DIST_TABLE: &str = include_str!("dist.txt");
 
 macro_rules! debug_log {
     ($($arg:tt)*) => {
-        if std::env::var("BUILD_DEBUG").is_ok() {
+        if std::env::var("BUILD_DEBUG").unwrap_or_default() == "1" {
             println!("cargo:warning=[DEBUG] {}", format!($($arg)*));
         }
     };
@@ -66,6 +65,19 @@ struct Dist {
     sha256: String,
     name: String,
     is_dynamic: bool,
+}
+
+fn get_feature_set() -> String {
+    let mut features = Vec::new();
+    if cfg!(feature = "static") {
+        features.push("static");
+    }
+    features.sort();
+    if features.is_empty() {
+        "none".into()
+    } else {
+        features.join(",")
+    }
 }
 
 fn find_dist(target: &str, feature_set: &str) -> Option<Dist> {
@@ -273,6 +285,21 @@ fn main() {
     println!("cargo:rerun-if-changed=./sherpa-onnx");
     println!("cargo:rerun-if-changed=dist.txt");
 
+    // Show warning if static enabled on Linux without RUSTFLAGS
+    if cfg!(all(
+        feature = "static",
+        target_os = "linux",
+        target_arch = "x86_64"
+    )) && !env::var("RUSTFLAGS")
+        .unwrap_or_default()
+        .contains("relocation-model=dynamic-no-pic")
+    {
+        println!(
+            "cargo:warning=\
+        Please enable the following environment variable when static feature enabled on Linux: export RUSTFLAGS=\"-C relocation-model=dynamic-no-pic\""
+        )
+    }
+
     // Rerun on these environment changes
     rerun_on_env_changes(&[
         "SHERPA_BUILD_SHARED_LIBS",
@@ -393,7 +420,7 @@ fn main() {
     #[cfg(feature = "download-binaries")]
     {
         // Try download sherpa libs and set SHERPA_LIB_PATH
-        if let Some(dist) = find_dist(&target, "none") {
+        if let Some(dist) = find_dist(&target, &get_feature_set()) {
             debug_log!("Dist: {:?}", dist);
             let mut cache_dir = cache_dir()
                 .expect("could not determine cache directory")

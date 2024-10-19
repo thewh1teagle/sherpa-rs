@@ -42,7 +42,7 @@ cargo build --release
 4. Restart your shell!!!
 5. Cargo build
 
-### Use prebuild sherpa-onnx (For fast compilation)
+### Compile with prebuild sherpa-onnx manually (For fast compilation)
 
 Note: sherpa-onnx already download and cache the sherpa-onnx binaries. You can do this manually instead.
 Note: to link sherpa-onnx libs dynamically set `SHERPA_BUILD_SHARED_LIBS` to `1`.

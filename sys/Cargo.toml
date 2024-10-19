@@ -49,6 +49,7 @@ sha2 = { version = "0.10", optional = true }
 
 [features]
 download-binaries = ["ureq", "tar", "bzip2", "flate2", "sha2"]
+static = []
 default = []
 tts = []
 cuda = []
