@@ -20,7 +20,12 @@ pub struct Punctuation {
 impl Punctuation {
     pub fn new(config: PunctuationConfig) -> Result<Self> {
         let model = RawCStr::new(&config.model);
-        let provider = RawCStr::new(&config.provider.unwrap_or(get_default_provider()));
+        let provider = RawCStr::new(&config.provider.unwrap_or(if cfg!(target_os = "macos") {
+            // TODO: sherpa-onnx/issues/1448
+            "cpu".into()
+        } else {
+            get_default_provider()
+        }));
 
         let sherpa_config = sherpa_rs_sys::SherpaOnnxOfflinePunctuationConfig {
             model: sherpa_rs_sys::SherpaOnnxOfflinePunctuationModelConfig {
