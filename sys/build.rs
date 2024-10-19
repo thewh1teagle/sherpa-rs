@@ -246,15 +246,9 @@ fn rerun_on_env_changes(vars: &[&str]) {
 }
 
 fn main() {
-    let target = env::var("TARGET").unwrap();
-    debug_log!("TARGET: {:?}", target);
-    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-
-    let target_dir = get_cargo_target_dir().unwrap();
-    let sherpa_dst = out_dir.join("sherpa-onnx");
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
-    let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
-    let mut is_dynamic = !cfg!(feature = "directml") || !cfg!(feature = "cuda");
+    println!("cargo:rerun-if-changed=wrapper.h");
+    println!("cargo:rerun-if-changed=./sherpa-onnx");
+    println!("cargo:rerun-if-changed=dist.txt");
 
     // Rerun on these environment changes
     rerun_on_env_changes(&[
@@ -266,6 +260,16 @@ fn main() {
         "SHERPA_LIB_PROFILE",
         "BUILD_DEBUG",
     ]);
+
+    let target = env::var("TARGET").unwrap();
+    debug_log!("TARGET: {:?}", target);
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+
+    let target_dir = get_cargo_target_dir().unwrap();
+    let sherpa_dst = out_dir.join("sherpa-onnx");
+    let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
+    let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
+    let mut is_dynamic = !cfg!(feature = "directml") || !cfg!(feature = "cuda");
 
     is_dynamic = std::env::var("SHERPA_BUILD_SHARED_LIBS")
         .map(|v| v == "1")
@@ -312,10 +316,6 @@ fn main() {
         bindings
             .write_to_file(bindings_path)
             .expect("Failed to write bindings");
-
-        println!("cargo:rerun-if-changed=wrapper.h");
-        println!("cargo:rerun-if-changed=./sherpa-onnx");
-
         debug_log!("Bindings Created");
     }
 
