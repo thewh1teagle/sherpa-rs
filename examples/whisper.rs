@@ -17,7 +17,7 @@ use std::time::Instant;
 fn main() -> Result<()> {
     let path = std::env::args().nth(1).expect("Missing file path argument");
     let provider = std::env::args().nth(2).unwrap_or("cpu".into());
-    let (sample_rate, samples) = read_audio_file(&path)?;
+    let (samples, sample_rate) = read_audio_file(&path)?;
 
     // Check if the sample rate is 16000
     if sample_rate != 16000 {

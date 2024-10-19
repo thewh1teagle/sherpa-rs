@@ -27,7 +27,7 @@ pub fn get_default_provider() -> String {
     .into()
 }
 
-pub fn read_audio_file(path: &str) -> Result<(u32, Vec<f32>)> {
+pub fn read_audio_file(path: &str) -> Result<(Vec<f32>, u32)> {
     let mut reader = hound::WavReader::open(path)?;
     let sample_rate = reader.spec().sample_rate;
 
@@ -42,5 +42,5 @@ pub fn read_audio_file(path: &str) -> Result<(u32, Vec<f32>)> {
         .map(|s| s.unwrap() as f32 / i16::MAX as f32)
         .collect();
 
-    Ok((sample_rate, samples))
+    Ok((samples, sample_rate))
 }

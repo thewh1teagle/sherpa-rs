@@ -19,7 +19,7 @@ use sherpa_rs::{
 fn main() -> Result<()> {
     // Read audio data from the file
     let path = std::env::args().nth(1).expect("Missing file path argument");
-    let (sample_rate, mut samples) = read_audio_file(&path)?;
+    let (mut samples, sample_rate) = read_audio_file(&path)?;
 
     // Pad with 3 seconds of slience so vad will able to detect stop
     for _ in 0..3 * sample_rate {

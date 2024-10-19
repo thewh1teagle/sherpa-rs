@@ -176,7 +176,7 @@ mod tests {
     #[test]
     fn test_whisper_transcribe() {
         let path = "motivation.wav";
-        let (sample_rate, samples) = read_audio_file(&path).expect("file not found");
+        let (samples, sample_rate) = read_audio_file(&path).unwrap();
 
         // Check if the sample rate is 16000
         if sample_rate != 16000 {
