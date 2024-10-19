@@ -36,6 +36,7 @@ Please see [BUILDING.md](BUILDING.md).
 - `cuda`: enable CUDA support
 - `directml`: enable DirectML support
 - `tts`: enable TTS
+- `download-binaries`: use prebuilt sherpa-onnx libraries for faster builds. cached.
 
 ## Docs
 

@@ -1,8 +1,15 @@
 use cmake::Config;
 use glob::glob;
 use std::env;
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+
+#[path = "src/internal/dirs.rs"]
+mod dirs;
+use self::dirs::cache_dir;
+
+const DIST_TABLE: &str = include_str!("dist.txt");
 
 macro_rules! debug_log {
     ($($arg:tt)*) => {
@@ -10,6 +17,91 @@ macro_rules! debug_log {
             println!("cargo:warning=[DEBUG] {}", format!($($arg)*));
         }
     };
+}
+
+#[cfg(feature = "download-binaries")]
+fn fetch_file(source_url: &str) -> Vec<u8> {
+    let resp = ureq::AgentBuilder::new()
+        .try_proxy_from_env(true)
+        .build()
+        .get(source_url)
+        .timeout(std::time::Duration::from_secs(1800))
+        .call()
+        .unwrap_or_else(|err| panic!("Failed to GET `{source_url}`: {err}"));
+
+    let len = resp
+        .header("Content-Length")
+        .and_then(|s| s.parse::<usize>().ok())
+        .expect("Content-Length header should be present on archive response");
+    debug_log!("Fetch file {} {}", source_url, len);
+    let mut reader = resp.into_reader();
+    let mut buffer = Vec::new();
+    reader
+        .read_to_end(&mut buffer)
+        .unwrap_or_else(|err| panic!("Failed to download from `{source_url}`: {err}"));
+    assert_eq!(buffer.len(), len);
+    buffer
+}
+
+#[derive(Debug)]
+struct Dist {
+    url: String,
+    sha256: String,
+    name: String,
+}
+
+fn find_dist(target: &str, feature_set: &str) -> Option<Dist> {
+    DIST_TABLE
+        .split('\n')
+        .skip(1) // Skip headers
+        .filter(|l| !l.is_empty() && !l.starts_with('#'))
+        .map(|l| l.split_whitespace().collect::<Vec<_>>())
+        .find(|row| row[0] == feature_set && row[1] == target)
+        .map(|row| Dist {
+            url: row[2].into(),
+            name: row[3].into(),
+            sha256: row[4].into(),
+        })
+}
+
+#[cfg(feature = "download-binaries")]
+fn hex_str_to_bytes(c: impl AsRef<[u8]>) -> Vec<u8> {
+    fn nibble(c: u8) -> u8 {
+        match c {
+            b'A'..=b'F' => c - b'A' + 10,
+            b'a'..=b'f' => c - b'a' + 10,
+            b'0'..=b'9' => c - b'0',
+            _ => panic!(),
+        }
+    }
+
+    c.as_ref()
+        .chunks(2)
+        .map(|n| nibble(n[0]) << 4 | nibble(n[1]))
+        .collect()
+}
+
+#[cfg(feature = "download-binaries")]
+fn verify_file(buf: &[u8], hash: impl AsRef<[u8]>) -> bool {
+    <sha2::Sha256 as sha2::Digest>::digest(buf)[..] == hex_str_to_bytes(hash)
+}
+
+#[cfg(feature = "download-binaries")]
+#[allow(unused)]
+fn extract_tgz(buf: &[u8], output: &Path) {
+    let buf: std::io::BufReader<&[u8]> = std::io::BufReader::new(buf);
+    let tar = flate2::read::GzDecoder::new(buf);
+    let mut archive = tar::Archive::new(tar);
+    archive.unpack(output).expect("Failed to extract .tgz file");
+}
+
+#[cfg(feature = "download-binaries")]
+fn extract_tbz(buf: &[u8], output: &Path) {
+    debug_log!("extracging tbz to {}", output.display());
+    let buf: std::io::BufReader<&[u8]> = std::io::BufReader::new(buf);
+    let tar = bzip2::read::BzDecoder::new(buf); // Use BzDecoder for .bz2
+    let mut archive = tar::Archive::new(tar);
+    archive.unpack(output).expect("Failed to extract .tbz file");
 }
 
 fn hard_link(src: PathBuf, dst: PathBuf) {
@@ -153,6 +245,7 @@ fn rerun_on_env_changes(vars: &[&str]) {
 
 fn main() {
     let target = env::var("TARGET").unwrap();
+    debug_log!("TARGET: {:?}", target);
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
     let target_dir = get_cargo_target_dir().unwrap();
@@ -276,9 +369,42 @@ fn main() {
     let sherpa_libs: Vec<String>;
     let sherpa_libs_kind = if build_shared_libs { "dylib" } else { "static" };
 
+    #[cfg(feature = "download-binaries")]
+    {
+        // Try download sherpa libs and set SHERPA_LIB_PATH
+        if let Some(dist) = find_dist(&target, "none") {
+            debug_log!("Dist: {:?}", dist);
+            let mut cache_dir = cache_dir()
+                .expect("could not determine cache directory")
+                .join("sherpa-bin")
+                .join(&target)
+                .join(&dist.sha256);
+            if fs::create_dir_all(&cache_dir).is_err() {
+                cache_dir = env::var("OUT_DIR").unwrap().into();
+            }
+            debug_log!("Cache dir: {}", cache_dir.display());
+            let lib_dir = cache_dir.join(&dist.name);
+            if !lib_dir.exists() {
+                let downloaded_file = fetch_file(&dist.url);
+                assert!(
+                    verify_file(&downloaded_file, &dist.sha256),
+                    "hash of downloaded Sherpa-ONNX Runtime binary does not match!"
+                );
+                extract_tbz(&downloaded_file, &cache_dir);
+                env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
+            } else {
+                debug_log!("Skip fetch file. Using cache from {}", lib_dir.display());
+                env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
+            }
+        } else {
+            debug_log!("Failed to download binaries")
+        }
+    }
+
     if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
         // Skip build if SHERPA_LIB_PATH specified
         debug_log!("Skpping build with Cmake...");
+        debug_log!("SHERPA_LIB_PATH: {}", sherpa_lib_path);
         println!(
             "cargo:rustc-link-search={}",
             Path::new(&sherpa_lib_path).join("lib").display()

@@ -98,6 +98,8 @@ git pull origin master
 
 ### Gotachas
 
+On Linux you should set `RUSTFLAGS="-C relocation-model=dynamic-no-pic"`
+
 <details>
 <summary>When using GPU such as DirectML or Cuda</summary>
 
@@ -192,4 +194,16 @@ For debug the build process of sherpa-onnx, please set `BUILD_DEBUG=1` environme
 
 ```console
 gh release create v0.4.1 --title v0.4.1 --generate-notes
+```
+
+## Calculate sha256 for dist table
+
+```console
+shasum -a 256 <path> | tr 'a-z' 'A-Z'
+```
+
+## See debug log from build
+
+```
+BUILD_DEBUG=1 cargo build -vv
 ```
