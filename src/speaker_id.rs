@@ -11,7 +11,7 @@ pub struct ExtractorConfig {
     pub model: String,
     pub provider: Option<String>,
     pub num_threads: Option<usize>,
-    pub debug: Option<bool>,
+    pub debug: bool,
 }
 
 #[derive(Debug)]
@@ -25,11 +25,7 @@ impl EmbeddingExtractor {
         let provider = config.provider.unwrap_or(get_default_provider());
 
         let num_threads = config.num_threads.unwrap_or(1);
-        let debug = if config.debug.unwrap_or_default() {
-            1
-        } else {
-            0
-        };
+        let debug = config.debug.into();
 
         let model_path = PathBuf::from(&config.model);
         if !model_path.exists() {

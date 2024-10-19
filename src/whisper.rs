@@ -22,10 +22,11 @@ pub struct WhisperConfig {
     pub encoder: String,
     pub tokens: String,
     pub language: String,
-    pub debug: Option<bool>,
+    pub bpe_vocab: Option<String>,
+
     pub provider: Option<String>,
     pub num_threads: Option<i32>,
-    pub bpe_vocab: Option<String>,
+    pub debug: bool,
 }
 
 impl Default for WhisperConfig {
@@ -35,21 +36,17 @@ impl Default for WhisperConfig {
             encoder: String::new(),
             tokens: String::new(),
             language: String::from("en"),
-            debug: None,
+            bpe_vocab: None,
+            debug: false,
             provider: None,
             num_threads: Some(1),
-            bpe_vocab: None,
         }
     }
 }
 
 impl WhisperRecognizer {
     pub fn new(config: WhisperConfig) -> Result<Self> {
-        let debug = if config.debug.unwrap_or_default() {
-            1
-        } else {
-            0
-        };
+        let debug = config.debug.into();
         let provider = config.provider.unwrap_or(get_default_provider());
 
         // Onnx
@@ -188,7 +185,7 @@ mod tests {
             encoder: "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
             tokens: "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
             language: "en".into(),
-            debug: Some(true),
+            debug: true,
             provider: None,
             num_threads: None,
             bpe_vocab: None,

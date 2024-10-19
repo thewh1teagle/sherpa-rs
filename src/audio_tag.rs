@@ -10,10 +10,10 @@ pub struct AudioTagConfig {
     pub model: String,
     pub labels: String,
     pub top_k: i32,
-    pub debug: Option<bool>,
+    pub ced: Option<String>,
+    pub debug: bool,
     pub num_threads: Option<i32>,
     pub provider: Option<String>,
-    pub ced: Option<String>,
 }
 
 pub struct AudioTag {
@@ -37,7 +37,7 @@ impl AudioTag {
                 },
                 ced: ced.as_ptr(),
                 num_threads: config.num_threads.unwrap_or(1),
-                debug: config.debug.unwrap_or_default().into(),
+                debug: config.debug.into(),
                 provider: provider.as_ptr(),
             },
             labels: labels.as_ptr(),

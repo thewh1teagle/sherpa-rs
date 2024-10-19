@@ -23,7 +23,7 @@ pub struct DiarizeConfig {
     pub min_duration_on: Option<f32>,
     pub min_duration_off: Option<f32>,
     pub provider: Option<String>,
-    pub debug: Option<bool>,
+    pub debug: bool,
 }
 
 impl Default for DiarizeConfig {
@@ -34,7 +34,7 @@ impl Default for DiarizeConfig {
             min_duration_on: Some(0.0),
             min_duration_off: Some(0.0),
             provider: None,
-            debug: Some(false),
+            debug: false,
         }
     }
 }
@@ -47,7 +47,7 @@ impl Diarize {
     ) -> Result<Self> {
         let provider = config.provider.unwrap_or(get_default_provider());
 
-        let debug = config.debug.unwrap_or(false);
+        let debug = config.debug;
         let debug = if debug { 1 } else { 0 };
 
         let embedding_model = embedding_model.as_ref().to_str().unwrap();

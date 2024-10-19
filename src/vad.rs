@@ -17,7 +17,7 @@ pub struct VadConfig {
     pub window_size: i32,
     pub provider: Option<String>,
     pub num_threads: Option<i32>,
-    pub debug: Option<bool>,
+    pub debug: bool,
 }
 
 impl Default for VadConfig {
@@ -32,7 +32,7 @@ impl Default for VadConfig {
             window_size: 512,
             provider: None,
             num_threads: Some(1),
-            debug: Some(false),
+            debug: false,
         }
     }
 }
@@ -58,7 +58,7 @@ impl Vad {
             window_size: config.window_size,
             max_speech_duration: config.max_speech_duration,
         };
-        let debug = config.debug.unwrap_or(false).into();
+        let debug = config.debug.into();
         let vad_config = sherpa_rs_sys::SherpaOnnxVadModelConfig {
             debug,
             provider: provider.as_ptr(),

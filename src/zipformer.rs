@@ -11,9 +11,10 @@ pub struct ZipFormerConfig {
     pub encoder: String,
     pub joiner: String,
     pub tokens: String,
-    pub debug: Option<bool>,
+
     pub num_threads: Option<i32>,
     pub provider: Option<String>,
+    pub debug: bool,
 }
 
 pub struct ZipFormer {
@@ -38,7 +39,7 @@ impl ZipFormer {
         // Offline model config
         let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
             num_threads: config.num_threads.unwrap_or(1),
-            debug: config.debug.unwrap_or_default().into(),
+            debug: config.debug.into(),
             provider: provider_ptr.as_ptr(),
             transducer: transcuder_config,
             tokens: tokens_ptr.as_ptr(),

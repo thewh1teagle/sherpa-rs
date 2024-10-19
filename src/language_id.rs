@@ -13,14 +13,14 @@ pub struct SpokenLanguageId {
 pub struct SpokenLanguageIdConfig {
     pub encoder: String,
     pub decoder: String,
-    pub debug: Option<bool>,
+    pub debug: bool,
     pub provider: Option<String>,
     pub num_threads: Option<i32>,
 }
 
 impl SpokenLanguageId {
     pub fn new(config: SpokenLanguageIdConfig) -> Self {
-        let debug = config.debug.unwrap_or_default().into();
+        let debug = config.debug.into();
 
         let decoder = RawCStr::new(&config.decoder);
         let encoder = RawCStr::new(&config.encoder);

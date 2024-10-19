@@ -9,7 +9,7 @@ pub struct OfflineTtsConfig {
     pub rule_fsts: String,
     pub max_num_sentences: i32,
     pub num_threads: Option<i32>,
-    pub debug: Option<bool>,
+    pub debug: bool,
     pub provider: Option<String>,
 }
 
@@ -47,7 +47,7 @@ impl Default for OfflineTtsConfig {
             rule_fsts: String::new(),
             max_num_sentences: 2,
             num_threads: None,
-            debug: None,
+            debug: false,
             provider: None,
         }
     }
@@ -85,7 +85,7 @@ impl OfflineTts {
                     tokens: tokens.as_ptr(),
                 },
                 num_threads: config.num_threads.unwrap_or(1),
-                debug: config.debug.unwrap_or(false).into(),
+                debug: config.debug.into(),
                 provider: provider.as_ptr(),
             },
             rule_fars: rule_fars.as_ptr(),
