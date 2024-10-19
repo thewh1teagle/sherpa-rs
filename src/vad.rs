@@ -1,4 +1,4 @@
-use crate::{cstr, free_cstr, get_default_provider};
+use crate::{get_default_provider, RawCStr};
 use eyre::Result;
 
 #[derive(Debug)]
@@ -47,11 +47,11 @@ impl Vad {
     pub fn new(config: VadConfig, buffer_size_in_seconds: f32) -> Result<Self> {
         let provider = config.provider.unwrap_or(get_default_provider());
 
-        let model_ptr = cstr!(config.model);
-        let provider_ptr = cstr!(provider);
+        let model = RawCStr::new(&config.model);
+        let provider = RawCStr::new(&provider);
 
         let silero_vad = sherpa_rs_sys::SherpaOnnxSileroVadModelConfig {
-            model: model_ptr,
+            model: model.as_ptr(),
             min_silence_duration: config.min_silence_duration,
             min_speech_duration: config.min_speech_duration,
             threshold: config.threshold,
@@ -61,7 +61,7 @@ impl Vad {
         let debug = config.debug.unwrap_or(false).into();
         let vad_config = sherpa_rs_sys::SherpaOnnxVadModelConfig {
             debug,
-            provider: provider_ptr,
+            provider: provider.as_ptr(),
             num_threads: config.num_threads.unwrap_or(1),
             sample_rate: config.sample_rate as i32,
             silero_vad,
@@ -72,8 +72,7 @@ impl Vad {
                 &vad_config,
                 buffer_size_in_seconds,
             );
-            free_cstr!(model_ptr);
-            free_cstr!(provider_ptr);
+
             Ok(Self { vad })
         }
     }

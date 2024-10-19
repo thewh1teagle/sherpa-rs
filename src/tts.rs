@@ -1,4 +1,4 @@
-use crate::{cstr, free_cstr, get_default_provider};
+use crate::{get_default_provider, RawCStr};
 use eyre::{bail, Result};
 use hound::{WavSpec, WavWriter};
 
@@ -62,57 +62,46 @@ impl OfflineTts {
     pub fn new(config: OfflineTtsConfig, vits_config: VitsConfig) -> Self {
         let provider = config.provider.unwrap_or(get_default_provider());
 
-        let data_dir_ptr = cstr!(vits_config.data_dir);
-        let dict_dir_ptr = cstr!(vits_config.dict_dir);
-        let lexicon_ptr = cstr!(vits_config.lexicon);
-        let model_ptr = cstr!(config.model);
-        let tokens_ptr = cstr!(vits_config.tokens);
-        let provider_ptr = cstr!(provider);
-        let rule_fars_ptr = cstr!(config.rule_fars);
-        let rule_fsts_ptr = cstr!(config.rule_fsts);
+        let data_dir = RawCStr::new(&vits_config.data_dir);
+        let dict_dir = RawCStr::new(&vits_config.dict_dir);
+        let lexicon = RawCStr::new(&vits_config.lexicon);
+        let model = RawCStr::new(&config.model);
+        let tokens = RawCStr::new(&vits_config.tokens);
+        let provider = RawCStr::new(&provider);
+        let rule_fars = RawCStr::new(&config.rule_fars);
+        let rule_fsts = RawCStr::new(&config.rule_fsts);
 
         let tts_config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
             max_num_sentences: config.max_num_sentences,
             model: sherpa_rs_sys::SherpaOnnxOfflineTtsModelConfig {
                 vits: sherpa_rs_sys::SherpaOnnxOfflineTtsVitsModelConfig {
-                    data_dir: data_dir_ptr,
-                    dict_dir: dict_dir_ptr,
+                    data_dir: data_dir.as_ptr(),
+                    dict_dir: dict_dir.as_ptr(),
                     length_scale: vits_config.length_scale,
-                    lexicon: lexicon_ptr,
-                    model: model_ptr,
+                    lexicon: lexicon.as_ptr(),
+                    model: model.as_ptr(),
                     noise_scale: vits_config.noise_scale,
                     noise_scale_w: vits_config.noise_scale_w,
-                    tokens: tokens_ptr,
+                    tokens: tokens.as_ptr(),
                 },
                 num_threads: config.num_threads.unwrap_or(1),
                 debug: config.debug.unwrap_or(false).into(),
-                provider: provider_ptr,
+                provider: provider.as_ptr(),
             },
-            rule_fars: rule_fars_ptr,
-            rule_fsts: rule_fsts_ptr,
+            rule_fars: rule_fars.as_ptr(),
+            rule_fsts: rule_fsts.as_ptr(),
         };
 
         let tts = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineTts(&tts_config) };
-
-        unsafe {
-            free_cstr!(data_dir_ptr);
-            free_cstr!(dict_dir_ptr);
-            free_cstr!(lexicon_ptr);
-            free_cstr!(model_ptr);
-            free_cstr!(tokens_ptr);
-            free_cstr!(provider_ptr);
-            free_cstr!(rule_fars_ptr);
-            free_cstr!(rule_fsts_ptr);
-        };
         Self { tts }
     }
 
     pub fn generate(&mut self, text: String, sid: i32, speed: f32) -> Result<TtsSample> {
         unsafe {
-            let text_ptr = cstr!(text);
+            let text = RawCStr::new(&text);
             let audio_ptr =
-                sherpa_rs_sys::SherpaOnnxOfflineTtsGenerate(self.tts, text_ptr, sid, speed);
-            free_cstr!(text_ptr);
+                sherpa_rs_sys::SherpaOnnxOfflineTtsGenerate(self.tts, text.as_ptr(), sid, speed);
+
             if audio_ptr.is_null() {
                 bail!("audio is null")
             }

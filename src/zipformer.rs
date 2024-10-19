@@ -1,4 +1,4 @@
-use crate::{cstr, cstr_to_string, free_cstr, get_default_provider};
+use crate::{cstr_to_string, get_default_provider, RawCStr};
 use eyre::{bail, Result};
 use std::ptr::null;
 
@@ -20,25 +20,25 @@ pub struct ZipFormer {
 impl ZipFormer {
     pub fn new(config: ZipFormerConfig) -> Result<Self> {
         // Zipformer config
-        let decoder_ptr = cstr!(config.decoder);
-        let encoder_ptr = cstr!(config.encoder);
-        let joiner_ptr = cstr!(config.joiner);
-        let provider_ptr = cstr!(config.provider.unwrap_or(get_default_provider()));
-        let tokens_ptr = cstr!(config.tokens);
-        let decoding_method_ptr = cstr!("greedy_search");
+        let decoder_ptr = RawCStr::new(&config.decoder);
+        let encoder_ptr = RawCStr::new(&config.encoder);
+        let joiner_ptr = RawCStr::new(&config.joiner);
+        let provider_ptr = RawCStr::new(&config.provider.unwrap_or(get_default_provider()));
+        let tokens_ptr = RawCStr::new(&config.tokens);
+        let decoding_method_ptr = RawCStr::new("greedy_search");
 
         let transcuder_config = sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
-            decoder: decoder_ptr,
-            encoder: encoder_ptr,
-            joiner: joiner_ptr,
+            decoder: decoder_ptr.as_ptr(),
+            encoder: encoder_ptr.as_ptr(),
+            joiner: joiner_ptr.as_ptr(),
         };
         // Offline model config
         let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
             num_threads: config.num_threads.unwrap_or(1),
             debug: config.debug.unwrap_or_default().into(),
-            provider: provider_ptr,
+            provider: provider_ptr.as_ptr(),
             transducer: transcuder_config,
-            tokens: tokens_ptr,
+            tokens: tokens_ptr.as_ptr(),
             // NULLs
             bpe_vocab: null(),
             model_type: null(),
@@ -64,7 +64,7 @@ impl ZipFormer {
         // Recognizer config
         let recognizer_config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
             model_config,
-            decoding_method: decoding_method_ptr,
+            decoding_method: decoding_method_ptr.as_ptr(),
             // NULLs
             blank_penalty: 0.0,
             feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
@@ -85,15 +85,6 @@ impl ZipFormer {
         let recognizer =
             unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&recognizer_config) };
 
-        unsafe {
-            free_cstr!(decoder_ptr);
-            free_cstr!(encoder_ptr);
-            free_cstr!(joiner_ptr);
-            free_cstr!(provider_ptr);
-            free_cstr!(tokens_ptr);
-            free_cstr!(decoding_method_ptr);
-        };
-
         if recognizer.is_null() {
             bail!("Failed to create recognizer")
         }
@@ -112,7 +103,7 @@ impl ZipFormer {
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
-            let text = cstr_to_string!(raw_result.text);
+            let text = cstr_to_string(raw_result.text);
 
             // Free
             sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizerResult(result_ptr);

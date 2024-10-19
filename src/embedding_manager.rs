@@ -1,4 +1,4 @@
-use crate::{cstr, cstr_to_string, free_cstr};
+use crate::{cstr_to_string, RawCStr};
 use eyre::{bail, Result};
 
 #[derive(Debug, Clone)]
@@ -30,7 +30,7 @@ impl EmbeddingManager {
             if name.is_null() {
                 return None;
             }
-            let name = cstr_to_string!(name);
+            let name = cstr_to_string(name);
             Some(name)
         }
     }
@@ -57,7 +57,7 @@ impl EmbeddingManager {
             let mut matches: Vec<SpeakerMatch> = Vec::new();
             for i in 0..result.count {
                 let match_c = matches_c[i as usize];
-                let name = cstr_to_string!(match_c.name);
+                let name = cstr_to_string(match_c.name);
                 let score = match_c.score;
                 matches.push(SpeakerMatch { name, score });
             }
@@ -67,14 +67,14 @@ impl EmbeddingManager {
     }
 
     pub fn add(&mut self, name: String, embedding: &mut [f32]) -> Result<()> {
-        let name_ptr = cstr!(name.clone());
+        let name_c = RawCStr::new(&name.clone());
         unsafe {
             let status = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerAdd(
                 self.manager,
-                name_ptr,
+                name_c.as_ptr(),
                 embedding.as_mut_ptr(),
             );
-            free_cstr!(name_ptr);
+
             if status.is_negative() {
                 bail!("Failed to register {}", name)
             }

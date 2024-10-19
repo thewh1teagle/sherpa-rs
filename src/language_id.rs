@@ -1,4 +1,4 @@
-use crate::{cstr, cstr_to_string, free_cstr, get_default_provider};
+use crate::{cstr_to_string, get_default_provider, RawCStr};
 use eyre::{bail, Result};
 
 #[derive(Debug)]
@@ -19,28 +19,24 @@ impl SpokenLanguageId {
     pub fn new(config: SpokenLanguageIdConfig) -> Self {
         let debug = config.debug.unwrap_or_default().into();
 
-        let decoder_ptr = cstr!(config.decoder);
-        let encoder_ptr = cstr!(config.encoder);
-        let provider_ptr = cstr!(config.provider.unwrap_or(get_default_provider()));
+        let decoder = RawCStr::new(&config.decoder);
+        let encoder = RawCStr::new(&config.encoder);
+        let provider = RawCStr::new(&config.provider.unwrap_or(get_default_provider()));
 
         let whisper = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationWhisperConfig {
-            decoder: decoder_ptr,
-            encoder: encoder_ptr,
+            decoder: decoder.as_ptr(),
+            encoder: encoder.as_ptr(),
             tail_paddings: 0,
         };
         let sherpa_config = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationConfig {
             debug,
             num_threads: config.num_threads.unwrap_or(1),
-            provider: provider_ptr,
+            provider: provider.as_ptr(),
             whisper,
         };
         let slid =
             unsafe { sherpa_rs_sys::SherpaOnnxCreateSpokenLanguageIdentification(&sherpa_config) };
-        unsafe {
-            free_cstr!(decoder_ptr);
-            free_cstr!(encoder_ptr);
-            free_cstr!(provider_ptr);
-        };
+
         Self { slid }
     }
 
@@ -60,7 +56,7 @@ impl SpokenLanguageId {
                 bail!("language ptr is null")
             }
             let language_ptr = (*language_result_ptr).lang;
-            let language = cstr_to_string!(language_ptr);
+            let language = cstr_to_string(language_ptr);
             // Free
             sherpa_rs_sys::SherpaOnnxDestroySpokenLanguageIdentificationResult(language_result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);

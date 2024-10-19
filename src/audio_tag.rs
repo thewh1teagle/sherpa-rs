@@ -1,6 +1,6 @@
 use eyre::{bail, Result};
 
-use crate::{cstr, cstr_to_string, free_cstr, get_default_provider};
+use crate::{cstr_to_string, get_default_provider, RawCStr};
 
 #[derive(Debug, Default, Clone)]
 pub struct AudioTagConfig {
@@ -22,32 +22,25 @@ impl AudioTag {
     pub fn new(config: AudioTagConfig) -> Result<Self> {
         let config_clone = config.clone();
 
-        let model_ptr = cstr!(config.model);
-        let ced_ptr = cstr!(config.ced.unwrap_or_default());
-        let labels_ptr = cstr!(config.labels);
-        let provider_ptr = cstr!(config.provider.unwrap_or(get_default_provider()));
+        let model = RawCStr::new(&config.model);
+        let ced = RawCStr::new(&config.ced.unwrap_or_default());
+        let labels = RawCStr::new(&config.labels);
+        let provider = RawCStr::new(&config.provider.unwrap_or(get_default_provider()));
 
         let sherpa_config = sherpa_rs_sys::SherpaOnnxAudioTaggingConfig {
             model: sherpa_rs_sys::SherpaOnnxAudioTaggingModelConfig {
                 zipformer: sherpa_rs_sys::SherpaOnnxOfflineZipformerAudioTaggingModelConfig {
-                    model: model_ptr,
+                    model: model.as_ptr(),
                 },
-                ced: ced_ptr,
+                ced: ced.as_ptr(),
                 num_threads: config.num_threads.unwrap_or(1),
                 debug: config.debug.unwrap_or_default().into(),
-                provider: provider_ptr,
+                provider: provider.as_ptr(),
             },
-            labels: labels_ptr,
+            labels: labels.as_ptr(),
             top_k: config.top_k,
         };
         let audio_tag = unsafe { sherpa_rs_sys::SherpaOnnxCreateAudioTagging(&sherpa_config) };
-
-        unsafe {
-            free_cstr!(model_ptr);
-            free_cstr!(ced_ptr);
-            free_cstr!(labels_ptr);
-            free_cstr!(provider_ptr);
-        }
 
         if audio_tag.is_null() {
             bail!("Failed to create audio tagging")
@@ -76,7 +69,7 @@ impl AudioTag {
 
             for i in 0..self.config.top_k {
                 let event = *results.add(i.try_into().unwrap());
-                let event_name = cstr_to_string!((*event).name);
+                let event_name = cstr_to_string((*event).name);
                 events.push(event_name);
             }
         }

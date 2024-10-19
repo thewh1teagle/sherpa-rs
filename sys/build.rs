@@ -298,7 +298,12 @@ fn main() {
     println!("cargo:rerun-if-changed=dist.txt");
 
     // Show warning if static enabled on Linux without RUSTFLAGS
-    #[cfg(all(feature = "static", target_os = "linux", target_arch = "x86_64", feature = "download-binaries"))]
+    #[cfg(all(
+        feature = "static",
+        target_os = "linux",
+        target_arch = "x86_64",
+        feature = "download-binaries"
+    ))]
     {
         if !env::var("RUSTFLAGS")
             .unwrap_or_default()

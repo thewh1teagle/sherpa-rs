@@ -1,4 +1,4 @@
-use crate::{cstr, cstr_to_string, free_cstr, get_default_provider};
+use crate::{cstr_to_string, get_default_provider, RawCStr};
 use eyre::{bail, Result};
 use std::ptr::null;
 
@@ -50,48 +50,48 @@ impl WhisperRecognizer {
         let provider = config.provider.unwrap_or(get_default_provider());
 
         // Onnx
-        let provider_ptr = cstr!(provider);
+        let provider_ptr = RawCStr::new(&provider);
         let num_threads = config.num_threads.unwrap_or(2);
 
         // Whisper
-        let bpe_vocab_ptr = cstr!(config.bpe_vocab.unwrap_or("".into()));
+        let bpe_vocab_ptr = RawCStr::new(&config.bpe_vocab.unwrap_or("".into()));
         let tail_paddings = 0;
-        let decoder_ptr = cstr!(config.decoder);
-        let encoder_ptr = cstr!(config.encoder);
-        let language_ptr = cstr!(config.language);
-        let task_ptr = cstr!("transcribe");
-        let tokens_ptr = cstr!(config.tokens);
-        let decoding_method_ptr = cstr!("greedy_search");
+        let decoder_ptr = RawCStr::new(&config.decoder);
+        let encoder_ptr = RawCStr::new(&config.encoder);
+        let language_ptr = RawCStr::new(&config.language);
+        let task_ptr = RawCStr::new("transcribe");
+        let tokens_ptr = RawCStr::new(&config.tokens);
+        let decoding_method_ptr = RawCStr::new("greedy_search");
         // Sense voice
-        let sense_voice_model_ptr = cstr!("");
-        let sense_voice_language_ptr = cstr!("");
+        let sense_voice_model_ptr = RawCStr::new("");
+        let sense_voice_language_ptr = RawCStr::new("");
 
         let whisper = sherpa_rs_sys::SherpaOnnxOfflineWhisperModelConfig {
-            decoder: decoder_ptr,
-            encoder: encoder_ptr,
-            language: language_ptr,
-            task: task_ptr,
+            decoder: decoder_ptr.as_ptr(),
+            encoder: encoder_ptr.as_ptr(),
+            language: language_ptr.as_ptr(),
+            task: task_ptr.as_ptr(),
             tail_paddings,
         };
 
         let sense_voice = sherpa_rs_sys::SherpaOnnxOfflineSenseVoiceModelConfig {
-            model: sense_voice_model_ptr,
-            language: sense_voice_language_ptr,
+            model: sense_voice_model_ptr.as_ptr(),
+            language: sense_voice_language_ptr.as_ptr(),
             use_itn: 0,
         };
 
         let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
-            bpe_vocab: bpe_vocab_ptr,
+            bpe_vocab: bpe_vocab_ptr.as_ptr(),
             debug,
             model_type: null(),
             modeling_unit: null(),
             nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig { model: null() },
             num_threads,
             paraformer: sherpa_rs_sys::SherpaOnnxOfflineParaformerModelConfig { model: null() },
-            provider: provider_ptr,
+            provider: provider_ptr.as_ptr(),
             tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
             telespeech_ctc: null(),
-            tokens: tokens_ptr,
+            tokens: tokens_ptr.as_ptr(),
             transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
                 encoder: null(),
                 decoder: null(),
@@ -102,7 +102,7 @@ impl WhisperRecognizer {
         };
 
         let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
-            decoding_method: decoding_method_ptr, // greedy_search, modified_beam_search
+            decoding_method: decoding_method_ptr.as_ptr(), // greedy_search, modified_beam_search
             feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
                 sample_rate: 16000,
                 feature_dim: 512,
@@ -121,19 +121,6 @@ impl WhisperRecognizer {
         };
 
         let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };
-
-        unsafe {
-            free_cstr!(provider_ptr);
-            free_cstr!(bpe_vocab_ptr);
-            free_cstr!(decoder_ptr);
-            free_cstr!(encoder_ptr);
-            free_cstr!(language_ptr);
-            free_cstr!(task_ptr);
-            free_cstr!(sense_voice_model_ptr);
-            free_cstr!(sense_voice_language_ptr);
-            free_cstr!(tokens_ptr);
-            free_cstr!(decoding_method_ptr);
-        };
 
         if recognizer.is_null() {
             bail!("Failed to create recognizer")
@@ -154,7 +141,7 @@ impl WhisperRecognizer {
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
-            let text = cstr_to_string!(raw_result.text);
+            let text = cstr_to_string(raw_result.text);
             // let timestamps: &[f32] =
             // std::slice::from_raw_parts(raw_result.timestamps, raw_result.count as usize);
             let result = WhisperRecognizerResult { text };
