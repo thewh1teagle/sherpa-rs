@@ -36,13 +36,7 @@ fn main() {
     let tokens_path = args().nth(5).expect("Missing tokens path argument");
 
     // Read the WAV file
-    let reader = hound::WavReader::open(&wav_path).expect("Failed to open WAV file");
-    let spec = reader.spec();
-    let sample_rate = spec.sample_rate;
-    let samples: Vec<f32> = reader
-        .into_samples::<i16>()
-        .map(|s| s.unwrap() as f32 / i16::MAX as f32)
-        .collect();
+    let (samples, sample_rate) = sherpa_rs::read_audio_file(&wav_path).unwrap();
 
     let config = sherpa_rs::zipformer::ZipFormerConfig {
         encoder: encoder_path.into(),

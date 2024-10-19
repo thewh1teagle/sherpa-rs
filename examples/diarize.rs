@@ -35,12 +35,7 @@ fn main() {
 
     let mut sd =
         sherpa_rs::diarize::Diarize::new(segment_model_path, embedding_model_path, config).unwrap();
-    let mut reader = hound::WavReader::open(wav_path).unwrap();
-
-    let samples: Vec<f32> = reader
-        .samples::<i16>()
-        .map(|s| s.unwrap() as f32 / i16::MAX as f32)
-        .collect();
+    let (samples, _) = sherpa_rs::read_audio_file(&wav_path).unwrap();
 
     let segments = sd
         .compute(samples, Some(Box::new(progress_callback)))

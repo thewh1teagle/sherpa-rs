@@ -18,6 +18,7 @@ fn main() {
     // Read audio data from the file
     let path = std::env::args().nth(1).expect("Missing file path argument");
     let (mut samples, sample_rate) = read_audio_file(&path).unwrap();
+    assert_eq!(sample_rate, 16000, "The sample rate must be 16000.");
 
     // Pad with 3 seconds of slience so vad will able to detect stop
     for _ in 0..3 * sample_rate {
@@ -109,7 +110,7 @@ fn main() {
             } else {
                 // Register a new speaker and add the embedding
                 let name = format!("speaker {}", speaker_counter);
-                embedding_manager.add(name.clone(), &mut embedding);
+                embedding_manager.add(name.clone(), &mut embedding).unwrap();
 
                 speaker_counter += 1;
                 name

@@ -141,7 +141,7 @@ impl TtsSample {
     pub fn write_to_wav(&self, filename: &str) -> Result<()> {
         let spec = WavSpec {
             channels: 1,
-            sample_rate: self.sample_rate as u32,
+            sample_rate: self.sample_rate,
             bits_per_sample: 32,
             sample_format: hound::SampleFormat::Float,
         };

@@ -11,17 +11,8 @@ cargo run --example language_id 16hz_mono_pcm_s16le.wav
 fn main() {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
 
-    let mut reader = hound::WavReader::open(file_path).unwrap();
-    let sample_rate = reader.spec().sample_rate;
-
-    if sample_rate != 16000 {
-        panic!("The sample rate must be 16000.");
-    }
-
-    let samples: Vec<f32> = reader
-        .samples::<i16>()
-        .map(|s| s.unwrap() as f32 / i16::MAX as f32)
-        .collect();
+    let (samples, sample_rate) = sherpa_rs::read_audio_file(&file_path).unwrap();
+    assert_eq!(sample_rate, 16000, "The sample rate must be 16000.");
 
     let config = sherpa_rs::language_id::SpokenLanguageIdConfig {
         encoder: "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),

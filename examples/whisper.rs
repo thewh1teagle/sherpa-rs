@@ -16,11 +16,7 @@ fn main() {
     let path = std::env::args().nth(1).expect("Missing file path argument");
     let provider = std::env::args().nth(2).unwrap_or("cpu".into());
     let (samples, sample_rate) = read_audio_file(&path).unwrap();
-
-    // Check if the sample rate is 16000
-    if sample_rate != 16000 {
-        panic!("The sample rate must be 16000.");
-    }
+    assert_eq!(sample_rate, 16000, "The sample rate must be 16000.");
 
     let config = WhisperConfig {
         decoder: "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),

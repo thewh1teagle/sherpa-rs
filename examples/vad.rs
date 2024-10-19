@@ -79,17 +79,8 @@ fn main() {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
     let max_speakers = 2;
 
-    let mut reader = hound::WavReader::open(file_path).unwrap();
-    let sample_rate = reader.spec().sample_rate;
-
-    if sample_rate != 16000 {
-        panic!("The sample rate must be 16000.");
-    }
-
-    let mut samples: Vec<f32> = reader
-        .samples::<i16>()
-        .map(|s| s.unwrap() as f32 / i16::MAX as f32)
-        .collect();
+    let (mut samples, sample_rate) = sherpa_rs::read_audio_file(&file_path).unwrap();
+    assert_eq!(sample_rate, 16000, "The sample rate must be 16000.");
 
     // Pad with 3 seconds of slience so vad will able to detect stop
     for _ in 0..3 * sample_rate {
