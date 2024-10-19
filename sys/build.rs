@@ -5,6 +5,23 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+#[cfg(all(feature = "download-binaries", feature = "cuda"))]
+compile_error!(
+    "Features 'download-binaries' and 'cuda' cannot be enabled simultaneously.\n\
+    If you wish to use the 'cuda' feature, disable the 'download-binaries' feature by setting `default-features = false` in Cargo.toml.\n\
+    Example:\n\
+    cargo build --features cuda --no-default-features"
+);
+
+#[cfg(all(feature = "download-binaries", feature = "directml"))]
+compile_error!(
+    "Features 'download-binaries' and 'directml' cannot be enabled simultaneously.\n\
+    If you wish to use the 'directml' feature, disable the 'download-binaries' feature by setting `default-features = false` in Cargo.toml.\n\
+    Example:\n\
+    cargo build --features directml --no-default-features"
+);
+
+
 #[path = "src/internal/dirs.rs"]
 mod dirs;
 use self::dirs::cache_dir;
@@ -107,7 +124,13 @@ fn extract_tbz(buf: &[u8], output: &Path) {
 }
 
 fn hard_link(src: PathBuf, dst: PathBuf) {
-    std::fs::hard_link(src, dst).unwrap();
+    match std::fs::hard_link(&src, &dst) {
+        Err(err) => {
+            debug_log!("Failed to hardlink {:?}. fallback to copy.", err);
+            fs::copy(src, dst).unwrap();
+        }
+        _ => {}
+    }
 }
 
 fn get_cargo_target_dir() -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
@@ -456,7 +479,11 @@ fn main() {
 
     // copy DLLs to target
     if is_dynamic {
-        let libs_assets = extract_lib_assets(&out_dir);
+        let mut libs_assets = extract_lib_assets(&out_dir);
+        if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
+            libs_assets.extend(extract_lib_assets(Path::new(&sherpa_lib_path)));
+        }
+
         for asset in libs_assets {
             let asset_clone = asset.clone();
             let filename = asset_clone.file_name().unwrap();
