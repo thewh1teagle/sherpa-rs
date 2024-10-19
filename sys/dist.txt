@@ -1,7 +1,7 @@
 # Dist table for prebuilt sherpa-onnx binaries
 # Indent with tabs (4).
-FEATURES	ARCH						URL																					                                    NAME											SHA256																SIZE(MB)
-none		x86_64-pc-windows-msvc		https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-win-x64-static.tar.bz2			sherpa-onnx-v1.10.28-win-x64-static				BECD2A21264C039AA59B7B71D6CD81F33FE732E73251C14391AF5F7E3AE604EA	128
-none		x86_64-unknown-linux-gnu	https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-linux-x64-static.tar.bz2			sherpa-onnx-v1.10.28-linux-x64-static			F93B03D9D9EFB866CE55802EBE4DE413A5FFC46577E42F1167FC17B90212057E	225
-none		aarch64-apple-darwin		https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-osx-universal2-static.tar.bz2		sherpa-onnx-v1.10.28-osx-universal2-static		15D6988A1AA2D32BB82CEE4C3AC13705F9EB606168919B6BBC69099D8100CC14	300
-none		x86_64-apple-darwin			https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-osx-universal2-static.tar.bz2		sherpa-onnx-v1.10.28-osx-universal2-static		15D6988A1AA2D32BB82CEE4C3AC13705F9EB606168919B6BBC69099D8100CC14	300
+FEATURES	ARCH						URL																					                                    NAME											SHA256																DYNAMIC     SIZE(MB)
+none		x86_64-pc-windows-msvc		https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-win-x64-static.tar.bz2			sherpa-onnx-v1.10.28-win-x64-static				BECD2A21264C039AA59B7B71D6CD81F33FE732E73251C14391AF5F7E3AE604EA	0           128
+none		x86_64-unknown-linux-gnu	https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-linux-x64-static.tar.bz2			sherpa-onnx-v1.10.28-linux-x64-static			F93B03D9D9EFB866CE55802EBE4DE413A5FFC46577E42F1167FC17B90212057E	0           225
+none		aarch64-apple-darwin		https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-osx-universal2-static.tar.bz2		sherpa-onnx-v1.10.28-osx-universal2-static		15D6988A1AA2D32BB82CEE4C3AC13705F9EB606168919B6BBC69099D8100CC14	0           300
+none		x86_64-apple-darwin			https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-osx-universal2-static.tar.bz2		sherpa-onnx-v1.10.28-osx-universal2-static		15D6988A1AA2D32BB82CEE4C3AC13705F9EB606168919B6BBC69099D8100CC14	0           300

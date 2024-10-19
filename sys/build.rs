@@ -48,6 +48,7 @@ struct Dist {
     url: String,
     sha256: String,
     name: String,
+    is_dynamic: bool,
 }
 
 fn find_dist(target: &str, feature_set: &str) -> Option<Dist> {
@@ -61,6 +62,7 @@ fn find_dist(target: &str, feature_set: &str) -> Option<Dist> {
             url: row[2].into(),
             name: row[3].into(),
             sha256: row[4].into(),
+            is_dynamic: row[5].trim() == "1",
         })
 }
 
@@ -145,16 +147,16 @@ fn copy_folder(src: &Path, dst: &Path) {
     }
 }
 
-fn extract_lib_names(out_dir: &Path, build_shared_libs: bool) -> Vec<String> {
+fn extract_lib_names(out_dir: &Path, dynamic: bool) -> Vec<String> {
     let lib_pattern = if cfg!(windows) {
         "*.lib"
     } else if cfg!(target_os = "macos") {
-        if build_shared_libs {
+        if dynamic {
             "*.dylib"
         } else {
             "*.a"
         }
-    } else if build_shared_libs {
+    } else if dynamic {
         "*.so"
     } else {
         "*.a"
@@ -252,7 +254,7 @@ fn main() {
     let sherpa_dst = out_dir.join("sherpa-onnx");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
-    let build_shared_libs = cfg!(feature = "directml") || cfg!(feature = "cuda");
+    let mut is_dynamic = !cfg!(feature = "directml") || !cfg!(feature = "cuda");
 
     // Rerun on these environment changes
     rerun_on_env_changes(&[
@@ -265,9 +267,9 @@ fn main() {
         "BUILD_DEBUG",
     ]);
 
-    let build_shared_libs = std::env::var("SHERPA_BUILD_SHARED_LIBS")
+    is_dynamic = std::env::var("SHERPA_BUILD_SHARED_LIBS")
         .map(|v| v == "1")
-        .unwrap_or(build_shared_libs);
+        .unwrap_or(is_dynamic);
     let profile = env::var("SHERPA_LIB_PROFILE").unwrap_or("Release".to_string());
     let static_crt = env::var("SHERPA_STATIC_CRT")
         .map(|v| v == "1")
@@ -277,7 +279,6 @@ fn main() {
     debug_log!("CARGO_MANIFEST_DIR: {}", manifest_dir);
     debug_log!("TARGET_DIR: {}", target_dir.display());
     debug_log!("OUT_DIR: {}", out_dir.display());
-    debug_log!("BUILD_SHARED: {}", build_shared_libs);
 
     // Prepare sherpa-onnx source
     if !sherpa_dst.exists() {
@@ -325,10 +326,7 @@ fn main() {
     config
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
         .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
-        .define(
-            "BUILD_SHARED_LIBS",
-            if build_shared_libs { "ON" } else { "OFF" },
-        )
+        .define("BUILD_SHARED_LIBS", if is_dynamic { "ON" } else { "OFF" })
         .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
         .define("SHERPA_ONNX_ENABLE_TTS", "OFF")
         .define("SHERPA_ONNX_BUILD_C_API_EXAMPLES", "OFF");
@@ -367,7 +365,7 @@ fn main() {
         .always_configure(false);
 
     let sherpa_libs: Vec<String>;
-    let sherpa_libs_kind = if build_shared_libs { "dylib" } else { "static" };
+    let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
 
     #[cfg(feature = "download-binaries")]
     {
@@ -391,11 +389,11 @@ fn main() {
                     "hash of downloaded Sherpa-ONNX Runtime binary does not match!"
                 );
                 extract_tbz(&downloaded_file, &cache_dir);
-                env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
             } else {
                 debug_log!("Skip fetch file. Using cache from {}", lib_dir.display());
-                env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
             }
+            env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
+            is_dynamic = dist.is_dynamic;
         } else {
             println!("cargo:warning=Failed to download binaries. fallback to manual build.");
         }
@@ -409,13 +407,13 @@ fn main() {
             "cargo:rustc-link-search={}",
             Path::new(&sherpa_lib_path).join("lib").display()
         );
-        sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), build_shared_libs);
+        sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), is_dynamic);
     } else {
         // Build with CMake
         let bindings_dir = config.build();
         println!("cargo:rustc-link-search={}", bindings_dir.display());
         // Link libraries
-        sherpa_libs = extract_lib_names(&out_dir, build_shared_libs);
+        sherpa_libs = extract_lib_names(&out_dir, is_dynamic);
     }
 
     // Search paths
@@ -457,7 +455,7 @@ fn main() {
     }
 
     // copy DLLs to target
-    if build_shared_libs {
+    if is_dynamic {
         let libs_assets = extract_lib_assets(&out_dir);
         for asset in libs_assets {
             let asset_clone = asset.clone();
