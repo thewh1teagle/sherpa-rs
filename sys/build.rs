@@ -414,9 +414,6 @@ fn main() {
         .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default
         .always_configure(false);
 
-    let sherpa_libs: Vec<String>;
-    let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
-
     #[cfg(feature = "download-binaries")]
     {
         // Try download sherpa libs and set SHERPA_LIB_PATH
@@ -448,6 +445,9 @@ fn main() {
             println!("cargo:warning=Failed to download binaries. fallback to manual build.");
         }
     }
+
+    let sherpa_libs: Vec<String>;
+    let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
 
     if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
         // Skip build if SHERPA_LIB_PATH specified
