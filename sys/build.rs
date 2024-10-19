@@ -397,7 +397,7 @@ fn main() {
                 env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
             }
         } else {
-            debug_log!("Failed to download binaries")
+            println!("cargo:warning=Failed to download binaries. fallback to manual build.");
         }
     }
 
