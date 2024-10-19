@@ -27,13 +27,15 @@ cargo run --example zipformer -- \
 */
 
 use sherpa_rs::zipformer::ZipFormer;
-use std::env::args;
 fn main() {
-    let wav_path = args().nth(1).expect("Missing wav file path argument");
-    let encoder_path = args().nth(2).expect("Missing encoder path argument");
-    let decoder_path = args().nth(3).expect("Missing decoder path argument");
-    let joiner_path = args().nth(4).expect("Missing joiner path argument");
-    let tokens_path = args().nth(5).expect("Missing tokens path argument");
+    let args: Vec<String> = std::env::args().collect();
+    let (wav_path, encoder_path, decoder_path, joiner_path, tokens_path) = (
+        args.get(1).expect("Missing wav file path argument"),
+        args.get(2).expect("Missing encoder path argument"),
+        args.get(3).expect("Missing decoder path argument"),
+        args.get(4).expect("Missing joiner path argument"),
+        args.get(5).expect("Missing tokens path argument"),
+    );
 
     // Read the WAV file
     let (samples, sample_rate) = sherpa_rs::read_audio_file(&wav_path).unwrap();

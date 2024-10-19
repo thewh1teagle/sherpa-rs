@@ -12,15 +12,14 @@ cargo run --example diarize ./sherpa-onnx-pyannote-segmentation-3-0/model.onnx .
 */
 
 fn main() {
-    let segment_model_path = std::env::args()
-        .nth(1)
-        .expect("Missing path argument for segmentation model");
-    let embedding_model_path = std::env::args()
-        .nth(2)
-        .expect("Missing path argument for embedding model");
-    let wav_path = std::env::args()
-        .nth(3)
-        .expect("Missing path argument for wav file");
+    let args: Vec<String> = std::env::args().collect();
+    let (segment_model_path, embedding_model_path, wav_path) = (
+        args.get(1)
+            .expect("Missing path argument for segmentation model"),
+        args.get(2)
+            .expect("Missing path argument for embedding model"),
+        args.get(3).expect("Missing path argument for wav file"),
+    );
 
     let config = sherpa_rs::diarize::DiarizeConfig {
         num_clusters: Some(5),
