@@ -28,7 +28,10 @@ Please disable tts feature when using static feature and downlaod-binaries. eg. 
 );
 
 #[path = "src/internal/mod.rs"]
+#[cfg(feature = "download-binaries")]
 mod internal;
+
+#[cfg(feature = "download-binaries")]
 use internal::dirs::cache_dir;
 
 const DIST_TABLE: &str = include_str!("dist.txt");
