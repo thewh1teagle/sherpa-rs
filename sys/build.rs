@@ -21,6 +21,12 @@ compile_error!(
     cargo build --features directml --no-default-features"
 );
 
+#[cfg(all(windows, feature = "static", feature = "download-binaries"))]
+compile_error!(
+    "cargo:warning=\
+Please disable tts feature when using static feature and downlaod-binaries. eg. cargo build --features static,download-binaries --no-default-features"
+);
+
 #[path = "src/internal/dirs.rs"]
 mod dirs;
 use self::dirs::cache_dir;
@@ -292,25 +298,17 @@ fn main() {
     println!("cargo:rerun-if-changed=dist.txt");
 
     // Show warning if static enabled on Linux without RUSTFLAGS
-    if cfg!(all(
-        feature = "static",
-        target_os = "linux",
-        target_arch = "x86_64"
-    )) && !env::var("RUSTFLAGS")
-        .unwrap_or_default()
-        .contains("relocation-model=dynamic-no-pic")
+    #[cfg(all(feature = "static", target_os = "linux", target_arch = "x86_64", feature = "download-binaries"))]
     {
-        println!(
-            "cargo:warning=\
-        Please enable the following environment variable when static feature enabled on Linux: RUSTFLAGS=\"-C relocation-model=dynamic-no-pic\""
-        )
-    }
-
-    if cfg!(all(windows, feature = "static", feature = "download-binaries")) {
-        println!(
-            "cargo:warning=\
-        Please disable tts feature when using static feature and downlaod-binaries. eg. cargo build --features static,download-binaries --no-default-features"
-        )
+        if !env::var("RUSTFLAGS")
+            .unwrap_or_default()
+            .contains("relocation-model=dynamic-no-pic")
+        {
+            panic!(
+                "cargo:warning=\
+            Please enable the following environment variable when static feature enabled on Linux: RUSTFLAGS=\"-C relocation-model=dynamic-no-pic\""
+            )
+        }
     }
 
     // Rerun on these environment changes
