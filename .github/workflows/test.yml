@@ -39,15 +39,15 @@ jobs:
             options: ""
 
           - platform: "windows-latest" # Windows Cuda
-            options: '--features "cuda"'
+            options: '--features "cuda" --no-default-features'
             cuda-version: "12.5.0"
 
           - platform: "windows-latest" # Windows Cuda
-            options: '--features "cuda"'
+            options: '--features "cuda" --no-default-features'
             cuda-version: "11.8.0"
 
           - platform: "windows-latest" # Windows DirectML
-            options: '--features "directml"'
+            options: '--features "directml" --no-default-features'
           - platform: "ubuntu-22.04" # Linux Cuda
             options: '--features "cuda"'
             cuda-version: "12.4.1"
@@ -87,11 +87,6 @@ jobs:
       - name: Build
         run: |
           cargo build ${{ matrix.options }} ${{ github.event.inputs.cargo_args }}
-
-      - name: Modify shared libraries path
-        if: contains(matrix.platform, 'ubuntu') && contains(matrix.options, 'cuda')
-        run: |
-          echo "LD_LIBRARY_PATH=$PWD/target/debug:$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
       - name: Test Whisper
         # Github actions doesn't have Nvidia GPUs
