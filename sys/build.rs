@@ -27,9 +27,9 @@ compile_error!(
 Please disable tts feature when using static feature and downlaod-binaries. eg. cargo build --features static,download-binaries --no-default-features"
 );
 
-#[path = "src/internal/dirs.rs"]
-mod dirs;
-use self::dirs::cache_dir;
+#[path = "src/internal/mod.rs"]
+mod internal;
+use internal::dirs::cache_dir;
 
 const DIST_TABLE: &str = include_str!("dist.txt");
 
