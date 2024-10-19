@@ -1,4 +1,4 @@
-use crate::{cstr, get_default_provider};
+use crate::{cstr, free_cstr, get_default_provider};
 use eyre::{bail, Result};
 use std::path::Path;
 
@@ -58,27 +58,39 @@ impl Diarize {
             threshold: config.threshold.unwrap_or(0.5),
         };
 
+        let embedding_model_ptr = cstr!(embedding_model);
+        let provider_ptr = cstr!(provider.clone());
+        let segmentation_model_ptr = cstr!(segmentation_model);
+
         let config = sherpa_rs_sys::SherpaOnnxOfflineSpeakerDiarizationConfig {
             embedding: sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig {
-                model: cstr!(embedding_model).into_raw(),
+                model: embedding_model_ptr,
                 num_threads: 1,
                 debug,
-                provider: cstr!(provider.clone()).into_raw(),
+                provider: provider_ptr,
             },
             clustering: clustering_config,
             min_duration_off: config.min_duration_off.unwrap_or(0.0),
             min_duration_on: config.min_duration_on.unwrap_or(0.0),
             segmentation: sherpa_rs_sys::SherpaOnnxOfflineSpeakerSegmentationModelConfig {
                 pyannote: sherpa_rs_sys::SherpaOnnxOfflineSpeakerSegmentationPyannoteModelConfig {
-                    model: cstr!(segmentation_model).into_raw(),
+                    model: segmentation_model_ptr,
                 },
                 num_threads: 1,
                 debug,
-                provider: cstr!(provider.clone()).into_raw(),
+                provider: provider_ptr,
             },
         };
 
         let sd = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineSpeakerDiarization(&config) };
+
+        // Free the C strings after use to avoid memory leaks
+        unsafe {
+            free_cstr!(embedding_model_ptr);
+            free_cstr!(provider_ptr);
+            free_cstr!(segmentation_model_ptr);
+        };
+
         if sd.is_null() {
             bail!("Failed to initialize offline speaker diarization")
         }

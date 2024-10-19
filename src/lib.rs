@@ -46,7 +46,19 @@ pub fn read_audio_file(path: &str) -> Result<(u32, Vec<f32>)> {
 #[macro_export]
 macro_rules! cstr {
     ($s:expr) => {
-        std::ffi::CString::new($s).expect("Failed to create CString")
+        std::ffi::CString::new($s)
+            .expect("Failed to create CString")
+            .into_raw()
+    };
+}
+
+#[macro_export]
+macro_rules! free_cstr {
+    ($ptr:expr) => {
+        if !$ptr.is_null() {
+            // Reclaim the CString to ensure it gets dropped and its memory is freed
+            let _ = std::ffi::CString::from_raw($ptr as *mut i8);
+        }
     };
 }
 

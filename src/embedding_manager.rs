@@ -1,4 +1,4 @@
-use crate::{cstr, cstr_to_string};
+use crate::{cstr, cstr_to_string, free_cstr};
 use eyre::{bail, Result};
 
 #[derive(Debug, Clone)]
@@ -67,12 +67,14 @@ impl EmbeddingManager {
     }
 
     pub fn add(&mut self, name: String, embedding: &mut [f32]) -> Result<()> {
+        let name_ptr = cstr!(name.clone());
         unsafe {
             let status = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerAdd(
                 self.manager,
-                cstr!(name.clone()).into_raw(),
+                name_ptr,
                 embedding.as_mut_ptr(),
             );
+            free_cstr!(name_ptr);
             if status.is_negative() {
                 bail!("Failed to register {}", name)
             }

@@ -1,4 +1,4 @@
-use crate::{cstr, cstr_to_string, get_default_provider};
+use crate::{cstr, cstr_to_string, free_cstr, get_default_provider};
 use eyre::{bail, Result};
 
 #[derive(Debug)]
@@ -19,19 +19,28 @@ impl SpokenLanguageId {
     pub fn new(config: SpokenLanguageIdConfig) -> Self {
         let debug = config.debug.unwrap_or_default().into();
 
+        let decoder_ptr = cstr!(config.decoder);
+        let encoder_ptr = cstr!(config.encoder);
+        let provider_ptr = cstr!(config.provider.unwrap_or(get_default_provider()));
+
         let whisper = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationWhisperConfig {
-            decoder: cstr!(config.decoder).into_raw(),
-            encoder: cstr!(config.encoder).into_raw(),
+            decoder: decoder_ptr,
+            encoder: encoder_ptr,
             tail_paddings: 0,
         };
         let sherpa_config = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationConfig {
             debug,
             num_threads: config.num_threads.unwrap_or(1),
-            provider: cstr!(config.provider.unwrap_or(get_default_provider())).into_raw(),
+            provider: provider_ptr,
             whisper,
         };
         let slid =
             unsafe { sherpa_rs_sys::SherpaOnnxCreateSpokenLanguageIdentification(&sherpa_config) };
+        unsafe {
+            free_cstr!(decoder_ptr);
+            free_cstr!(encoder_ptr);
+            free_cstr!(provider_ptr);
+        };
         Self { slid }
     }
 

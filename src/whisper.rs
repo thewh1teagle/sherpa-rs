@@ -1,4 +1,4 @@
-use crate::{cstr, cstr_to_string, get_default_provider};
+use crate::{cstr, cstr_to_string, free_cstr, get_default_provider};
 use eyre::{bail, Result};
 use std::ptr::null;
 
@@ -42,49 +42,56 @@ impl Default for WhisperConfig {
 
 impl WhisperRecognizer {
     pub fn new(config: WhisperConfig) -> Result<Self> {
-        let decoder_c = cstr!(config.decoder);
-        let encoder_c = cstr!(config.encoder);
-        let language_c = cstr!(config.language);
-        let task_c = cstr!("transcribe".to_string());
-        let tail_paddings = 0;
-        let tokens_c = cstr!(config.tokens);
-
-        let debug = config.debug.unwrap_or_default();
-        let debug = if debug { 1 } else { 0 };
+        let debug = if config.debug.unwrap_or_default() {
+            1
+        } else {
+            0
+        };
         let provider = config.provider.unwrap_or(get_default_provider());
-        let provider_c = cstr!(provider);
+
+        // Onnx
+        let provider_ptr = cstr!(provider);
         let num_threads = config.num_threads.unwrap_or(2);
-        let bpe_vocab = config.bpe_vocab.unwrap_or("".into());
-        let bpe_vocab_c = cstr!(bpe_vocab);
+
+        // Whisper
+        let bpe_vocab_ptr = cstr!(config.bpe_vocab.unwrap_or("".into()));
+        let tail_paddings = 0;
+        let decoder_ptr = cstr!(config.decoder);
+        let encoder_ptr = cstr!(config.encoder);
+        let language_ptr = cstr!(config.language);
+        let task_ptr = cstr!("transcribe");
+        let tokens_ptr = cstr!(config.tokens);
+        let decoding_method_ptr = cstr!("greedy_search");
+        // Sense voice
+        let sense_voice_model_ptr = cstr!("");
+        let sense_voice_language_ptr = cstr!("");
 
         let whisper = sherpa_rs_sys::SherpaOnnxOfflineWhisperModelConfig {
-            decoder: decoder_c.into_raw(),
-            encoder: encoder_c.into_raw(),
-            language: language_c.into_raw(),
-            task: task_c.into_raw(),
+            decoder: decoder_ptr,
+            encoder: encoder_ptr,
+            language: language_ptr,
+            task: task_ptr,
             tail_paddings,
         };
 
-        let sense_voice_model_c = cstr!("".to_string());
-        let sense_voice_language_c = cstr!("".to_string());
         let sense_voice = sherpa_rs_sys::SherpaOnnxOfflineSenseVoiceModelConfig {
-            model: sense_voice_model_c.into_raw(),
-            language: sense_voice_language_c.into_raw(),
+            model: sense_voice_model_ptr,
+            language: sense_voice_language_ptr,
             use_itn: 0,
         };
 
         let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
-            bpe_vocab: bpe_vocab_c.into_raw(),
+            bpe_vocab: bpe_vocab_ptr,
             debug,
             model_type: null(),
             modeling_unit: null(),
             nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig { model: null() },
             num_threads,
             paraformer: sherpa_rs_sys::SherpaOnnxOfflineParaformerModelConfig { model: null() },
-            provider: provider_c.into_raw(),
+            provider: provider_ptr,
             tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
             telespeech_ctc: null(),
-            tokens: tokens_c.into_raw(),
+            tokens: tokens_ptr,
             transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
                 encoder: null(),
                 decoder: null(),
@@ -95,7 +102,7 @@ impl WhisperRecognizer {
         };
 
         let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
-            decoding_method: cstr!("greedy_search").into_raw(), // greedy_search, modified_beam_search
+            decoding_method: decoding_method_ptr, // greedy_search, modified_beam_search
             feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
                 sample_rate: 16000,
                 feature_dim: 512,
@@ -114,6 +121,20 @@ impl WhisperRecognizer {
         };
 
         let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };
+
+        unsafe {
+            free_cstr!(provider_ptr);
+            free_cstr!(bpe_vocab_ptr);
+            free_cstr!(decoder_ptr);
+            free_cstr!(encoder_ptr);
+            free_cstr!(language_ptr);
+            free_cstr!(task_ptr);
+            free_cstr!(sense_voice_model_ptr);
+            free_cstr!(sense_voice_language_ptr);
+            free_cstr!(tokens_ptr);
+            free_cstr!(decoding_method_ptr);
+        };
+
         if recognizer.is_null() {
             bail!("Failed to create recognizer")
         }

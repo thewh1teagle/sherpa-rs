@@ -1,6 +1,6 @@
 use eyre::{bail, Result};
 
-use crate::{cstr, cstr_to_string, get_default_provider};
+use crate::{cstr, cstr_to_string, free_cstr, get_default_provider};
 
 #[derive(Debug, Default, Clone)]
 pub struct AudioTagConfig {
@@ -21,29 +21,41 @@ pub struct AudioTag {
 impl AudioTag {
     pub fn new(config: AudioTagConfig) -> Result<Self> {
         let config_clone = config.clone();
+
+        let model_ptr = cstr!(config.model);
+        let ced_ptr = cstr!(config.ced.unwrap_or_default());
+        let labels_ptr = cstr!(config.labels);
+        let provider_ptr = cstr!(config.provider.unwrap_or(get_default_provider()));
+
         let sherpa_config = sherpa_rs_sys::SherpaOnnxAudioTaggingConfig {
             model: sherpa_rs_sys::SherpaOnnxAudioTaggingModelConfig {
                 zipformer: sherpa_rs_sys::SherpaOnnxOfflineZipformerAudioTaggingModelConfig {
-                    model: cstr!(config.model).into_raw(),
+                    model: model_ptr,
                 },
-                ced: cstr!(config.ced.unwrap_or_default()).into_raw(),
+                ced: ced_ptr,
                 num_threads: config.num_threads.unwrap_or(1),
                 debug: config.debug.unwrap_or_default().into(),
-                provider: cstr!(config.provider.unwrap_or(get_default_provider())).into_raw(),
+                provider: provider_ptr,
             },
-            labels: cstr!(config.labels).into_raw(),
+            labels: labels_ptr,
             top_k: config.top_k,
         };
+        let audio_tag = unsafe { sherpa_rs_sys::SherpaOnnxCreateAudioTagging(&sherpa_config) };
+
         unsafe {
-            let audio_tag = sherpa_rs_sys::SherpaOnnxCreateAudioTagging(&sherpa_config);
-            if audio_tag.is_null() {
-                bail!("Failed to create audio tagging")
-            }
-            Ok(Self {
-                audio_tag,
-                config: config_clone,
-            })
+            free_cstr!(model_ptr);
+            free_cstr!(ced_ptr);
+            free_cstr!(labels_ptr);
+            free_cstr!(provider_ptr);
         }
+
+        if audio_tag.is_null() {
+            bail!("Failed to create audio tagging")
+        }
+        Ok(Self {
+            audio_tag,
+            config: config_clone,
+        })
     }
 
     pub fn compute(&mut self, samples: Vec<f32>, sample_rate: u32) -> Vec<String> {
