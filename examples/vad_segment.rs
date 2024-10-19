@@ -5,16 +5,15 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_v
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
 cargo run --example vad_segment motivation.wav
 */
-use eyre::{bail, Result};
 use sherpa_rs::vad::{Vad, VadConfig};
 
-fn main() -> Result<()> {
+fn main() {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
-    let mut reader = hound::WavReader::open(file_path)?;
+    let mut reader = hound::WavReader::open(file_path).unwrap();
     let sample_rate = reader.spec().sample_rate;
 
     if sample_rate != 16000 {
-        bail!("The sample rate must be 16000.");
+        panic!("The sample rate must be 16000.");
     }
 
     let mut samples: Vec<f32> = reader
@@ -44,5 +43,4 @@ fn main() -> Result<()> {
         }
         samples = samples[window_size..].to_vec(); // Move the remaining samples to the next iteration
     }
-    Ok(())
 }

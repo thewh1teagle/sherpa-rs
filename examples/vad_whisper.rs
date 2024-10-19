@@ -8,18 +8,16 @@ tar xvf sherpa-onnx-whisper-tiny.tar.bz2
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/sam_altman.wav -O sam_altman.wav
 cargo run --example vad_whisper sam_altman.wav
 */
-
-use eyre::Result;
 use sherpa_rs::{
     embedding_manager, read_audio_file, speaker_id,
     vad::{Vad, VadConfig},
     whisper::{WhisperConfig, WhisperRecognizer},
 };
 
-fn main() -> Result<()> {
+fn main() {
     // Read audio data from the file
     let path = std::env::args().nth(1).expect("Missing file path argument");
-    let (mut samples, sample_rate) = read_audio_file(&path)?;
+    let (mut samples, sample_rate) = read_audio_file(&path).unwrap();
 
     // Pad with 3 seconds of slience so vad will able to detect stop
     for _ in 0..3 * sample_rate {
@@ -66,14 +64,15 @@ fn main() -> Result<()> {
                 let transcript = recognizer.transcribe(sample_rate as u32, segment.samples.clone());
 
                 // Compute the speaker embedding
-                let mut embedding =
-                    extractor.compute_speaker_embedding(segment.samples, sample_rate)?;
+                let mut embedding = extractor
+                    .compute_speaker_embedding(segment.samples, sample_rate)
+                    .unwrap();
                 let name = if let Some(speaker_name) = embedding_manager.search(&embedding, 0.4) {
                     speaker_name
                 } else {
                     // Register a new speaker and add the embedding
                     let name = format!("speaker {}", speaker_counter);
-                    embedding_manager.add(name.clone(), &mut embedding)?;
+                    embedding_manager.add(name.clone(), &mut embedding).unwrap();
 
                     speaker_counter += 1;
                     name
@@ -101,15 +100,16 @@ fn main() -> Result<()> {
             let transcript = recognizer.transcribe(sample_rate as u32, segment.samples.clone());
 
             // Compute the speaker embedding
-            let mut embedding =
-                extractor.compute_speaker_embedding(segment.samples, sample_rate)?;
+            let mut embedding = extractor
+                .compute_speaker_embedding(segment.samples, sample_rate)
+                .unwrap();
 
             let name = if let Some(speaker_name) = embedding_manager.search(&embedding, 0.4) {
                 speaker_name
             } else {
                 // Register a new speaker and add the embedding
                 let name = format!("speaker {}", speaker_counter);
-                embedding_manager.add(name.clone(), &mut embedding)?;
+                embedding_manager.add(name.clone(), &mut embedding);
 
                 speaker_counter += 1;
                 name
@@ -124,5 +124,4 @@ fn main() -> Result<()> {
             vad.pop();
         }
     }
-    Ok(())
 }

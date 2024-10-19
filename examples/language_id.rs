@@ -8,17 +8,14 @@ wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/16hz_mon
 cargo run --example language_id 16hz_mono_pcm_s16le.wav
 */
 
-use eyre::{bail, Result};
-use sherpa_rs::language_id;
-
-fn main() -> Result<()> {
+fn main() {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
 
-    let mut reader = hound::WavReader::open(file_path)?;
+    let mut reader = hound::WavReader::open(file_path).unwrap();
     let sample_rate = reader.spec().sample_rate;
 
     if sample_rate != 16000 {
-        bail!("The sample rate must be 16000.");
+        panic!("The sample rate must be 16000.");
     }
 
     let samples: Vec<f32> = reader
@@ -26,15 +23,13 @@ fn main() -> Result<()> {
         .map(|s| s.unwrap() as f32 / i16::MAX as f32)
         .collect();
 
-    let config = language_id::SpokenLanguageIdConfig {
+    let config = sherpa_rs::language_id::SpokenLanguageIdConfig {
         encoder: "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
         decoder: "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),
         ..Default::default()
     };
-    let mut extractor = language_id::SpokenLanguageId::new(config);
+    let mut extractor = sherpa_rs::language_id::SpokenLanguageId::new(config);
 
-    let language = extractor.compute(samples, sample_rate)?;
+    let language = extractor.compute(samples, sample_rate).unwrap();
     println!("Spoken language: {}", language);
-
-    Ok(())
 }

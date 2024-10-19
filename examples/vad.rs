@@ -6,8 +6,6 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
 cargo run --example vad motivation.wav
 */
-
-use eyre::{bail, Result};
 use sherpa_rs::{
     embedding_manager, speaker_id,
     vad::{Vad, VadConfig},
@@ -50,14 +48,16 @@ fn process_speech_segment(
     extractor: &mut speaker_id::EmbeddingExtractor,
     speaker_counter: &mut i32,
     max_speakers: i32,
-) -> Result<()> {
+) {
     while !vad.is_empty() {
         let segment = vad.front();
         let start_sec = (segment.start as f32) / sample_rate as f32;
         let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
 
         // Compute the speaker embedding
-        let mut embedding = extractor.compute_speaker_embedding(segment.samples, sample_rate)?;
+        let mut embedding = extractor
+            .compute_speaker_embedding(segment.samples, sample_rate)
+            .unwrap();
 
         let name = get_speaker_name(
             &mut embedding_manager,
@@ -73,18 +73,17 @@ fn process_speech_segment(
         );
         vad.pop();
     }
-    Ok(())
 }
 
-fn main() -> Result<()> {
+fn main() {
     let file_path = std::env::args().nth(1).expect("Missing file path argument");
     let max_speakers = 2;
 
-    let mut reader = hound::WavReader::open(file_path)?;
+    let mut reader = hound::WavReader::open(file_path).unwrap();
     let sample_rate = reader.spec().sample_rate;
 
     if sample_rate != 16000 {
-        bail!("The sample rate must be 16000.");
+        panic!("The sample rate must be 16000.");
     }
 
     let mut samples: Vec<f32> = reader
@@ -128,7 +127,7 @@ fn main() -> Result<()> {
                     &mut extractor,
                     &mut speaker_counter,
                     max_speakers,
-                )?;
+                );
             }
         }
 
@@ -144,8 +143,6 @@ fn main() -> Result<()> {
             &mut extractor,
             &mut speaker_counter,
             max_speakers,
-        )?;
+        );
     }
-
-    Ok(())
 }

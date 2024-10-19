@@ -7,21 +7,19 @@ wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivati
 cargo run --example whisper motivation.wav
 */
 
-use eyre::{bail, Result};
 use sherpa_rs::{
     read_audio_file,
     whisper::{WhisperConfig, WhisperRecognizer},
 };
-use std::time::Instant;
 
-fn main() -> Result<()> {
+fn main() {
     let path = std::env::args().nth(1).expect("Missing file path argument");
     let provider = std::env::args().nth(2).unwrap_or("cpu".into());
-    let (samples, sample_rate) = read_audio_file(&path)?;
+    let (samples, sample_rate) = read_audio_file(&path).unwrap();
 
     // Check if the sample rate is 16000
     if sample_rate != 16000 {
-        bail!("The sample rate must be 16000.");
+        panic!("The sample rate must be 16000.");
     }
 
     let config = WhisperConfig {
@@ -37,9 +35,8 @@ fn main() -> Result<()> {
 
     let mut recognizer = WhisperRecognizer::new(config).unwrap();
 
-    let start_t = Instant::now();
+    let start_t = std::time::Instant::now();
     let result = recognizer.transcribe(sample_rate as u32, samples);
     println!("✅ Text: {}", result.text);
     println!("⏱️ Time taken for transcription: {:?}", start_t.elapsed());
-    Ok(())
 }

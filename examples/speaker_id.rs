@@ -6,11 +6,10 @@ wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/biden.wa
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/obama.wav -O obama.wav
 cargo run --example speaker_id
 */
-use eyre::{bail, Result};
 use sherpa_rs::{embedding_manager, speaker_id};
 use std::collections::HashMap;
 
-fn main() -> Result<()> {
+fn main() {
     // Define paths to the audio files
     let audio_files = vec!["obama.wav", "biden.wav"];
 
@@ -18,21 +17,23 @@ fn main() -> Result<()> {
         model: "nemo_en_speakerverification_speakernet.onnx".into(),
         ..Default::default()
     };
-    let mut extractor = speaker_id::EmbeddingExtractor::new(config)?;
+    let mut extractor = speaker_id::EmbeddingExtractor::new(config).unwrap();
 
     // Read and process each audio file, compute embeddings
     let mut embeddings = Vec::new();
     for file in &audio_files {
-        let mut reader = hound::WavReader::open(file)?;
+        let mut reader = hound::WavReader::open(file).unwrap();
         let samples: Vec<f32> = reader
             .samples::<i16>()
             .map(|s| s.unwrap() as f32 / i16::MAX as f32)
             .collect();
         let sample_rate = reader.spec().sample_rate;
         if sample_rate != 16000 {
-            bail!("The sample rate must be 16000.");
+            panic!("The sample rate must be 16000.");
         }
-        let embedding = extractor.compute_speaker_embedding(samples, sample_rate)?;
+        let embedding = extractor
+            .compute_speaker_embedding(samples, sample_rate)
+            .unwrap();
         embeddings.push((file.to_string(), embedding));
     }
 
@@ -54,10 +55,12 @@ fn main() -> Result<()> {
                 .push(file.clone());
         } else {
             // Register a new speaker and add the embedding
-            embedding_manager.add(
-                format!("speaker {}", speaker_counter),
-                &mut embedding.clone(),
-            )?;
+            embedding_manager
+                .add(
+                    format!("speaker {}", speaker_counter),
+                    &mut embedding.clone(),
+                )
+                .unwrap();
             speaker_map
                 .entry(format!("speaker {}", speaker_counter))
                 .or_default()
@@ -72,6 +75,4 @@ fn main() -> Result<()> {
     for (speaker_id, files) in &speaker_map {
         println!("Speaker {}: {:?}", speaker_id, files);
     }
-
-    Ok(())
 }
