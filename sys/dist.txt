@@ -2,7 +2,7 @@
 # Features alphabet, comma separated
 # Indent with tabs (4).
 
-FEATURES	        ARCH						URL																					                                    NAME											SHA256																DYNAMIC     SIZE(MB)
+# FEATURES	        ARCH						URL																					                                    NAME											SHA256																DYNAMIC     SIZE(MB)
 # Windows MSVC
 static		        x86_64-pc-windows-msvc		https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-win-x64-static.tar.bz2			sherpa-onnx-v1.10.28-win-x64-static				BECD2A21264C039AA59B7B71D6CD81F33FE732E73251C14391AF5F7E3AE604EA	0           128
 none		        x86_64-pc-windows-msvc		https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.10.28/sherpa-onnx-v1.10.28-win-x64-shared.tar.bz2			sherpa-onnx-v1.10.28-win-x64-shared				20849F9A77D30B68A4323B462DB3E39ABE6A0F879BBBA2529D60D5E0D8143E13	1           19

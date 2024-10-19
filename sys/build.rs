@@ -81,11 +81,17 @@ fn get_feature_set() -> String {
 }
 
 fn find_dist(target: &str, feature_set: &str) -> Option<Dist> {
-    DIST_TABLE
+    let table_content = DIST_TABLE
         .split('\n')
-        .skip(1) // Skip headers
-        .filter(|l| !l.is_empty() && !l.starts_with('#'))
-        .map(|l| l.split_whitespace().collect::<Vec<_>>())
+        .skip(5)
+        .filter(|l| !l.is_empty() && !l.starts_with('#')); // Skip headers
+    debug_log!(
+        "table content: {:?}",
+        table_content.clone().collect::<String>()
+    );
+    let mut table = table_content.map(|l| l.split_whitespace().collect::<Vec<_>>());
+
+    table
         .find(|row| row[0] == feature_set && row[1] == target)
         .map(|row| Dist {
             url: row[2].into(),
@@ -296,7 +302,14 @@ fn main() {
     {
         println!(
             "cargo:warning=\
-        Please enable the following environment variable when static feature enabled on Linux: export RUSTFLAGS=\"-C relocation-model=dynamic-no-pic\""
+        Please enable the following environment variable when static feature enabled on Linux: RUSTFLAGS=\"-C relocation-model=dynamic-no-pic\""
+        )
+    }
+
+    if cfg!(all(windows, feature = "static", feature = "download-binaries")) {
+        println!(
+            "cargo:warning=\
+        Please disable tts feature when using static feature and downlaod-binaries. eg. cargo build --features static,download-binaries --no-default-features"
         )
     }
 
