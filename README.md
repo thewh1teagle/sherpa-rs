@@ -12,6 +12,7 @@ Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 - Speaker diarization
 - Speech to text
 - Text to speech
+- Text punctuation
 - Voice activity detection
 - Audio tagging
 
