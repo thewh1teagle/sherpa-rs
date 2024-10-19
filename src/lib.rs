@@ -2,6 +2,7 @@ pub mod audio_tag;
 pub mod diarize;
 pub mod embedding_manager;
 pub mod language_id;
+pub mod punctuation;
 pub mod speaker_id;
 pub mod vad;
 pub mod whisper;

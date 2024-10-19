@@ -16,3 +16,4 @@ sherpa-onnx-v*
 jniLibs
 sys/src/bindings.rs
 !sys/dist.txt
+sherpa-onnx-punct*
