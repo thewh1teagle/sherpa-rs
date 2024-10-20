@@ -18,3 +18,4 @@ sys/src/bindings.rs
 !sys/dist.txt
 sherpa-onnx-punct*
 vits-*
+sherpa-onnx-kws-*
