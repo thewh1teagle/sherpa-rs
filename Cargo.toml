@@ -31,6 +31,7 @@ clap = { version = "4.5.8", features = ["derive"] }
 default = ["download-binaries", "tts"]
 download-binaries = ["sherpa-rs-sys/download-binaries"]
 static = ["sherpa-rs-sys/static"]
+sys = []
 tts = ["sherpa-rs-sys/tts"]
 cuda = ["sherpa-rs-sys/cuda"]
 directml = ["sherpa-rs-sys/directml"]

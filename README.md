@@ -39,6 +39,7 @@ Please see [BUILDING.md](BUILDING.md).
 - `tts`: enable TTS
 - `download-binaries`: use prebuilt sherpa-onnx libraries for faster builds. cached.
 - `static`: use static sherpa-onnx libraries and link them statically.
+- `sys`: expose raw c bindings (sys crate)
 
 ## Docs
 
