@@ -47,3 +47,7 @@ See [sherpa/intro.html](https://k2-fsa.github.io/sherpa/intro.html)
 ## Examples
 
 See [examples](examples)
+
+## Models
+
+All pretrained models available at [sherpa/onnx/pretrained_models](https://k2-fsa.github.io/sherpa/onnx/pretrained_models/index.html)
