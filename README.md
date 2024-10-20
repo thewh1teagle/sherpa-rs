@@ -15,6 +15,7 @@ Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 - Text punctuation
 - Voice activity detection
 - Audio tagging
+- Keyword spotting
 
 ## Supported Platforms
 
