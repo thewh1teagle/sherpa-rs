@@ -13,6 +13,9 @@ mod utils;
 #[cfg(feature = "tts")]
 pub mod tts;
 
+#[cfg(feature = "sys")]
+pub use sherpa_rs_sys;
+
 use eyre::{bail, Result};
 
 pub fn get_default_provider() -> String {
