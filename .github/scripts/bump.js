@@ -20,12 +20,12 @@ function inc(version) {
     : semver.inc(version, "patch");
 }
 
-function replaceLineWith(content, startsWith, original, replace) {
+function replaceLineWith(content, { startsWith, value, replaceValue }) {
   return content
     .split("\n")
     .map((line) =>
       startsWith.some((c) => line.includes(c))
-        ? line.replace(original, replace)
+        ? line.replace(value, replaceValue)
         : line
     )
     .join("\n");
@@ -35,12 +35,11 @@ async function bumpCrate(path) {
   var content = await readFile(path);
   var config = Bun.TOML.parse(content);
   var version = config.package.version;
-  var content = replaceLineWith(
-    content.toString(),
-    ["sherpa-rs-sys", "version ="],
-    version,
-    inc(version)
-  );
+  var content = replaceLineWith(content.toString(), {
+    value: version,
+    replaceValue: inc(version),
+    startsWith: ["sherpa-rs-sys", "version ="],
+  });
   await writeFile(path, content);
 }
 
