@@ -48,6 +48,9 @@ struct Args {
     lexicon: Option<String>,
 
     #[arg(long)]
+    tts_rule_fsts: Option<String>,
+
+    #[arg(long)]
     sid: Option<i32>,
 
     #[arg(long)]
@@ -85,6 +88,7 @@ fn main() {
     let tts_config = sherpa_rs::tts::OfflineTtsConfig {
         model: args.model,
         max_num_sentences,
+        rule_fsts: args.tts_rule_fsts.unwrap_or_default(),
         ..Default::default()
     };
     let mut tts = sherpa_rs::tts::OfflineTts::new(tts_config, vits_config);
