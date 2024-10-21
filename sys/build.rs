@@ -5,7 +5,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-#[cfg(all(feature = "download-binaries", feature = "cuda"))]
+#[cfg(all(
+    feature = "download-binaries",
+    feature = "cuda",
+    any(target_os = "windows", target_os = "linux")
+))]
 compile_error!(
     "Features 'download-binaries' and 'cuda' cannot be enabled simultaneously.\n\
     If you wish to use the 'cuda' feature, disable the 'download-binaries' feature by setting `default-features = false` in Cargo.toml.\n\
@@ -13,7 +17,11 @@ compile_error!(
     cargo build --features cuda --no-default-features"
 );
 
-#[cfg(all(feature = "download-binaries", feature = "directml"))]
+#[cfg(all(
+    feature = "download-binaries",
+    feature = "directml",
+    any(target_os = "windows")
+))]
 compile_error!(
     "Features 'download-binaries' and 'directml' cannot be enabled simultaneously.\n\
     If you wish to use the 'directml' feature, disable the 'download-binaries' feature by setting `default-features = false` in Cargo.toml.\n\
