@@ -4,8 +4,7 @@
             "name": "Mac",
             "includePath": [
                 "${default}",
-                "${workspaceFolder}/sys/sherpa-onnx",
-                "${workspaceFolder}/sys/sherpa-onnx/build/_deps/**"
+                "${workspaceFolder}/sys"
             ],
             "defines": [],
             "macFrameworkPath": [

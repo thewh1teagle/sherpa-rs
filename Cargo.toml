@@ -21,7 +21,7 @@ keywords = [
 [dependencies]
 eyre = "0.6.12"
 hound = { version = "3.5.1" }
-sherpa-rs-sys = { path = "sys", version = "0.5.1-beta.0" }
+sherpa-rs-sys = { path = "sys", version = "0.5.1-beta.0", default-features = false }
 tracing = "0.1.40"
 
 [dev-dependencies]

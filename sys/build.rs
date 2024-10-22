@@ -5,34 +5,43 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+// Prebuilt sherpa-onnx doesn't have Cuda support
 #[cfg(all(
+    any(target_os = "windows", target_os = "linux"),
     feature = "download-binaries",
-    feature = "cuda",
-    any(target_os = "windows", target_os = "linux")
+    feature = "cuda"
 ))]
 compile_error!(
-    "Features 'download-binaries' and 'cuda' cannot be enabled simultaneously.\n\
-    If you wish to use the 'cuda' feature, disable the 'download-binaries' feature by setting `default-features = false` in Cargo.toml.\n\
-    Example:\n\
-    cargo build --features cuda --no-default-features"
+    "The 'download-binaries' and 'cuda' features cannot be enabled at the same time.\n\
+    To resolve this, please disable the 'download-binaries' feature when using 'cuda'.\n\
+    For example, in your Cargo.toml:\n\
+    [dependencies]\n\
+    sherpa-rs = { default-features = false, features = [\"cuda\"] }"
 );
 
+// Prebuilt sherpa-onnx doesn't have DirectML support
+#[cfg(all(windows, feature = "download-binaries", feature = "directml"))]
+compile_error!(
+    "The 'download-binaries' and 'directml' features cannot be enabled at the same time.\n\
+    To resolve this, please disable the 'download-binaries' feature when using 'directml'.\n\
+    For example, in your Cargo.toml:\n\
+    [dependencies]\n\
+    sherpa-rs = { default-features = false, features = [\"directml\"] }"
+);
+
+// Prebuilt sherpa-onnx does not include TTS in static builds.
 #[cfg(all(
+    windows,
     feature = "download-binaries",
-    feature = "directml",
-    any(target_os = "windows")
+    feature = "static",
+    feature = "tts"
 ))]
 compile_error!(
-    "Features 'download-binaries' and 'directml' cannot be enabled simultaneously.\n\
-    If you wish to use the 'directml' feature, disable the 'download-binaries' feature by setting `default-features = false` in Cargo.toml.\n\
-    Example:\n\
-    cargo build --features directml --no-default-features"
-);
-
-#[cfg(all(windows, feature = "static", feature = "download-binaries"))]
-compile_error!(
-    "cargo:warning=\
-Please disable tts feature when using static feature and downlaod-binaries. eg. cargo build --features static,download-binaries --no-default-features"
+    "The 'download-binaries', 'static', and 'tts' features cannot be enabled at the same time.\n\
+    To resolve this, please disable the 'tts' feature when using 'static' and 'download-binaries' together.\n\
+    For example, in your Cargo.toml:\n\
+    [dependencies]\n\
+    sherpa-rs = { default-features = false, features = [\"static\", \"tts\"] }"
 );
 
 #[path = "src/internal/mod.rs"]
