@@ -7,7 +7,7 @@ use std::ptr::null;
 
 #[derive(Debug)]
 pub struct WhisperRecognizer {
-    recognizer: *mut sherpa_rs_sys::SherpaOnnxOfflineRecognizer,
+    recognizer: *const sherpa_rs_sys::SherpaOnnxOfflineRecognizer,
 }
 
 #[derive(Debug)]
