@@ -1,8 +1,8 @@
 use clap::{arg, Parser};
+use sherpa_rs::common_config::FeatureConfig;
 use sherpa_rs::recognizer::online_recognizer::{
-    FeatureConfig, OnlineCtcFstDecoderConfig, OnlineModelConfig, OnlineParaformerModelConfig,
-    OnlineRecognizer, OnlineRecognizerConfig, OnlineTransducerModelConfig,
-    OnlineZipformer2CtcModelConfig,
+    OnlineCtcFstDecoderConfig, OnlineModelConfig, OnlineParaformerModelConfig, OnlineRecognizer,
+    OnlineRecognizerConfig, OnlineTransducerModelConfig, OnlineZipformer2CtcModelConfig,
 };
 use sherpa_rs::stream::online_stream::OnlineStream;
 

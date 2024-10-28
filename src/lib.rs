@@ -1,4 +1,5 @@
 pub mod audio_tag;
+pub mod common_config;
 pub mod diarize;
 pub mod embedding_manager;
 pub mod keyword_spot;
