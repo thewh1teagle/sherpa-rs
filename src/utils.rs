@@ -19,6 +19,7 @@ impl RawCStr {
     /// This function only returns the raw pointer and does not transfer ownership.
     /// The pointer remains valid as long as the `CStr` instance exists.
     /// Be cautious not to deallocate or modify the pointer after using `CStr::new`.
+    #[inline]
     pub fn as_ptr(&self) -> *const i8 {
         self.ptr
     }
