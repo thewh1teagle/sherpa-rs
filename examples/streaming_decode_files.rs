@@ -1,3 +1,24 @@
+/*
+Zh & En:
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20.tar.bz2
+tar xvf sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20.tar.bz2
+rm sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20.tar.bz2
+
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/itn-zh-number.wav
+
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/itn_zh_number.fst
+
+cargo run --example streaming_decode_files -- \
+  --encoder ./sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20/encoder-epoch-99-avg-1.int8.onnx \
+  --decoder ./sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20/decoder-epoch-99-avg-1.onnx \
+  --joiner ./sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20/joiner-epoch-99-avg-1.int8.onnx \
+  --tokens ./sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20/tokens.txt \
+  --model-type zipformer \
+  --rule-fsts ./itn_zh_number.fst \
+  --debug 0 \
+  ./itn-zh-number.wav
+*/
+
 use clap::{arg, Parser};
 use sherpa_rs::common_config::FeatureConfig;
 use sherpa_rs::recognizer::online_recognizer::{
@@ -154,16 +175,16 @@ fn main() {
     );
 }
 
-/// 读取 WAV 文件并返回样本和采样率
+/// Reads a WAV file and returns the samples and sample rate
 ///
-/// # 参数
+/// # Parameters
 ///
-/// * `filename` - WAV 文件的路径
+/// * `filename` - Path to the WAV file
 ///
-/// # 返回
+/// # Returns
 ///
-/// * `samples` - 样本数据
-/// * `sample_rate` - 采样率
+/// * `samples` - Sample data
+/// * `sample_rate` - Sample rate
 fn read_wave(filename: &str) -> (Vec<f32>, i32) {
     let mut reader = hound::WavReader::open(filename).expect("Failed to open WAV file");
     let spec = reader.spec();
