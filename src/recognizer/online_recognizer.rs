@@ -3,10 +3,10 @@ use crate::stream::online_stream::{InitialState, OnlineStream, State};
 use crate::utils;
 use crate::utils::RawCStr;
 use sherpa_rs_sys::{
-    SherpaOnnxCreateOnlineStream, SherpaOnnxDecodeMultipleOnlineStreams,
-    SherpaOnnxDecodeOnlineStream, SherpaOnnxDestroyOnlineRecognizer,
-    SherpaOnnxDestroyOnlineRecognizerResult, SherpaOnnxFeatureConfig,
-    SherpaOnnxGetOnlineStreamResult, SherpaOnnxIsOnlineStreamReady,
+    SherpaOnnxCreateOnlineRecognizer, SherpaOnnxCreateOnlineStream,
+    SherpaOnnxDecodeMultipleOnlineStreams, SherpaOnnxDecodeOnlineStream,
+    SherpaOnnxDestroyOnlineRecognizer, SherpaOnnxDestroyOnlineRecognizerResult,
+    SherpaOnnxFeatureConfig, SherpaOnnxGetOnlineStreamResult, SherpaOnnxIsOnlineStreamReady,
     SherpaOnnxOnlineCtcFstDecoderConfig, SherpaOnnxOnlineModelConfig,
     SherpaOnnxOnlineParaformerModelConfig, SherpaOnnxOnlineRecognizer,
     SherpaOnnxOnlineRecognizerConfig, SherpaOnnxOnlineStream, SherpaOnnxOnlineStreamIsEndpoint,
@@ -55,7 +55,7 @@ pub struct OnlineModelConfig {
     pub zipformer2_ctc: OnlineZipformer2CtcModelConfig,
     pub tokens: String,                // Path to tokens.txt
     pub num_threads: i32,              // Number of threads to use for neural network computation
-    pub provider: String,              // Optional. Valid values are: cpu, cuda, coreml
+    pub provider: Option<String>,      // Optional. Valid values are: cpu, cuda, coreml
     pub debug: i32,                    // 1 to show model meta information while loading it.
     pub model_type: Option<String>, // Optional. You can specify it for faster model initialization
     pub modeling_unit: Option<String>, // Optional. cjkchar, bpe, cjkchar+bpe
@@ -64,6 +64,7 @@ pub struct OnlineModelConfig {
     pub tokens_buf_size: Option<i32>, // Optional.
 }
 
+#[derive(Default)]
 pub struct OnlineCtcFstDecoderConfig {
     pub graph: String,
     pub max_active: i32,
@@ -117,7 +118,7 @@ impl Drop for OnlineRecognizer {
 }
 
 impl OnlineRecognizer {
-    /// The user is responsible to invoke [DeleteOnlineRecognizer]() to free
+    /// The user is responsible to invoke [`Self::drop`] to free
     /// the returned recognizer to avoid memory leak
     pub fn new(config: &OnlineRecognizerConfig) -> Self {
         let transducer_encoder = RawCStr::new(&config.model_config.transducer.encoder);
@@ -132,7 +133,11 @@ impl OnlineRecognizer {
             .tokens_buf
             .as_ref()
             .map_or_else(|| RawCStr::new(""), |tokens_buf| RawCStr::new(tokens_buf));
-        let provider = RawCStr::new(&config.model_config.provider);
+        let provider = config
+            .model_config
+            .provider
+            .as_ref()
+            .map_or_else(|| RawCStr::new(""), |provider| RawCStr::new(provider));
         let mode_type = config
             .model_config
             .model_type
@@ -201,7 +206,7 @@ impl OnlineRecognizer {
             },
         };
 
-        let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOnlineRecognizer(&c_config) };
+        let recognizer = unsafe { SherpaOnnxCreateOnlineRecognizer(&c_config) };
 
         OnlineRecognizer {
             pointer: recognizer,
@@ -215,7 +220,7 @@ impl OnlineRecognizer {
         }
     }
 
-    /// The user is responsible to invoke [DeleteOnlineStream]() to free
+    /// The user is responsible to invoke [`OnlineStream::drop`] to free
     /// the returned stream to avoid memory leak
     pub fn new_stream(&self) -> OnlineStream<InitialState> {
         let stream = unsafe { SherpaOnnxCreateOnlineStream(self.pointer) };
@@ -229,10 +234,11 @@ impl OnlineRecognizer {
     /// Return true if this stream is ready for decoding. Return false otherwise.
     ///
     /// You will usually use it like below:
-    ///
-    ///    for recognizer.IsReady(s) {
-    ///       recognizer.Decode(s)
-    ///    }
+    /// ```text
+    /// while recognizer.is_ready(&stream) {
+    ///     recognizer.decode(&stream);
+    /// }
+    /// ```
     pub fn is_ready(&self, stream: &OnlineStream<impl State>) -> bool {
         unsafe { SherpaOnnxIsOnlineStreamReady(self.pointer, stream.pointer) == 1 }
     }
@@ -240,18 +246,19 @@ impl OnlineRecognizer {
     /// Return true if an endpoint is detected.
     ///
     /// You usually use it like below:
+    /// ```text
+    /// if recognizer.is_endpoint(&stream) {
+    ///     // do your own stuff after detecting an endpoint
     ///
-    ///    if recognizer.IsEndpoint(s) {
-    ///       // do your own stuff after detecting an endpoint
-    ///
-    ///       recognizer.Reset(s)
-    ///    }
+    ///     recognizer.reset(&stream)
+    /// }
+    /// ```
     pub fn is_endpoint(&self, stream: &OnlineStream<impl State>) -> bool {
         unsafe { SherpaOnnxOnlineStreamIsEndpoint(self.pointer, stream.pointer) == 1 }
     }
 
     /// After calling this function, the internal neural network model states
-    /// are reset and IsEndpoint(s) would return false. GetResult(s) would also
+    /// are reset and [`Self::is_endpoint(s)`] would return false. [`Self::get_result(s)`] would also
     /// return an empty string.
     pub fn reset(&self, stream: &OnlineStream<impl State>) {
         unsafe {
@@ -264,9 +271,11 @@ impl OnlineRecognizer {
     ///
     /// You usually use it like below:
     ///
-    ///    for recognizer.IsReady(s) {
-    ///      recognizer.Decode(s)
-    ///    }
+    /// ```text
+    /// while recognizer.is_ready(&stream) {
+    ///     recognizer.decode(&stream);
+    /// }
+    /// ```
     pub fn decode(&self, stream: &OnlineStream<impl State>) {
         unsafe {
             SherpaOnnxDecodeOnlineStream(self.pointer, stream.pointer);
@@ -288,7 +297,7 @@ impl OnlineRecognizer {
         }
     }
 
-    /// Get the current result of stream since the last invoke of Reset()
+    /// Get the current result of stream since the last invoke of [`Self::reset()`]
     pub fn get_result(&self, stream: &OnlineStream<impl State>) -> OnlineRecognizerResult {
         let result = unsafe { SherpaOnnxGetOnlineStreamResult(self.pointer, stream.pointer) };
         let text = utils::cstr_to_string((unsafe { *result }).text);

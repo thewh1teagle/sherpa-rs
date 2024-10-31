@@ -29,7 +29,7 @@ impl<T: State> Drop for OnlineStream<T> {
 
 impl<T: State> OnlineStream<T> {
     /// Signal that there will be no incoming audio samples.
-    /// After calling this function, you cannot call [OnlineStream.AcceptWaveform] any longer.
+    /// After calling this function, you cannot call [`OnlineStream<InitialState>::accept_waveform()`] any longer.
     ///
     /// The main purpose of this function is to flush the remaining audio samples
     /// buffered inside for feature extraction.
@@ -52,7 +52,7 @@ impl<T: State> OnlineStream<T> {
 }
 
 impl OnlineStream<InitialState> {
-    /// The user is responsible to invoke [DeleteOnlineStream]() to free
+    /// The user is responsible to invoke [`Self::drop`] to free
     /// the returned stream to avoid memory leak
     pub fn new(recognizer: &OnlineRecognizer) -> Self {
         recognizer.new_stream()
