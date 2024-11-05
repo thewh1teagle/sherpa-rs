@@ -8,7 +8,7 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/itn-zh-n
 
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/itn_zh_number.fst
 
-cargo run --example streaming_decode_files -- \
+cargo run --example non_streaming_decode_files -- \
   --paraformer ./sherpa-onnx-paraformer-zh-2023-09-14/model.int8.onnx \
   --tokens ./sherpa-onnx-paraformer-zh-2023-09-14/tokens.txt \
   --model-type paraformer \
