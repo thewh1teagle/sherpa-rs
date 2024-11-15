@@ -26,7 +26,6 @@ fn main() {
         cached_decoder: "./sherpa-onnx-moonshine-tiny-en-int8/cached_decode.int8.onnx".into(),
         tokens: "./sherpa-onnx-moonshine-tiny-en-int8/tokens.txt".into(),
         provider: Some(provider),
-        debug: true,
         num_threads: None,
         ..Default::default() // fill in any missing fields with defaults
     };
