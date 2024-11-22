@@ -44,13 +44,6 @@ compile_error!(
     sherpa-rs = { default-features = false, features = [\"static\", \"tts\"] }"
 );
 
-#[path = "src/internal/mod.rs"]
-#[cfg(feature = "download-binaries")]
-mod internal;
-
-#[cfg(feature = "download-binaries")]
-use internal::dirs::cache_dir;
-
 const DIST_TABLE: &str = include_str!("dist.txt");
 
 macro_rules! debug_log {
@@ -147,6 +140,11 @@ fn hex_str_to_bytes(c: impl AsRef<[u8]>) -> Vec<u8> {
 #[cfg(feature = "download-binaries")]
 fn verify_file(buf: &[u8], hash: impl AsRef<[u8]>) -> bool {
     <sha2::Sha256 as sha2::Digest>::digest(buf)[..] == hex_str_to_bytes(hash)
+}
+
+#[cfg(feature = "download-binaries")]
+fn get_cache_dir() -> Option<PathBuf> {
+    dirs::cache_dir().map(|p| p.join("sherpa-rs"))
 }
 
 #[cfg(feature = "download-binaries")]
@@ -452,12 +450,15 @@ fn main() {
         // Try download sherpa libs and set SHERPA_LIB_PATH
         if let Some(dist) = find_dist(&target, &get_feature_set()) {
             debug_log!("Dist: {:?}", dist);
-            let mut cache_dir = cache_dir()
-                .expect("could not determine cache directory")
-                .join("sherpa-bin")
-                .join(&target)
-                .join(&dist.sha256);
+
+            let mut cache_dir = if let Some(dir) = get_cache_dir() {
+                dir.join(target.clone()).join(&dist.sha256)
+            } else {
+                println!("cargo:warning=Could not determine cache directory, using OUT_DIR");
+                PathBuf::from(env::var("OUT_DIR").unwrap())
+            };
             if fs::create_dir_all(&cache_dir).is_err() {
+                println!("cargo:warning=Could not create cache directory, using OUT_DIR");
                 cache_dir = env::var("OUT_DIR").unwrap().into();
             }
             debug_log!("Cache dir: {}", cache_dir.display());
