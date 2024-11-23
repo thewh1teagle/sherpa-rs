@@ -97,6 +97,7 @@ ffmpeg -i <file> -ar 16000 -ac 1 -c:a pcm_s16le <out>
 ```console
 cd sys/sherpa-onnx
 git pull origin master
+git checkout <new tag>
 ```
 
 ### Gotachas
