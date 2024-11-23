@@ -1,0 +1,52 @@
+name: Bug Report
+description: File a bug report
+title: "[Title here. keep it short]"
+labels: ["bug"]
+assignees:
+  - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        One second before you create, search if it's already created [issues](https://github.com/thewh1teagle/vibe/issues?q=is:issue+label:bug+)
+
+        Also, you can try enable debug mode by set `debug: true` in the creation of the struct and rerun to see more logs.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: |
+        1. Step one...
+        2. Step two...
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: What OS are you seeing the problem on?
+      multiple: true
+      options:
+        - Window
+        - Linux
+        - MacOS
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: |
+        Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+
+      render: shell
