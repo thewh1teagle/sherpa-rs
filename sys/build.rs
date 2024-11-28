@@ -388,6 +388,9 @@ fn main() {
         let bindings = bindgen::Builder::default()
             .header("wrapper.h")
             .clang_arg(format!("-I{}", sherpa_dst.display()))
+            // Explicitly set target in case we are cross-compiling.
+            // See https://github.com/rust-lang/rust-bindgen/issues/1780 for context.
+            .clang_arg(format!("--target={}", target))
             .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
             .generate()
             .expect("Failed to generate bindings");

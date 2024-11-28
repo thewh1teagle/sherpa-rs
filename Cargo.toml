@@ -18,6 +18,9 @@ keywords = [
     "diarization",
 ]
 
+[lib]
+crate-type = ["dylib"]
+
 [dependencies]
 eyre = "0.6.12"
 hound = { version = "3.5.1" }
