@@ -460,6 +460,7 @@ fn main() {
         .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default
         .always_configure(false);
 
+    let mut download_lib_dir: Option<PathBuf> = None;
     #[cfg(feature = "download-binaries")]
     {
         // Try download sherpa libs and set SHERPA_LIB_PATH
@@ -489,6 +490,7 @@ fn main() {
                 debug_log!("Skip fetch file. Using cache from {}", lib_dir.display());
             }
             env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
+            download_lib_dir = Some(cache_dir.join(&dist.name));
             is_dynamic = dist.is_dynamic;
         } else {
             println!("cargo:warning=Failed to download binaries. fallback to manual build.");
@@ -515,15 +517,36 @@ fn main() {
         sherpa_libs = extract_lib_names(&out_dir, is_dynamic, &target_os);
     }
 
-    // Search paths
-    println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
-
-    for lib in sherpa_libs {
-        debug_log!(
-            "LINK {}",
-            format!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib)
+    if target_os == "ios" {
+        println!(
+            "cargo:rustc-link-search={}",
+            download_lib_dir
+                .clone()
+                .unwrap()
+                .join("ios-onnxruntime/1.17.1/onnxruntime.xcframework/ios-arm64")
+                .display()
         );
-        println!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib);
+        println!(
+            "cargo:rustc-link-search={}",
+            download_lib_dir
+                .clone()
+                .unwrap()
+                .join("sherpa-onnx.xcframework/ios-arm64")
+                .display()
+        );
+        println!("cargo:rustc-link-lib=static=sherpa-onnx");
+        println!("cargo:rustc-link-lib=static=onnxruntime");
+    } else {
+        // Android, Linux, Windows, macOS
+        // Search paths
+        println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
+        for lib in sherpa_libs {
+            debug_log!(
+                "LINK {}",
+                format!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib)
+            );
+            println!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib);
+        }
     }
 
     // Windows debug
