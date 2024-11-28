@@ -19,3 +19,4 @@ sys/src/bindings.rs
 sherpa-onnx-punct*
 vits-*
 sherpa-onnx-kws-*
+jniLibs/

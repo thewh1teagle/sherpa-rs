@@ -218,11 +218,6 @@ You must install NDK from Android Studio settings.
 ```console
 rustup target add aarch64-linux-android
 cargo install cargo-ndk
-export ANDROID_NDK_HOME="$HOME/Library/Android/sdk/ndk/27.0.12077973"
-export NDK_HOME=$ANDROID_NDK_HOME
-export CC="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android35-clang"
-export CXX="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android35-clang++"
-export C_INCLUDE_PATH="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/:$C_INCLUDE_PATH"
-# export LIBCLANG_PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64/lib"
-BUILD_DEBUG=1 cargo ndk -t arm64-v8a -o ./jniLibs build --release
+export NDK_HOME="$HOME/Library/Android/sdk/ndk/27.0.12077973"
+cargo ndk -t arm64-v8a -o ./jniLibs build --release
 ```

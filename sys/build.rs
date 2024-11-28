@@ -209,16 +209,18 @@ fn copy_folder(src: &Path, dst: &Path) {
     }
 }
 
-fn extract_lib_names(out_dir: &Path, dynamic: bool) -> Vec<String> {
-    let lib_pattern = if cfg!(windows) {
+fn extract_lib_names(out_dir: &Path, dynamic: bool, target_os: &str) -> Vec<String> {
+    let lib_pattern = if target_os == "windows" {
         "*.lib"
-    } else if cfg!(target_os = "macos") {
+    } else if target_os == "macos" {
         if dynamic {
             "*.dylib"
         } else {
             "*.a"
         }
-    } else if dynamic {
+    }
+    // Linux, Android
+    else if dynamic {
         "*.so"
     } else {
         "*.a"
@@ -251,10 +253,10 @@ fn extract_lib_names(out_dir: &Path, dynamic: bool) -> Vec<String> {
     lib_names
 }
 
-fn extract_lib_assets(out_dir: &Path) -> Vec<PathBuf> {
-    let shared_lib_pattern = if cfg!(windows) {
+fn extract_lib_assets(out_dir: &Path, target_os: &str) -> Vec<PathBuf> {
+    let shared_lib_pattern = if target_os == "windows" {
         "*.dll"
-    } else if cfg!(target_os = "macos") {
+    } else if target_os == "macos" {
         "*.dylib"
     } else {
         "*.so"
@@ -311,6 +313,11 @@ fn main() {
     println!("cargo:rerun-if-changed=wrapper.h");
     println!("cargo:rerun-if-changed=./sherpa-onnx");
     println!("cargo:rerun-if-changed=dist.txt");
+
+    // Note: using cfg!(target_os = "...") doesn't work well when cross compile.
+    // Prefer using this var or TARGET!!!
+    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+    debug_log!("target_os = {}", target_os);
 
     // Show warning if static enabled on Linux without RUSTFLAGS
     #[cfg(all(
@@ -385,12 +392,17 @@ fn main() {
         std::fs::copy("src/bindings.rs", out_dir.join("bindings.rs"))
             .expect("Failed to copy bindings.rs");
     } else {
+        let mut clang_target = target.clone();
+        if target.contains("android") {
+            clang_target = "armv8-linux-androideabi".to_string();
+        }
+        debug_log!("clang target: {}", clang_target);
         let bindings = bindgen::Builder::default()
             .header("wrapper.h")
             .clang_arg(format!("-I{}", sherpa_dst.display()))
             // Explicitly set target in case we are cross-compiling.
             // See https://github.com/rust-lang/rust-bindgen/issues/1780 for context.
-            .clang_arg(format!("--target={}", target))
+            .clang_arg(format!("--target={}", clang_target))
             .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
             .generate()
             .expect("Failed to generate bindings");
@@ -415,7 +427,7 @@ fn main() {
         .define("SHERPA_ONNX_ENABLE_TTS", "OFF")
         .define("SHERPA_ONNX_BUILD_C_API_EXAMPLES", "OFF");
 
-    if cfg!(windows) {
+    if target_os == "windows" {
         config.static_crt(static_crt);
     }
 
@@ -438,7 +450,7 @@ fn main() {
         config.define("BUILD_SHARED_LIBS", "ON");
     }
 
-    if cfg!(any(windows, target_os = "linux")) {
+    if target_os == "windows" || target_os == "linux" || target == "android" {
         config.define("SHERPA_ONNX_ENABLE_PORTAUDIO", "ON");
     }
 
@@ -494,13 +506,13 @@ fn main() {
             "cargo:rustc-link-search={}",
             Path::new(&sherpa_lib_path).join("lib").display()
         );
-        sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), is_dynamic);
+        sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), is_dynamic, &target_os);
     } else {
         // Build with CMake
         let bindings_dir = config.build();
         println!("cargo:rustc-link-search={}", bindings_dir.display());
         // Link libraries
-        sherpa_libs = extract_lib_names(&out_dir, is_dynamic);
+        sherpa_libs = extract_lib_names(&out_dir, is_dynamic, &target_os);
     }
 
     // Search paths
@@ -520,13 +532,13 @@ fn main() {
     }
 
     // macOS
-    if cfg!(target_os = "macos") {
+    if target_os == "macos" {
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=c++");
     }
 
     // Linux
-    if cfg!(target_os = "linux") {
+    if target_os == "linux" || target == "android" {
         println!("cargo:rustc-link-lib=dylib=stdc++");
     }
 
@@ -543,9 +555,9 @@ fn main() {
 
     // copy DLLs to target
     if is_dynamic {
-        let mut libs_assets = extract_lib_assets(&out_dir);
+        let mut libs_assets = extract_lib_assets(&out_dir, &target_os);
         if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
-            libs_assets.extend(extract_lib_assets(Path::new(&sherpa_lib_path)));
+            libs_assets.extend(extract_lib_assets(Path::new(&sherpa_lib_path), &target_os));
         }
 
         for asset in libs_assets {
