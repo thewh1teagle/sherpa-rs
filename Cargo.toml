@@ -19,7 +19,7 @@ keywords = [
 ]
 
 [lib]
-crate-type = ["dylib"]
+crate-type = ["rlib", "dylib", "staticlib"]
 
 [dependencies]
 eyre = "0.6.12"
