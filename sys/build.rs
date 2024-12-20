@@ -488,7 +488,14 @@ fn main() {
             } else {
                 debug_log!("Skip fetch file. Using cache from {}", lib_dir.display());
             }
-            env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
+            if target.contains("android") {
+                // Extracted folder with Android called jniLibs
+                // TODO: change hardcoded architecture
+                env::set_var("SHERPA_LIB_PATH", cache_dir.join("jniLibs/arm64-v8a"));
+            } else {
+                env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
+            }
+
             is_dynamic = dist.is_dynamic;
         } else {
             println!("cargo:warning=Failed to download binaries. fallback to manual build.");
