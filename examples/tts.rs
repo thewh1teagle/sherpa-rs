@@ -89,6 +89,7 @@ fn main() {
         model: args.model,
         max_num_sentences,
         rule_fsts: args.tts_rule_fsts.unwrap_or_default(),
+        provider: args.provider,
         ..Default::default()
     };
     let mut tts = sherpa_rs::tts::OfflineTts::new(tts_config, vits_config);
