@@ -435,27 +435,7 @@ fn main() {
             "LINK {}",
             format!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib)
         );
-        println!(
-            "cargo:rustc-link-search={}",
-            download_lib_dir
-                .clone()
-                .unwrap()
-                .join("sherpa-onnx.xcframework/ios-arm64")
-                .display()
-        );
-        println!("cargo:rustc-link-lib=static=sherpa-onnx");
-        println!("cargo:rustc-link-lib=static=onnxruntime");
-    } else {
-        // Android, Linux, Windows, macOS
-        // Search paths
-        println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
-        for lib in sherpa_libs {
-            debug_log!(
-                "LINK {}",
-                format!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib)
-            );
-            println!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib);
-        }
+        println!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib);
     }
 
     // Windows debug
