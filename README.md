@@ -22,6 +22,8 @@ Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 - Windows
 - Linux
 - macOS
+- Android
+- IOS
 
 ## Install
 

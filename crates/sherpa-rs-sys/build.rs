@@ -339,7 +339,6 @@ fn main() {
         .always_configure(false);
 
     let mut sherpa_libs: Vec<String> = Vec::new();
-    let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
 
     // Download libraries, cache and set SHERPA_LIB_PATH
 
@@ -352,7 +351,8 @@ fn main() {
         debug_log!("Download binaries enabled");
         // debug_log!("Dist table: {:?}", DIST_TABLE.targets);
         // Try download sherpa libs and set SHERPA_LIB_PATH
-        if let Some(dist) = DIST_TABLE.get(&target, is_dynamic) {
+        if let Some(dist) = DIST_TABLE.get(&target, &mut is_dynamic) {
+            debug_log!("is_dynamic after: {}", is_dynamic);
             optional_dist = Some(dist.clone());
             let mut cache_dir = if let Some(dir) = get_cache_dir() {
                 dir.join(target.clone()).join(&dist.checksum)
@@ -390,9 +390,12 @@ fn main() {
 
             debug_log!("dist libs: {:?}", dist.libs);
             if let Some(libs) = dist.libs {
-                let dist_libs_path = cache_dir.join(libs.first().unwrap());
-                let dist_libs_parent = dist_libs_path.parent().unwrap();
-                println!("cargo:rustc-link-search={}", dist_libs_parent.display());
+                for lib in libs.iter() {
+                    let lib_path = cache_dir.join(lib);
+                    let lib_parent = lib_path.parent().unwrap();
+                    debug_log!("Adding search path: {}", lib_parent.display());
+                    println!("cargo:rustc-link-search={}", lib_parent.display());
+                }
 
                 sherpa_libs = libs
                     .iter()
@@ -408,6 +411,8 @@ fn main() {
                             .replace(".so", "")
                             // Remove .dylib
                             .replace(".dylib", "")
+                            // Remove .a
+                            .replace(".a", "")
                             .to_string()
                     })
                     .collect();
@@ -445,10 +450,12 @@ fn main() {
     println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
     debug_log!("Sherpa libs: {:?}", sherpa_libs);
 
+    let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
     for lib in sherpa_libs {
         if lib.contains("cxx") {
             continue;
         }
+        debug_log!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib);
         println!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib);
     }
 
@@ -458,7 +465,7 @@ fn main() {
     }
 
     // macOS
-    if target_os == "macos" {
+    if target_os == "macos" || target_os == "ios" {
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=c++");
     }
@@ -468,7 +475,8 @@ fn main() {
         println!("cargo:rustc-link-lib=dylib=stdc++");
     }
 
-    if target.contains("apple") {
+    // macOS
+    if target_os == "macos" {
         // On (older) OSX we need to link against the clang runtime,
         // which is hidden in some non-default path.
         //
