@@ -22,7 +22,7 @@ fn main() {
     // Read and process each audio file, compute embeddings
     let mut embeddings = Vec::new();
     for file in &audio_files {
-        let (samples, sample_rate) = sherpa_rs::read_audio_file(&file).unwrap();
+        let (samples, sample_rate) = sherpa_rs::read_audio_file(file).unwrap();
         assert_eq!(sample_rate, 16000, "The sample rate must be 16000.");
         let embedding = extractor
             .compute_speaker_embedding(samples, sample_rate)

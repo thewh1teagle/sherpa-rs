@@ -99,6 +99,12 @@ impl WhisperRecognizer {
             },
             whisper,
             sense_voice,
+            moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
+                preprocessor: null(),
+                encoder: null(),
+                uncached_decoder: null(),
+                cached_decoder: null(),
+            },
         };
 
         let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
@@ -173,7 +179,7 @@ mod tests {
     #[test]
     fn test_whisper_transcribe() {
         let path = "motivation.wav";
-        let (samples, sample_rate) = read_audio_file(&path).unwrap();
+        let (samples, sample_rate) = read_audio_file(path).unwrap();
 
         // Check if the sample rate is 16000
         if sample_rate != 16000 {
@@ -189,7 +195,6 @@ mod tests {
             provider: None,
             num_threads: None,
             bpe_vocab: None,
-            ..Default::default() // fill in any missing fields with defaults
         };
 
         let mut recognizer = WhisperRecognizer::new(config).unwrap();
