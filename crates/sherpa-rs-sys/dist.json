@@ -32,9 +32,13 @@
         },
         "ios": {
             "archive": "sherpa-onnx-{tag}-ios.tar.bz2",
+            "arch": {
+                "aarch64-apple-ios": "ios-arm64",
+                "aarch64-apple-ios-sim": "ios-arm64-simulator"
+            },
             "libs": [
-                "build-ios/ios-onnxruntime/onnxruntime.xcframework",
-                "build-ios/sherpa-onnx.xcframework"
+                "build-ios/ios-onnxruntime/onnxruntime.xcframework/{arch}/libonnxruntime.a",
+                "build-ios/sherpa-onnx.xcframework/{arch}/libsherpa-onnx.a"
             ]
         }
     }

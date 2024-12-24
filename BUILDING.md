@@ -221,3 +221,28 @@ cargo install cargo-ndk
 export NDK_HOME="$HOME/Library/Android/sdk/ndk/27.0.12077973"
 cargo ndk -t arm64-v8a -o ./jniLibs build --release
 ```
+
+## Build for IOS
+
+Install Xcode command line tools
+
+```console
+xcode-select --install
+```
+
+Install toolchain
+
+```console
+# IOS
+rustup target add aarch64-apple-ios
+# Intel chip emulator
+rustup target add x86_64-apple-ios
+# Apple chip emulator
+rustup target add aarch64-apple-ios-sim
+```
+
+Build
+
+```console
+cargo build --release --target aarch64-apple-ios
+```
