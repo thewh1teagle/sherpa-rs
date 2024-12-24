@@ -1,0 +1,87 @@
+[package]
+name = "sherpa-rs"
+version = "0.5.1"
+edition = "2021"
+authors = ["thewh1teagle"]
+license = "MIT"
+repository = "https://github.com/thewh1teagle/sherpa-rs"
+description = "Rust bindings to https://github.com/k2-fsa/sherpa-onnx"
+readme = "README.md"
+keywords = [
+    "audio",
+    "embeddings",
+    "speech-recognition",
+    "sherpa",
+    "diarization",
+]
+
+[dependencies]
+eyre = "0.6.12"
+hound = { version = "3.5.1" }
+sherpa-rs-sys = { path = "../sherpa-rs-sys", version = "0.5.1", default-features = false }
+tracing = "0.1.40"
+
+[dev-dependencies]
+clap = { version = "4.5.8", features = ["derive"] }
+
+[features]
+default = ["download-binaries", "tts"]
+download-binaries = ["sherpa-rs-sys/download-binaries"]
+static = ["sherpa-rs-sys/static"]
+sys = []
+tts = ["sherpa-rs-sys/tts"]
+cuda = ["sherpa-rs-sys/cuda"]
+directml = ["sherpa-rs-sys/directml"]
+
+[[example]]
+name = "tts"
+required-features = ["tts"]
+path = "../../examples/tts.rs"
+
+[[example]]
+name = "audio_tag"
+path = "../../examples/audio_tag.rs"
+
+[[example]]
+name = "keyword_spot"
+path = "../../examples/keyword_spot.rs"
+
+[[example]]
+name = "punctuate"
+path = "../../examples/punctuate.rs"
+
+[[example]]
+name = "speaker_id"
+path = "../../examples/speaker_id.rs"
+
+[[example]]
+name = "vad"
+path = "../../examples/vad.rs"
+
+[[example]]
+name = "vad_whisper"
+path = "../../examples/vad_whisper.rs"
+
+[[example]]
+name = "zipformer"
+path = "../../examples/zipformer.rs"
+
+[[example]]
+name = "diarize"
+path = "../../examples/diarize.rs"
+
+[[example]]
+name = "language_id"
+path = "../../examples/language_id.rs"
+
+[[example]]
+name = "speaker_embedding"
+path = "../../examples/speaker_embedding.rs"
+
+[[example]]
+name = "vad_segment"
+path = "../../examples/vad_segment.rs"
+
+[[example]]
+name = "whisper"
+path = "../../examples/whisper.rs"

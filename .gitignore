@@ -5,6 +5,7 @@ tokens.txt
 .DS_Store
 venv/
 vits-piper*
+sherpa-onnx/
 *.wav
 !samples/*.wav
 *.bz2
@@ -12,6 +13,7 @@ sherpa-onnx-whisper*
 sherpa-onnx-pyannote-*
 sherpa-onnx-zipformer-*
 *.txt
+!checksum.txt
 sherpa-onnx-v*
 jniLibs
 sys/src/bindings.rs

@@ -38,7 +38,7 @@ fn main() {
     );
 
     // Read the WAV file
-    let (samples, sample_rate) = sherpa_rs::read_audio_file(&wav_path).unwrap();
+    let (samples, sample_rate) = sherpa_rs::read_audio_file(wav_path).unwrap();
 
     let config = sherpa_rs::zipformer::ZipFormerConfig {
         encoder: encoder_path.into(),

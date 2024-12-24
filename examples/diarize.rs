@@ -34,7 +34,7 @@ fn main() {
 
     let mut sd =
         sherpa_rs::diarize::Diarize::new(segment_model_path, embedding_model_path, config).unwrap();
-    let (samples, _) = sherpa_rs::read_audio_file(&wav_path).unwrap();
+    let (samples, _) = sherpa_rs::read_audio_file(wav_path).unwrap();
 
     let segments = sd
         .compute(samples, Some(Box::new(progress_callback)))

@@ -44,7 +44,7 @@ fn get_speaker_name(
 fn process_speech_segment(
     vad: &mut Vad,
     sample_rate: u32,
-    mut embedding_manager: &mut embedding_manager::EmbeddingManager,
+    embedding_manager: &mut embedding_manager::EmbeddingManager,
     extractor: &mut speaker_id::EmbeddingExtractor,
     speaker_counter: &mut i32,
     max_speakers: i32,
@@ -60,7 +60,7 @@ fn process_speech_segment(
             .unwrap();
 
         let name = get_speaker_name(
-            &mut embedding_manager,
+            embedding_manager,
             &mut embedding,
             speaker_counter,
             max_speakers,
@@ -82,10 +82,8 @@ fn main() {
     let (mut samples, sample_rate) = sherpa_rs::read_audio_file(&file_path).unwrap();
     assert_eq!(sample_rate, 16000, "The sample rate must be 16000.");
 
-    // Pad with 3 seconds of slience so vad will able to detect stop
-    for _ in 0..3 * sample_rate {
-        samples.push(0.0);
-    }
+    // Pad with 3 seconds of silence so vad will be able to detect stop
+    samples.extend(vec![0.0; (3 * sample_rate) as usize]);
 
     let extractor_config = speaker_id::ExtractorConfig {
         model: "nemo_en_speakerverification_speakernet.onnx".into(),
@@ -106,7 +104,7 @@ fn main() {
 
     let mut vad = Vad::new(vad_config, 60.0 * 10.0).unwrap();
     let mut index = 0;
-    while index + window_size <= samples.len().try_into().unwrap() {
+    while index + window_size <= samples.len() {
         let window = &samples[index..index + window_size];
         vad.accept_waveform(window.to_vec()); // Convert slice to Vec
         if vad.is_speech() {
