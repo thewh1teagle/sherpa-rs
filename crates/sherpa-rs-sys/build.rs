@@ -19,9 +19,10 @@ macro_rules! debug_log {
 }
 
 fn hard_link(src: PathBuf, dst: PathBuf) {
-    if let Err(err) = std::fs::hard_link(&src, &dst) {
+    if let Err(err) = std::fs::hard_link(&src.clone(), &dst) {
         debug_log!("Failed to hardlink {:?}. fallback to copy.", err);
-        fs::copy(src, dst).unwrap();
+        fs::copy(&src, &dst)
+            .unwrap_or_else(|_| panic!("Failed to copy {} to {}", src.display(), dst.display()));
     }
 }
 
@@ -329,6 +330,10 @@ fn main() {
     let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
 
     // Download libraries, cache and set SHERPA_LIB_PATH
+
+    #[cfg(feature = "download-binaries")]
+    let mut optional_dist: Option<download_binaries::Dist> = None;
+
     #[cfg(feature = "download-binaries")]
     {
         use download_binaries::{extract_tbz, fetch_file, get_cache_dir, sha256, DIST_TABLE};
@@ -336,8 +341,7 @@ fn main() {
         // debug_log!("Dist table: {:?}", DIST_TABLE.targets);
         // Try download sherpa libs and set SHERPA_LIB_PATH
         if let Some(dist) = DIST_TABLE.get(&target, is_dynamic) {
-            debug_log!("Dist: {:?}", dist);
-
+            optional_dist = Some(dist.clone());
             let mut cache_dir = if let Some(dir) = get_cache_dir() {
                 dir.join(target.clone()).join(&dist.checksum)
             } else {
@@ -364,8 +368,15 @@ fn main() {
             } else {
                 debug_log!("Skip fetch file. Using cache from {}", lib_dir.display());
             }
-            env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
 
+            // In Android, we need to set SHERPA_LIB_PATH to the cache directory sincie it has jniLibs
+            if target.contains("android") {
+                env::set_var("SHERPA_LIB_PATH", cache_dir);
+            } else {
+                env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
+            }
+
+            debug_log!("dist libs: {:?}", dist.libs);
             if let Some(libs) = dist.libs {
                 sherpa_libs = libs;
             } else {
@@ -442,6 +453,15 @@ fn main() {
         let mut libs_assets = extract_lib_assets(&out_dir, &target_os);
         if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
             libs_assets.extend(extract_lib_assets(Path::new(&sherpa_lib_path), &target_os));
+        }
+
+        if let Some(dist) = optional_dist {
+            if let Some(assets) = dist.libs {
+                if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
+                    let sherpa_lib_path = Path::new(&sherpa_lib_path);
+                    libs_assets.extend(assets.iter().map(|p| sherpa_lib_path.join(p)));
+                }
+            }
         }
 
         for asset in libs_assets {

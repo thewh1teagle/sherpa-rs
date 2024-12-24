@@ -208,7 +208,7 @@ shasum -a 256 <path> | tr 'a-z' 'A-Z'
 ## See debug log from build
 
 ```
-BUILD_DEBUG=1 cargo build -vv
+SHERPA_BUILD_DEBUG=1 cargo build -vv
 ```
 
 ## Build for Android
