@@ -383,14 +383,34 @@ fn main() {
 
             // In Android, we need to set SHERPA_LIB_PATH to the cache directory sincie it has jniLibs
             if target.contains("android") || target.contains("ios") {
-                env::set_var("SHERPA_LIB_PATH", cache_dir);
+                env::set_var("SHERPA_LIB_PATH", &cache_dir);
             } else {
-                env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
+                env::set_var("SHERPA_LIB_PATH", &cache_dir.join(&dist.name));
             }
 
             debug_log!("dist libs: {:?}", dist.libs);
             if let Some(libs) = dist.libs {
-                sherpa_libs = libs;
+                let dist_libs_path = cache_dir.join(libs.first().unwrap());
+                let dist_libs_parent = dist_libs_path.parent().unwrap();
+                println!("cargo:rustc-link-search={}", dist_libs_parent.display());
+
+                sherpa_libs = libs
+                    .iter()
+                    .map(|p| {
+                        Path::new(p)
+                            .file_name()
+                            .unwrap()
+                            .to_string_lossy()
+                            // Remove lib prefix
+                            .strip_prefix("lib")
+                            .unwrap_or_else(|| p)
+                            // Remove .so
+                            .replace(".so", "")
+                            // Remove .dylib
+                            .replace(".dylib", "")
+                            .to_string()
+                    })
+                    .collect();
             } else {
                 sherpa_libs = extract_lib_names(&lib_dir, is_dynamic, &target_os);
             }
@@ -407,7 +427,9 @@ fn main() {
             "cargo:rustc-link-search={}",
             Path::new(&sherpa_lib_path).join("lib").display()
         );
-        sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), is_dynamic, &target_os);
+        if sherpa_libs.is_empty() {
+            sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), is_dynamic, &target_os);
+        }
     } else {
         // Build with CMake
         let bindings_dir = config.build();
@@ -421,15 +443,12 @@ fn main() {
 
     // Search paths
     println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
+    debug_log!("Sherpa libs: {:?}", sherpa_libs);
 
     for lib in sherpa_libs {
         if lib.contains("cxx") {
             continue;
         }
-        debug_log!(
-            "LINK {}",
-            format!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib)
-        );
         println!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib);
     }
 
@@ -459,6 +478,12 @@ fn main() {
             println!("cargo:rustc-link-search={}", path);
         }
     }
+
+    // TODO: add rpath for Android and iOS so it can find its dependencies in the same directory of executable
+    // if target.contains("android") || target.contains("ios") {
+    //     // Add rpath for Android and iOS so that the shared library can find its dependencies in the same directory as well
+    //     println!("cargo:rustc-link-arg=-Wl,-rpath,'$ORIGIN'");
+    // }
 
     // copy DLLs to target
     if is_dynamic {
