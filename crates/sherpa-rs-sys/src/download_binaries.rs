@@ -144,7 +144,7 @@ impl DistTable {
         } else {
             self.targets
                 .get(target)
-                .expect(format!("Target {} not found", target).as_str())
+                .unwrap_or_else(|| panic!("Target {} not found", target))
         };
         debug_log!(
             "raw target_dist: {:?}",
