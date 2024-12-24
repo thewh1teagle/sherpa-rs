@@ -64,6 +64,12 @@ impl ZipFormer {
                 model: null(),
                 use_itn: 0,
             },
+            moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
+                preprocessor: null(),
+                encoder: null(),
+                uncached_decoder: null(),
+                cached_decoder: null(),
+            },
         };
         // Recognizer config
         let recognizer_config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {

@@ -5,164 +5,17 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-// Prebuilt sherpa-onnx doesn't have Cuda support
-#[cfg(all(
-    any(target_os = "windows", target_os = "linux"),
-    feature = "download-binaries",
-    feature = "cuda"
-))]
-compile_error!(
-    "The 'download-binaries' and 'cuda' features cannot be enabled at the same time.\n\
-    To resolve this, please disable the 'download-binaries' feature when using 'cuda'.\n\
-    For example, in your Cargo.toml:\n\
-    [dependencies]\n\
-    sherpa-rs = { default-features = false, features = [\"cuda\"] }"
-);
-
-// Prebuilt sherpa-onnx doesn't have DirectML support
-#[cfg(all(windows, feature = "download-binaries", feature = "directml"))]
-compile_error!(
-    "The 'download-binaries' and 'directml' features cannot be enabled at the same time.\n\
-    To resolve this, please disable the 'download-binaries' feature when using 'directml'.\n\
-    For example, in your Cargo.toml:\n\
-    [dependencies]\n\
-    sherpa-rs = { default-features = false, features = [\"directml\"] }"
-);
-
-// Prebuilt sherpa-onnx does not include TTS in static builds.
-#[cfg(all(
-    windows,
-    feature = "download-binaries",
-    feature = "static",
-    feature = "tts"
-))]
-compile_error!(
-    "The 'download-binaries', 'static', and 'tts' features cannot be enabled at the same time.\n\
-    To resolve this, please disable the 'tts' feature when using 'static' and 'download-binaries' together.\n\
-    For example, in your Cargo.toml:\n\
-    [dependencies]\n\
-    sherpa-rs = { default-features = false, features = [\"static\", \"tts\"] }"
-);
-
-const DIST_TABLE: &str = include_str!("dist.txt");
+#[path = "src/download_binaries.rs"]
+#[cfg(feature = "download-binaries")]
+mod download_binaries;
 
 macro_rules! debug_log {
     ($($arg:tt)*) => {
-        if std::env::var("BUILD_DEBUG").unwrap_or_default() == "1" {
+        // SHERPA_BUILD_DEBUG=1 cargo build
+        if std::env::var("SHERPA_BUILD_DEBUG").unwrap_or_default() == "1" {
             println!("cargo:warning=[DEBUG] {}", format!($($arg)*));
         }
     };
-}
-
-#[cfg(feature = "download-binaries")]
-fn fetch_file(source_url: &str) -> Vec<u8> {
-    let resp = ureq::AgentBuilder::new()
-        .try_proxy_from_env(true)
-        .build()
-        .get(source_url)
-        .timeout(std::time::Duration::from_secs(1800))
-        .call()
-        .unwrap_or_else(|err| panic!("Failed to GET `{source_url}`: {err}"));
-
-    let len = resp
-        .header("Content-Length")
-        .and_then(|s| s.parse::<usize>().ok())
-        .expect("Content-Length header should be present on archive response");
-    debug_log!("Fetch file {} {}", source_url, len);
-    let mut reader = resp.into_reader();
-    let mut buffer = Vec::new();
-    reader
-        .read_to_end(&mut buffer)
-        .unwrap_or_else(|err| panic!("Failed to download from `{source_url}`: {err}"));
-    assert_eq!(buffer.len(), len);
-    buffer
-}
-
-#[derive(Debug)]
-struct Dist {
-    url: String,
-    sha256: String,
-    name: String,
-    is_dynamic: bool,
-}
-
-fn get_feature_set() -> String {
-    let mut features = Vec::new();
-    if cfg!(feature = "static") {
-        features.push("static");
-    }
-    features.sort();
-    if features.is_empty() {
-        "none".into()
-    } else {
-        features.join(",")
-    }
-}
-
-fn find_dist(target: &str, feature_set: &str) -> Option<Dist> {
-    let table_content = DIST_TABLE
-        .split('\n')
-        .skip(5)
-        .filter(|l| !l.is_empty() && !l.starts_with('#')); // Skip headers
-    debug_log!(
-        "table content: {:?}",
-        table_content.clone().collect::<String>()
-    );
-    let mut table = table_content.map(|l| l.split_whitespace().collect::<Vec<_>>());
-
-    table
-        .find(|row| row[0] == feature_set && row[1] == target)
-        .map(|row| Dist {
-            url: row[2].into(),
-            name: row[3].into(),
-            sha256: row[4].into(),
-            is_dynamic: row[5].trim() == "1",
-        })
-}
-
-#[cfg(feature = "download-binaries")]
-fn hex_str_to_bytes(c: impl AsRef<[u8]>) -> Vec<u8> {
-    fn nibble(c: u8) -> u8 {
-        match c {
-            b'A'..=b'F' => c - b'A' + 10,
-            b'a'..=b'f' => c - b'a' + 10,
-            b'0'..=b'9' => c - b'0',
-            _ => panic!(),
-        }
-    }
-
-    c.as_ref()
-        .chunks(2)
-        .map(|n| nibble(n[0]) << 4 | nibble(n[1]))
-        .collect()
-}
-
-#[cfg(feature = "download-binaries")]
-fn verify_file(buf: &[u8], hash: impl AsRef<[u8]>) -> bool {
-    <sha2::Sha256 as sha2::Digest>::digest(buf)[..] == hex_str_to_bytes(hash)
-}
-
-#[cfg(feature = "download-binaries")]
-fn get_cache_dir() -> Option<PathBuf> {
-    dirs::cache_dir().map(|p| p.join("sherpa-rs"))
-}
-
-#[cfg(feature = "download-binaries")]
-#[allow(unused)]
-fn extract_tgz(buf: &[u8], output: &Path) {
-    let buf: std::io::BufReader<&[u8]> = std::io::BufReader::new(buf);
-    let tar = flate2::read::GzDecoder::new(buf);
-    let mut archive = tar::Archive::new(tar);
-    archive.unpack(output).expect("Failed to extract .tgz file");
-}
-
-#[cfg(feature = "download-binaries")]
-fn extract_tbz(buf: &[u8], output: &Path) {
-    debug_log!("extracging tbz to {}", output.display());
-    let buf: std::io::BufReader<&[u8]> = std::io::BufReader::new(buf);
-    let tar = bzip2::read::BzDecoder::new(buf); // Use BzDecoder for .bz2
-    let mut archive = tar::Archive::new(tar);
-    archive.unpack(output).expect("Failed to extract .tbz file");
 }
 
 fn hard_link(src: PathBuf, dst: PathBuf) {
@@ -357,11 +210,23 @@ fn main() {
     let sherpa_dst = out_dir.join("sherpa-onnx");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
-    let mut is_dynamic = !cfg!(feature = "directml") || !cfg!(feature = "cuda");
 
-    is_dynamic = std::env::var("SHERPA_BUILD_SHARED_LIBS")
-        .map(|v| v == "1")
-        .unwrap_or(is_dynamic);
+    // Dynamic by default
+    let mut is_dynamic = true;
+
+    // Static feature
+    if cfg!(feature = "static") {
+        is_dynamic = false;
+    }
+    // DirectML / Cuda
+    else if cfg!(any(feature = "directml", feature = "cuda")) {
+        is_dynamic = true;
+    }
+    // Env
+    else if let Ok(val) = env::var("SHERPA_BUILD_SHARED_LIBS") {
+        is_dynamic = val == "1";
+    }
+
     let profile = env::var("SHERPA_LIB_PROFILE").unwrap_or("Release".to_string());
     let static_crt = env::var("SHERPA_STATIC_CRT")
         .map(|v| v == "1")
@@ -460,14 +325,21 @@ fn main() {
         .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default
         .always_configure(false);
 
+    let mut sherpa_libs: Vec<String> = Vec::new();
+    let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
+
+    // Download libraries, cache and set SHERPA_LIB_PATH
     #[cfg(feature = "download-binaries")]
     {
+        use download_binaries::{extract_tbz, fetch_file, get_cache_dir, sha256, DIST_TABLE};
+        debug_log!("Download binaries enabled");
+        // debug_log!("Dist table: {:?}", DIST_TABLE.targets);
         // Try download sherpa libs and set SHERPA_LIB_PATH
-        if let Some(dist) = find_dist(&target, &get_feature_set()) {
+        if let Some(dist) = DIST_TABLE.get(&target, is_dynamic) {
             debug_log!("Dist: {:?}", dist);
 
             let mut cache_dir = if let Some(dir) = get_cache_dir() {
-                dir.join(target.clone()).join(&dist.sha256)
+                dir.join(target.clone()).join(&dist.checksum)
             } else {
                 println!("cargo:warning=Could not determine cache directory, using OUT_DIR");
                 PathBuf::from(env::var("OUT_DIR").unwrap())
@@ -480,30 +352,29 @@ fn main() {
             let lib_dir = cache_dir.join(&dist.name);
             if !lib_dir.exists() {
                 let downloaded_file = fetch_file(&dist.url);
-                assert!(
-                    verify_file(&downloaded_file, &dist.sha256),
-                    "hash of downloaded Sherpa-ONNX Runtime binary does not match!"
+                let hash = sha256(&downloaded_file);
+                // verify checksum
+                assert_eq!(
+                    hash, dist.checksum,
+                    "Checksum mismatch: {} != {}",
+                    hash, dist.checksum
                 );
+
                 extract_tbz(&downloaded_file, &cache_dir);
             } else {
                 debug_log!("Skip fetch file. Using cache from {}", lib_dir.display());
             }
-            if target.contains("android") {
-                // Extracted folder with Android called jniLibs
-                // TODO: change hardcoded architecture
-                env::set_var("SHERPA_LIB_PATH", cache_dir.join("jniLibs/arm64-v8a"));
-            } else {
-                env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
-            }
+            env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
 
-            is_dynamic = dist.is_dynamic;
+            if let Some(libs) = dist.libs {
+                sherpa_libs = libs;
+            } else {
+                sherpa_libs = extract_lib_names(&lib_dir, is_dynamic);
+            }
         } else {
             println!("cargo:warning=Failed to download binaries. fallback to manual build.");
         }
     }
-
-    let sherpa_libs: Vec<String>;
-    let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
 
     if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
         // Skip build if SHERPA_LIB_PATH specified
@@ -518,14 +389,20 @@ fn main() {
         // Build with CMake
         let bindings_dir = config.build();
         println!("cargo:rustc-link-search={}", bindings_dir.display());
-        // Link libraries
-        sherpa_libs = extract_lib_names(&out_dir, is_dynamic, &target_os);
+
+        // Extract libs on desktop platforms
+        if !target.contains("android") && !target.contains("ios") {
+            sherpa_libs = extract_lib_names(&bindings_dir, is_dynamic);
+        }
     }
 
     // Search paths
     println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
 
     for lib in sherpa_libs {
+        if lib.contains("cxx") {
+            continue;
+        }
         debug_log!(
             "LINK {}",
             format!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib)
@@ -572,7 +449,7 @@ fn main() {
             let filename = asset_clone.file_name().unwrap();
             let filename = filename.to_str().unwrap();
             let dst = target_dir.join(filename);
-            debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
+            // debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
             if !dst.exists() {
                 hard_link(asset.clone(), dst);
             }
@@ -580,7 +457,7 @@ fn main() {
             // Copy DLLs to examples as well
             if target_dir.join("examples").exists() {
                 let dst = target_dir.join("examples").join(filename);
-                debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
+                // debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
                 if !dst.exists() {
                     hard_link(asset.clone(), dst);
                 }
@@ -588,7 +465,7 @@ fn main() {
 
             // Copy DLLs to target/profile/deps as well for tests
             let dst = target_dir.join("deps").join(filename);
-            debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
+            // debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
             if !dst.exists() {
                 hard_link(asset.clone(), dst);
             }

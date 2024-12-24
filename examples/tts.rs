@@ -69,12 +69,11 @@ struct Args {
 fn main() {
     // Parse command-line arguments into `Args` struct
     let args = Args::parse();
-    let text;
-    if args.text.is_some() {
-        text = args.text.unwrap();
+    let text = if args.text.is_some() {
+        args.text.unwrap()
     } else {
-        text = std::fs::read_to_string(args.text_file_input.unwrap()).unwrap();
-    }
+        std::fs::read_to_string(args.text_file_input.unwrap()).unwrap()
+    };
 
     let vits_config = sherpa_rs::tts::VitsConfig {
         lexicon: args.lexicon.unwrap_or_default(),
