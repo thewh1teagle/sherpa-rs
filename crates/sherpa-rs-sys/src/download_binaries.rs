@@ -101,7 +101,7 @@ pub struct DistTable {
     pub targets: HashMap<String, Value>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Dist {
     pub url: String,
     pub name: String,
@@ -135,32 +135,56 @@ impl DistTable {
     }
 
     pub fn get(&self, target: &str, is_dynamic: bool) -> Option<Dist> {
-        debug_log!("dist table: {:?}", self);
-        let target = self.targets.get(target)?;
-        let archive = if is_dynamic {
-            target.get("dynamic").unwrap().as_str().unwrap()
+        debug_log!("Extracting dist for target: {}", target);
+        // debug_log!("dist table: {:?}", self);
+        let target_dist = if target.contains("android") {
+            self.targets.get("android").unwrap()
         } else {
-            target.get("static").unwrap().as_str().unwrap()
+            self.targets.get(target).unwrap()
+        };
+        debug_log!(
+            "raw target_dist: {:?}",
+            serde_json::to_string(target_dist).unwrap()
+        );
+        let archive = if target_dist.get("archive").is_some() {
+            target_dist.get("archive").unwrap().as_str().unwrap()
+        } else if is_dynamic {
+            target_dist.get("dynamic").unwrap().as_str().unwrap()
+        } else {
+            target_dist.get("static").unwrap().as_str().unwrap()
         };
         let name = archive.replace(".tar.bz2", "");
         let name = name.replace(".tar.gz", "");
 
-        let libs = target.get("libs").map(|libs| {
+        let mut libs: Option<Vec<String>> = target_dist.get("libs").map(|libs| {
             libs.as_array()
                 .unwrap()
                 .iter()
                 .map(|lib| lib.as_str().unwrap().to_string())
                 .collect()
         });
+
+        // Replace {arch} in libs
+        let dist_arch = target_dist["arch"][target].as_str().map(|s| s.to_string());
+        if let Some(libs) = libs.as_mut() {
+            if let Some(arch) = dist_arch {
+                libs.iter_mut().for_each(|lib| {
+                    *lib = lib.replace("{arch}", &arch);
+                });
+            }
+        }
+
         let url = self.url.replace("{archive}", archive);
         let checksum = DIST_CHECKSUM.get(archive).unwrap();
 
-        Some(Dist {
+        let dist = Dist {
             url,
+            name,
             checksum: checksum.to_string(),
-            name: name.to_string(),
             libs,
-        })
+        };
+        debug_log!("dist: {:?}", dist);
+        Some(dist)
     }
 }
 

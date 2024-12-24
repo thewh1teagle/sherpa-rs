@@ -1,5 +1,6 @@
 use cmake::Config;
 use glob::glob;
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -18,10 +19,21 @@ macro_rules! debug_log {
     };
 }
 
+lazy_static::lazy_static! {
+    // clang --print-targets
+    // rustc --print target-list
+    static ref RUST_CLANG_TARGET_MAP: HashMap<String, String> = {
+        let mut m = HashMap::new();
+        m.insert("aarch64-linux-android".to_string(), "armv8-linux-androideabi".to_string());
+        m
+    };
+}
+
 fn hard_link(src: PathBuf, dst: PathBuf) {
     if let Err(err) = std::fs::hard_link(&src, &dst) {
         debug_log!("Failed to hardlink {:?}. fallback to copy.", err);
-        fs::copy(src, dst).unwrap();
+        fs::copy(&src, &dst)
+            .unwrap_or_else(|_| panic!("Failed to copy {} to {}", src.display(), dst.display()));
     }
 }
 
@@ -62,16 +74,18 @@ fn copy_folder(src: &Path, dst: &Path) {
     }
 }
 
-fn extract_lib_names(out_dir: &Path, dynamic: bool) -> Vec<String> {
-    let lib_pattern = if cfg!(windows) {
+fn extract_lib_names(out_dir: &Path, is_dynamic: bool, target_os: &str) -> Vec<String> {
+    let lib_pattern = if target_os == "windows" {
         "*.lib"
-    } else if cfg!(target_os = "macos") {
-        if dynamic {
+    } else if target_os == "macos" {
+        if is_dynamic {
             "*.dylib"
         } else {
             "*.a"
         }
-    } else if dynamic {
+    }
+    // Linux, Android
+    else if is_dynamic {
         "*.so"
     } else {
         "*.a"
@@ -104,10 +118,10 @@ fn extract_lib_names(out_dir: &Path, dynamic: bool) -> Vec<String> {
     lib_names
 }
 
-fn extract_lib_assets(out_dir: &Path) -> Vec<PathBuf> {
-    let shared_lib_pattern = if cfg!(windows) {
+fn extract_lib_assets(out_dir: &Path, target_os: &str) -> Vec<PathBuf> {
+    let shared_lib_pattern = if target_os == "windows" {
         "*.dll"
-    } else if cfg!(target_os = "macos") {
+    } else if target_os == "macos" {
         "*.dylib"
     } else {
         "*.so"
@@ -164,6 +178,11 @@ fn main() {
     println!("cargo:rerun-if-changed=wrapper.h");
     println!("cargo:rerun-if-changed=./sherpa-onnx");
     println!("cargo:rerun-if-changed=dist.txt");
+
+    // Note: using cfg!(target_os = "...") doesn't work well when cross compile.
+    // Prefer using this var or TARGET!!!
+    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+    debug_log!("target_os = {}", target_os);
 
     // Show warning if static enabled on Linux without RUSTFLAGS
     #[cfg(all(
@@ -250,16 +269,30 @@ fn main() {
         std::fs::copy("src/bindings.rs", out_dir.join("bindings.rs"))
             .expect("Failed to copy bindings.rs");
     } else {
-        let bindings = bindgen::Builder::default()
+        let mut clang_target = target.clone();
+        if target.contains("android") {
+            clang_target = "armv8-linux-androideabi".to_string();
+        }
+        debug_log!("clang target: {}", clang_target);
+        let mut bindings_builder = bindgen::Builder::default()
             .header("wrapper.h")
             .clang_arg(format!("-I{}", sherpa_dst.display()))
-            .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+            .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
+
+        if let Some(clang_target) = RUST_CLANG_TARGET_MAP.get(&target) {
+            // Explicitly set target in case we are cross-compiling.
+            // See https://github.com/rust-lang/rust-bindgen/issues/1780 for context.
+            debug_log!("mapped clang target: {}", clang_target);
+            bindings_builder = bindings_builder.clang_arg(format!("--target={}", clang_target));
+        }
+
+        let bindings_builder = bindings_builder
             .generate()
             .expect("Failed to generate bindings");
 
         // Write the generated bindings to an output file
         let bindings_path = out_dir.join("bindings.rs");
-        bindings
+        bindings_builder
             .write_to_file(bindings_path)
             .expect("Failed to write bindings");
         debug_log!("Bindings Created");
@@ -277,7 +310,7 @@ fn main() {
         .define("SHERPA_ONNX_ENABLE_TTS", "OFF")
         .define("SHERPA_ONNX_BUILD_C_API_EXAMPLES", "OFF");
 
-    if cfg!(windows) {
+    if target_os == "windows" {
         config.static_crt(static_crt);
     }
 
@@ -300,7 +333,7 @@ fn main() {
         config.define("BUILD_SHARED_LIBS", "ON");
     }
 
-    if cfg!(any(windows, target_os = "linux")) {
+    if target_os == "windows" || target_os == "linux" || target == "android" {
         config.define("SHERPA_ONNX_ENABLE_PORTAUDIO", "ON");
     }
 
@@ -314,6 +347,10 @@ fn main() {
     let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
 
     // Download libraries, cache and set SHERPA_LIB_PATH
+
+    #[cfg(feature = "download-binaries")]
+    let mut optional_dist: Option<download_binaries::Dist> = None;
+
     #[cfg(feature = "download-binaries")]
     {
         use download_binaries::{extract_tbz, fetch_file, get_cache_dir, sha256, DIST_TABLE};
@@ -321,8 +358,7 @@ fn main() {
         // debug_log!("Dist table: {:?}", DIST_TABLE.targets);
         // Try download sherpa libs and set SHERPA_LIB_PATH
         if let Some(dist) = DIST_TABLE.get(&target, is_dynamic) {
-            debug_log!("Dist: {:?}", dist);
-
+            optional_dist = Some(dist.clone());
             let mut cache_dir = if let Some(dir) = get_cache_dir() {
                 dir.join(target.clone()).join(&dist.checksum)
             } else {
@@ -349,12 +385,19 @@ fn main() {
             } else {
                 debug_log!("Skip fetch file. Using cache from {}", lib_dir.display());
             }
-            env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
 
+            // In Android, we need to set SHERPA_LIB_PATH to the cache directory sincie it has jniLibs
+            if target.contains("android") {
+                env::set_var("SHERPA_LIB_PATH", cache_dir);
+            } else {
+                env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
+            }
+
+            debug_log!("dist libs: {:?}", dist.libs);
             if let Some(libs) = dist.libs {
                 sherpa_libs = libs;
             } else {
-                sherpa_libs = extract_lib_names(&lib_dir, is_dynamic);
+                sherpa_libs = extract_lib_names(&lib_dir, is_dynamic, &target_os);
             }
         } else {
             println!("cargo:warning=Failed to download binaries. fallback to manual build.");
@@ -369,7 +412,7 @@ fn main() {
             "cargo:rustc-link-search={}",
             Path::new(&sherpa_lib_path).join("lib").display()
         );
-        sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), is_dynamic);
+        sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), is_dynamic, &target_os);
     } else {
         // Build with CMake
         let bindings_dir = config.build();
@@ -377,7 +420,7 @@ fn main() {
 
         // Extract libs on desktop platforms
         if !target.contains("android") && !target.contains("ios") {
-            sherpa_libs = extract_lib_names(&bindings_dir, is_dynamic);
+            sherpa_libs = extract_lib_names(&bindings_dir, is_dynamic, &target_os);
         }
     }
 
@@ -401,13 +444,13 @@ fn main() {
     }
 
     // macOS
-    if cfg!(target_os = "macos") {
+    if target_os == "macos" {
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=c++");
     }
 
     // Linux
-    if cfg!(target_os = "linux") {
+    if target_os == "linux" || target == "android" {
         println!("cargo:rustc-link-lib=dylib=stdc++");
     }
 
@@ -424,9 +467,18 @@ fn main() {
 
     // copy DLLs to target
     if is_dynamic {
-        let mut libs_assets = extract_lib_assets(&out_dir);
+        let mut libs_assets = extract_lib_assets(&out_dir, &target_os);
         if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
-            libs_assets.extend(extract_lib_assets(Path::new(&sherpa_lib_path)));
+            libs_assets.extend(extract_lib_assets(Path::new(&sherpa_lib_path), &target_os));
+        }
+
+        if let Some(dist) = optional_dist {
+            if let Some(assets) = dist.libs {
+                if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
+                    let sherpa_lib_path = Path::new(&sherpa_lib_path);
+                    libs_assets.extend(assets.iter().map(|p| sherpa_lib_path.join(p)));
+                }
+            }
         }
 
         for asset in libs_assets {
