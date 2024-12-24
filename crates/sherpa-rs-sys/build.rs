@@ -62,18 +62,18 @@ fn copy_folder(src: &Path, dst: &Path) {
     }
 }
 
-fn extract_lib_names(out_dir: &Path, dynamic: bool, target_os: &str) -> Vec<String> {
+fn extract_lib_names(out_dir: &Path, is_dynamic: bool, target_os: &str) -> Vec<String> {
     let lib_pattern = if target_os == "windows" {
         "*.lib"
     } else if target_os == "macos" {
-        if dynamic {
+        if is_dynamic {
             "*.dylib"
         } else {
             "*.a"
         }
     }
     // Linux, Android
-    else if dynamic {
+    else if is_dynamic {
         "*.so"
     } else {
         "*.a"
@@ -369,7 +369,7 @@ fn main() {
             if let Some(libs) = dist.libs {
                 sherpa_libs = libs;
             } else {
-                sherpa_libs = extract_lib_names(&lib_dir, is_dynamic);
+                sherpa_libs = extract_lib_names(&lib_dir, is_dynamic, &target_os);
             }
         } else {
             println!("cargo:warning=Failed to download binaries. fallback to manual build.");
@@ -392,7 +392,7 @@ fn main() {
 
         // Extract libs on desktop platforms
         if !target.contains("android") && !target.contains("ios") {
-            sherpa_libs = extract_lib_names(&bindings_dir, is_dynamic);
+            sherpa_libs = extract_lib_names(&bindings_dir, is_dynamic, &target_os);
         }
     }
 
