@@ -139,8 +139,12 @@ impl DistTable {
         // debug_log!("dist table: {:?}", self);
         let target_dist = if target.contains("android") {
             self.targets.get("android").unwrap()
+        } else if target.contains("ios") {
+            self.targets.get("ios").unwrap()
         } else {
-            self.targets.get(target).unwrap()
+            self.targets
+                .get(target)
+                .expect(format!("Target {} not found", target).as_str())
         };
         debug_log!(
             "raw target_dist: {:?}",

@@ -269,11 +269,6 @@ fn main() {
         std::fs::copy("src/bindings.rs", out_dir.join("bindings.rs"))
             .expect("Failed to copy bindings.rs");
     } else {
-        let mut clang_target = target.clone();
-        if target.contains("android") {
-            clang_target = "armv8-linux-androideabi".to_string();
-        }
-        debug_log!("clang target: {}", clang_target);
         let mut bindings_builder = bindgen::Builder::default()
             .header("wrapper.h")
             .clang_arg(format!("-I{}", sherpa_dst.display()))
@@ -387,7 +382,7 @@ fn main() {
             }
 
             // In Android, we need to set SHERPA_LIB_PATH to the cache directory sincie it has jniLibs
-            if target.contains("android") {
+            if target.contains("android") || target.contains("ios") {
                 env::set_var("SHERPA_LIB_PATH", cache_dir);
             } else {
                 env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
