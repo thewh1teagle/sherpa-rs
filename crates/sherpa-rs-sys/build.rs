@@ -1,5 +1,6 @@
 use cmake::Config;
 use glob::glob;
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -15,6 +16,16 @@ macro_rules! debug_log {
         if std::env::var("SHERPA_BUILD_DEBUG").unwrap_or_default() == "1" {
             println!("cargo:warning=[DEBUG] {}", format!($($arg)*));
         }
+    };
+}
+
+lazy_static::lazy_static! {
+    // clang --print-targets
+    // rustc --print target-list
+    static ref RUST_CLANG_TARGET_MAP: HashMap<String, String> = {
+        let mut m = HashMap::new();
+        m.insert("aarch64-linux-android".to_string(), "armv8-linux-androideabi".to_string());
+        m
     };
 }
 
@@ -263,19 +274,25 @@ fn main() {
             clang_target = "armv8-linux-androideabi".to_string();
         }
         debug_log!("clang target: {}", clang_target);
-        let bindings = bindgen::Builder::default()
+        let mut bindings_builder = bindgen::Builder::default()
             .header("wrapper.h")
             .clang_arg(format!("-I{}", sherpa_dst.display()))
+            .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
+
+        if let Some(clang_target) = RUST_CLANG_TARGET_MAP.get(&target) {
             // Explicitly set target in case we are cross-compiling.
             // See https://github.com/rust-lang/rust-bindgen/issues/1780 for context.
-            .clang_arg(format!("--target={}", clang_target))
-            .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+            debug_log!("mapped clang target: {}", clang_target);
+            bindings_builder = bindings_builder.clang_arg(format!("--target={}", clang_target));
+        }
+
+        let bindings_builder = bindings_builder
             .generate()
             .expect("Failed to generate bindings");
 
         // Write the generated bindings to an output file
         let bindings_path = out_dir.join("bindings.rs");
-        bindings
+        bindings_builder
             .write_to_file(bindings_path)
             .expect("Failed to write bindings");
         debug_log!("Bindings Created");
