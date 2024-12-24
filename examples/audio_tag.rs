@@ -14,7 +14,7 @@ fn main() {
     let wav_path = "./sherpa-onnx-zipformer-audio-tagging-2024-04-09/test_wavs/1.wav";
     let top_k = 5;
 
-    let (samples, sample_rate) = sherpa_rs::read_audio_file(&wav_path).unwrap();
+    let (samples, sample_rate) = sherpa_rs::read_audio_file(wav_path).unwrap();
 
     let config = sherpa_rs::audio_tag::AudioTagConfig {
         model: model.into(),

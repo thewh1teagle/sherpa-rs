@@ -32,7 +32,7 @@ fn main() {
     let mut recognizer = WhisperRecognizer::new(config).unwrap();
 
     let start_t = std::time::Instant::now();
-    let result = recognizer.transcribe(sample_rate as u32, samples);
+    let result = recognizer.transcribe(sample_rate, samples);
     println!("✅ Text: {}", result.text);
     println!("⏱️ Time taken for transcription: {:?}", start_t.elapsed());
 }

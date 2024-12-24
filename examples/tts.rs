@@ -69,12 +69,11 @@ struct Args {
 fn main() {
     // Parse command-line arguments into `Args` struct
     let args = Args::parse();
-    let text;
-    if args.text.is_some() {
-        text = args.text.unwrap();
+    let text = if args.text.is_some() {
+        args.text.unwrap()
     } else {
-        text = std::fs::read_to_string(args.text_file_input.unwrap()).unwrap();
-    }
+        std::fs::read_to_string(args.text_file_input.unwrap()).unwrap()
+    };
 
     let vits_config = sherpa_rs::tts::VitsConfig {
         lexicon: args.lexicon.unwrap_or_default(),
@@ -89,6 +88,7 @@ fn main() {
         model: args.model,
         max_num_sentences,
         rule_fsts: args.tts_rule_fsts.unwrap_or_default(),
+        provider: args.provider,
         ..Default::default()
     };
     let mut tts = sherpa_rs::tts::OfflineTts::new(tts_config, vits_config);
