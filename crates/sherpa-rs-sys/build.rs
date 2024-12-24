@@ -19,7 +19,7 @@ macro_rules! debug_log {
 }
 
 fn hard_link(src: PathBuf, dst: PathBuf) {
-    if let Err(err) = std::fs::hard_link(&src.clone(), &dst) {
+    if let Err(err) = std::fs::hard_link(&src, &dst) {
         debug_log!("Failed to hardlink {:?}. fallback to copy.", err);
         fs::copy(&src, &dst)
             .unwrap_or_else(|_| panic!("Failed to copy {} to {}", src.display(), dst.display()));
