@@ -3,6 +3,7 @@ pub mod diarize;
 pub mod embedding_manager;
 pub mod keyword_spot;
 pub mod language_id;
+pub mod moonshine;
 pub mod punctuate;
 pub mod speaker_id;
 pub mod vad;

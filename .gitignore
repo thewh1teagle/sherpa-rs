@@ -12,6 +12,7 @@ sherpa-onnx/
 sherpa-onnx-whisper*
 sherpa-onnx-pyannote-*
 sherpa-onnx-zipformer-*
+sherpa-onnx-moonshine-*
 *.txt
 !checksum.txt
 sherpa-onnx-v*
@@ -21,4 +22,5 @@ sys/src/bindings.rs
 sherpa-onnx-punct*
 vits-*
 sherpa-onnx-kws-*
+.tmp/
 jniLibs/

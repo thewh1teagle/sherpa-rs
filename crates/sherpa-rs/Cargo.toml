@@ -88,3 +88,7 @@ path = "../../examples/vad_segment.rs"
 [[example]]
 name = "whisper"
 path = "../../examples/whisper.rs"
+
+[[example]]
+name = "moonshine"
+path = "../../examples/moonshine.rs"
