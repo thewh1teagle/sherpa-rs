@@ -25,7 +25,7 @@ fn main() {
 
     println!("--------------------");
     for sentence in sentences {
-        let punctuated = punctuate.add_punctuation(&sentence);
+        let punctuated = punctuate.add_punctuation(sentence);
         println!("Input text: {}", sentence);
         println!("Output text: {}", punctuated);
         println!("--------------------");

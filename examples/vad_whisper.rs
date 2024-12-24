@@ -20,10 +20,8 @@ fn main() {
     let (mut samples, sample_rate) = read_audio_file(&path).unwrap();
     assert_eq!(sample_rate, 16000, "The sample rate must be 16000.");
 
-    // Pad with 3 seconds of slience so vad will able to detect stop
-    for _ in 0..3 * sample_rate {
-        samples.push(0.0);
-    }
+    // Pad with 3 seconds of silence so vad will be able to detect stop
+    samples.extend(vec![0.0; (3 * sample_rate) as usize]);
 
     let extractor_config = speaker_id::ExtractorConfig {
         model: "nemo_en_speakerverification_speakernet.onnx".into(),
@@ -62,7 +60,7 @@ fn main() {
                 let segment = vad.front();
                 let start_sec = (segment.start as f32) / sample_rate as f32;
                 let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
-                let transcript = recognizer.transcribe(sample_rate as u32, segment.samples.clone());
+                let transcript = recognizer.transcribe(sample_rate, segment.samples.clone());
 
                 // Compute the speaker embedding
                 let mut embedding = extractor
@@ -98,7 +96,7 @@ fn main() {
             let segment = vad.front();
             let start_sec = (segment.start as f32) / sample_rate as f32;
             let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
-            let transcript = recognizer.transcribe(sample_rate as u32, segment.samples.clone());
+            let transcript = recognizer.transcribe(sample_rate, segment.samples.clone());
 
             // Compute the speaker embedding
             let mut embedding = extractor
