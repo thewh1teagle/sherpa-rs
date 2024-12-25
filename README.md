@@ -1,7 +1,6 @@
 # sherpa-rs
 
 [![Crates](https://img.shields.io/crates/v/sherpa-rs?logo=rust)](https://crates.io/crates/sherpa-rs/)
-![docs.rs](https://img.shields.io/docsrs/sherpa-rs)
 [![License](https://img.shields.io/github/license/thewh1teagle/sherpa-rs?color=00aaaa&logo=license)](https://github.com/thewh1teagle/sherpa-rs/blob/main/LICENSE)
 
 Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
@@ -45,9 +44,11 @@ Please see [BUILDING.md](BUILDING.md).
 - `static`: use static sherpa-onnx libraries and link them statically.
 - `sys`: expose raw c bindings (sys crate)
 
-## Docs
+## Documentation
 
-See [sherpa/intro.html](https://k2-fsa.github.io/sherpa/intro.html)
+For the documentation on `sherpa_rs`, please visit [docs.rs/sherpa_rs](https://docs.rs/sherpa-rs/latest/sherpa_rs).
+
+For documentation on `sherpa-onnx`, refer to the [sherpa/intro.html](https://k2-fsa.github.io/sherpa/intro.html).
 
 ## Examples
 
