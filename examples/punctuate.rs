@@ -6,11 +6,12 @@ wget https://github.com/k2-fsa/sherpa-onnx/releases/download/punctuation-models/
 tar xvf sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12.tar.bz2
 rm sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12.tar.bz2
 
-cargo run --example punctuate
+cargo run --example punctuate ./sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12/model.onnx
 */
 
 fn main() {
-    let model = "./sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12/model.onnx";
+    let args: Vec<String> = std::env::args().collect();
+    let model = args.get(1).expect("Please specify model path");
     let sentences = [
         "这是一个测试你好吗How are you我很好thank you are you ok谢谢你", 
         "我们都是木头人不会说话不会动", 

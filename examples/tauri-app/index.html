@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- <link rel="stylesheet" href="/src/styles.css" /> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sherpa-rs with tauri</title>
+    <script type="module" src="/src/main.ts" defer></script>
+    <style>
+      h1 {
+        background-color: #8EC5FC;
+        background-image: linear-gradient(62deg, #8EC5FC 0%, #E0C3FC 100%);
+        -webkit-background-clip: text; /* Safari */
+        background-clip: text; /* For other modern browsers */
+        color: transparent; /* Make the text itself transparent */
+      }
+      
+        #input {
+          width: 90%;
+          height: 120px;
+          border-radius: 12px;
+          padding: 5px 5px;
+        }
+
+        .action {
+          display: flex;
+          justify-content: center;
+          margin-top: 10px;
+        }
+
+        button {
+          background: #8EC5FC;
+          color: white;
+          border: none;
+          padding: 5px 5px;
+          
+          font-size: 22px;
+          border-radius: 12px;
+        }
+
+        #output {
+          margin-top: 20px;
+          padding: 10px;
+          border-radius: 12px;
+          background-color: #f4f4f9;
+          font-size: 18px;
+          color: #333;
+          word-wrap: break-word;
+        }
+    </style>
+  </head>
+
+  <body>
+    <main class="container">
+      <h1 style="text-align: center;">sherpa-rs</h1>
+
+      <form class="row" id="input-form">
+        <textarea id="input" placeholder="Type text to punctuate...">Hello how are you</textarea>
+        <div class="action">
+        <button type="submit">Punctuate</button>
+      </div>
+      </form>
+      <p id="output"></p>
+    </main>
+  </body>
+</html>
