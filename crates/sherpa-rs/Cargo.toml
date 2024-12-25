@@ -1,12 +1,12 @@
 [package]
 name = "sherpa-rs"
-version = "0.5.1"
+version = "0.5.2-beta.0"
 edition = "2021"
 authors = ["thewh1teagle"]
 license = "MIT"
 repository = "https://github.com/thewh1teagle/sherpa-rs"
 description = "Rust bindings to https://github.com/k2-fsa/sherpa-onnx"
-readme = "README.md"
+readme = "../../README.md"
 keywords = [
     "audio",
     "embeddings",
@@ -21,7 +21,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 eyre = "0.6.12"
 hound = { version = "3.5.1" }
-sherpa-rs-sys = { path = "../sherpa-rs-sys", version = "0.5.1", default-features = false }
+sherpa-rs-sys = { path = "../sherpa-rs-sys", version = "0.5.2-beta.0", default-features = false }
 tracing = "0.1.40"
 
 [dev-dependencies]
