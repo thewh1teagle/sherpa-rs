@@ -1,6 +1,6 @@
 [package]
 name = "sherpa-rs-sys"
-version = "0.5.1"
+version = "0.6.0"
 edition = "2021"
 authors = ["thewh1teagle"]
 homepage = "https://github.com/thewh1teagle/sherpa-rs"
@@ -30,7 +30,8 @@ include = [
     "src/",
     "build.rs",
     "wrapper.h",
-    "dist.txt",
+    "dist.json",
+    "checksum.txt",
 ]
 
 [build-dependencies]
