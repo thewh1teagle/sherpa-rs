@@ -519,6 +519,7 @@ fn main() {
             libs_assets.extend(extract_lib_assets(Path::new(&sherpa_lib_path), &target_os));
         }
 
+        #[cfg(feature = "download-binaries")]
         if let Some(dist) = optional_dist {
             if let Some(assets) = dist.libs {
                 if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
