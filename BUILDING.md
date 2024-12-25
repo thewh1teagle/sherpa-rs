@@ -190,6 +190,14 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
 
 </details>
 
+### Shared library not found while it's in the same directly of executable
+
+Modify the shared librarie and binary files to load other shared libraries located in the same folder.
+
+```console
+patchelf --set-rpath '$ORIGIN' /path/to/binary/or/shared/library.so
+```
+
 ### Debug build
 
 For debug the build process of sherpa-onnx, please set `SHERPA_BUILD_DEBUG=1` environment variable before build.
