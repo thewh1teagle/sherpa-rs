@@ -232,6 +232,7 @@ fn main() {
     ]);
 
     let target = env::var("TARGET").unwrap();
+    let is_mobile = target.contains("android") || target.contains("ios");
     debug_log!("TARGET: {:?}", target);
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
@@ -385,8 +386,16 @@ fn main() {
                 cache_dir = env::var("OUT_DIR").unwrap().into();
             }
             debug_log!("Cache dir: {}", cache_dir.display());
+
             let lib_dir = cache_dir.join(&dist.name);
-            if !lib_dir.exists() {
+            // if is mobile then check if cache dir not empty
+            let cache_dir_empty = cache_dir
+                .read_dir()
+                .map(|mut entries| entries.next().is_none())
+                .unwrap_or(true);
+            // Check if cache directory exists
+            // Sherpa uses special directory structure for mobile
+            if (!lib_dir.exists() && !is_mobile) || (is_mobile && cache_dir_empty) {
                 let downloaded_file = fetch_file(&dist.url);
                 let hash = sha256(&downloaded_file);
                 // verify checksum
@@ -402,7 +411,7 @@ fn main() {
             }
 
             // In Android, we need to set SHERPA_LIB_PATH to the cache directory sincie it has jniLibs
-            if target.contains("android") || target.contains("ios") {
+            if is_mobile {
                 env::set_var("SHERPA_LIB_PATH", &cache_dir);
             } else {
                 env::set_var("SHERPA_LIB_PATH", &cache_dir.join(&dist.name));
@@ -457,7 +466,7 @@ fn main() {
         add_search_path(&bindings_dir);
 
         // Extract libs on desktop platforms
-        if !target.contains("android") && !target.contains("ios") {
+        if !is_mobile {
             sherpa_libs = extract_lib_names(&bindings_dir, is_dynamic, &target_os);
         }
     }
@@ -507,7 +516,7 @@ fn main() {
     }
 
     // TODO: add rpath for Android and iOS so it can find its dependencies in the same directory of executable
-    // if target.contains("android") || target.contains("ios") {
+    // if is_mobile {
     //     // Add rpath for Android and iOS so that the shared library can find its dependencies in the same directory as well
     //     println!("cargo:rustc-link-arg=-Wl,-rpath,'$ORIGIN'");
     // }
