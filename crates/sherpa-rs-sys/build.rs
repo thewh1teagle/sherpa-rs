@@ -25,11 +25,28 @@ lazy_static::lazy_static! {
     static ref RUST_CLANG_TARGET_MAP: HashMap<String, String> = {
         let mut m = HashMap::new();
         m.insert("aarch64-linux-android".to_string(), "armv8-linux-androideabi".to_string());
+        m.insert("aarch64-apple-ios-sim".to_string(), "arm64-apple-ios-sim".to_string());
         m
     };
 }
 
-fn hard_link(src: PathBuf, dst: PathBuf) {
+fn link_lib(lib: &str, is_dynamic: bool) {
+    let lib_kind = if is_dynamic { "dylib" } else { "static" };
+    debug_log!("cargo:rustc-link-lib={}={}", lib_kind, lib);
+    println!("cargo:rustc-link-lib={}={}", lib_kind, lib);
+}
+
+fn link_framework(framework: &str) {
+    debug_log!("cargo:rustc-link-lib=framework={}", framework);
+    println!("cargo:rustc-link-lib=framework={}", framework);
+}
+
+fn add_search_path<P: AsRef<Path>>(path: P) {
+    debug_log!("cargo:rustc-link-search={}", path.as_ref().display());
+    println!("cargo:rustc-link-search={}", path.as_ref().display());
+}
+
+fn copy_file(src: PathBuf, dst: PathBuf) {
     if let Err(err) = std::fs::hard_link(&src, &dst) {
         debug_log!("Failed to hardlink {:?}. fallback to copy.", err);
         fs::copy(&src, &dst)
@@ -281,12 +298,15 @@ fn main() {
             bindings_builder = bindings_builder.clang_arg(format!("--target={}", clang_target));
         }
 
+        debug_log!("Generating bindings...");
         let bindings_builder = bindings_builder
             .generate()
             .expect("Failed to generate bindings");
 
         // Write the generated bindings to an output file
         let bindings_path = out_dir.join("bindings.rs");
+
+        debug_log!("Writing bindings to {:?}", bindings_path);
         bindings_builder
             .write_to_file(bindings_path)
             .expect("Failed to write bindings");
@@ -393,8 +413,7 @@ fn main() {
                 for lib in libs.iter() {
                     let lib_path = cache_dir.join(lib);
                     let lib_parent = lib_path.parent().unwrap();
-                    debug_log!("Adding search path: {}", lib_parent.display());
-                    println!("cargo:rustc-link-search={}", lib_parent.display());
+                    add_search_path(lib_parent);
                 }
 
                 sherpa_libs = libs
@@ -428,17 +447,14 @@ fn main() {
         // Skip build if SHERPA_LIB_PATH specified
         debug_log!("Skpping build with Cmake...");
         debug_log!("SHERPA_LIB_PATH: {}", sherpa_lib_path);
-        println!(
-            "cargo:rustc-link-search={}",
-            Path::new(&sherpa_lib_path).join("lib").display()
-        );
+        add_search_path(Path::new(&sherpa_lib_path).join("lib"));
         if sherpa_libs.is_empty() {
             sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), is_dynamic, &target_os);
         }
     } else {
         // Build with CMake
         let bindings_dir = config.build();
-        println!("cargo:rustc-link-search={}", bindings_dir.display());
+        add_search_path(&bindings_dir);
 
         // Extract libs on desktop platforms
         if !target.contains("android") && !target.contains("ios") {
@@ -447,32 +463,35 @@ fn main() {
     }
 
     // Search paths
-    println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
     debug_log!("Sherpa libs: {:?}", sherpa_libs);
+    add_search_path(out_dir.join("lib"));
 
-    let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
     for lib in sherpa_libs {
         if lib.contains("cxx") {
             continue;
         }
-        debug_log!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib);
-        println!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib);
+        link_lib(&lib, is_dynamic);
     }
 
     // Windows debug
     if cfg!(all(debug_assertions, windows)) {
-        println!("cargo:rustc-link-lib=dylib=msvcrtd");
+        link_lib("msvcrtd", true);
     }
 
     // macOS
     if target_os == "macos" || target_os == "ios" {
-        println!("cargo:rustc-link-lib=framework=Foundation");
-        println!("cargo:rustc-link-lib=c++");
+        link_framework("CoreML");
+        link_framework("Foundation");
+        link_lib("c++", true);
+    }
+
+    if target_os == "ios" {
+        println!("cargo:rustc-link-arg=Metal");
     }
 
     // Linux
     if target_os == "linux" || target == "android" {
-        println!("cargo:rustc-link-lib=dylib=stdc++");
+        link_lib("stdc++", true);
     }
 
     // macOS
@@ -482,8 +501,8 @@ fn main() {
         //
         // More details at https://github.com/alexcrichton/curl-rust/issues/279.
         if let Some(path) = macos_link_search_path() {
-            println!("cargo:rustc-link-lib=clang_rt.osx");
-            println!("cargo:rustc-link-search={}", path);
+            add_search_path(path);
+            link_lib("clang_rt.osx", is_dynamic);
         }
     }
 
@@ -516,7 +535,7 @@ fn main() {
             let dst = target_dir.join(filename);
             // debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
             if !dst.exists() {
-                hard_link(asset.clone(), dst);
+                copy_file(asset.clone(), dst);
             }
 
             // Copy DLLs to examples as well
@@ -524,7 +543,7 @@ fn main() {
                 let dst = target_dir.join("examples").join(filename);
                 // debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
                 if !dst.exists() {
-                    hard_link(asset.clone(), dst);
+                    copy_file(asset.clone(), dst);
                 }
             }
 
@@ -532,7 +551,7 @@ fn main() {
             let dst = target_dir.join("deps").join(filename);
             // debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
             if !dst.exists() {
-                hard_link(asset.clone(), dst);
+                copy_file(asset.clone(), dst);
             }
         }
     }

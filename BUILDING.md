@@ -192,7 +192,7 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
 
 ### Debug build
 
-For debug the build process of sherpa-onnx, please set `BUILD_DEBUG=1` environment variable before build.
+For debug the build process of sherpa-onnx, please set `SHERPA_BUILD_DEBUG=1` environment variable before build.
 
 ## Release new version
 
