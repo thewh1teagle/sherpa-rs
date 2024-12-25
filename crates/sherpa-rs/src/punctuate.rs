@@ -57,3 +57,14 @@ impl Punctuation {
         }
     }
 }
+
+unsafe impl Send for Punctuation {}
+unsafe impl Sync for Punctuation {}
+
+impl Drop for Punctuation {
+    fn drop(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxDestroyOfflinePunctuation(self.audio_punctuation);
+        }
+    }
+}

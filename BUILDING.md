@@ -256,3 +256,16 @@ Build
 export RUSTFLAGS="-C link-arg=-fapple-link-rtlib" # See https://github.com/bmrlab/gendam/issues/96
 cargo build --release --target aarch64-apple-ios
 ```
+
+## Build for Windows arm64
+
+1. Install toolchain in Visual Studio
+
+Open Visual Studio Installer, go to Individual Components, search ARM64, select MSVC v[version] - ARM64 build tools, and click Modify.
+
+1. Build
+
+```console
+rustup target add aarch64-pc-windows-msvc
+cargo build --no-default-features --target aarch64-pc-windows-msvc --release
+```
