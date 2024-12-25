@@ -414,7 +414,7 @@ fn main() {
             if is_mobile {
                 env::set_var("SHERPA_LIB_PATH", &cache_dir);
             } else {
-                env::set_var("SHERPA_LIB_PATH", &cache_dir.join(&dist.name));
+                env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
             }
 
             debug_log!("dist libs: {:?}", dist.libs);
