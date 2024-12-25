@@ -314,6 +314,13 @@ fn main() {
         debug_log!("Bindings Created");
     }
 
+    // Skip build when docs.rs website built this crate
+    // Only build the bindings.rs file.
+    if env::var("DOCS_RS") == Ok("1".to_string()) {
+        debug_log!("Detected DOCS_RS. Skipping build / fetch.");
+        return;
+    }
+
     // Build with Cmake
 
     let mut config = Config::new(&sherpa_dst);
