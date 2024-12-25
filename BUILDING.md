@@ -245,5 +245,6 @@ rustup target add aarch64-apple-ios-sim
 Build
 
 ```console
+export RUSTFLAGS="-C link-arg=-fapple-link-rtlib" # See https://github.com/bmrlab/gendam/issues/96
 cargo build --release --target aarch64-apple-ios
 ```

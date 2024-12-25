@@ -494,10 +494,6 @@ fn main() {
         link_lib("c++", true);
     }
 
-    if target_os == "ios" {
-        println!("cargo:rustc-link-arg=Metal");
-    }
-
     // Linux
     if target_os == "linux" || target == "android" {
         link_lib("stdc++", true);
