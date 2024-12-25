@@ -144,7 +144,7 @@ impl DistTable {
         } else {
             self.targets
                 .get(target)
-                .unwrap_or_else(|| panic!("Target {} not found", target))
+                .unwrap_or_else(|| panic!("Target {} not found. try to disable download-feature with --no-default-features.", target))
         };
         debug_log!(
             "raw target_dist: {:?}",
