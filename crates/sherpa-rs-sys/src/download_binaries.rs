@@ -134,7 +134,7 @@ impl DistTable {
         table
     }
 
-    pub fn get(&self, target: &str, is_dynamic: bool) -> Option<Dist> {
+    pub fn get(&self, target: &str, is_dynamic: &mut bool) -> Option<Dist> {
         debug_log!("Extracting dist for target: {}", target);
         // debug_log!("dist table: {:?}", self);
         let target_dist = if target.contains("android") {
@@ -151,10 +151,14 @@ impl DistTable {
             serde_json::to_string(target_dist).unwrap()
         );
         let archive = if target_dist.get("archive").is_some() {
+            // archive name
+            // static/dynamic located in 'is_dynamic' field
             target_dist.get("archive").unwrap().as_str().unwrap()
-        } else if is_dynamic {
+        } else if *is_dynamic {
+            // dynamic archive name
             target_dist.get("dynamic").unwrap().as_str().unwrap()
         } else {
+            // static archive name
             target_dist.get("static").unwrap().as_str().unwrap()
         };
         let name = archive.replace(".tar.bz2", "");
@@ -180,6 +184,13 @@ impl DistTable {
 
         let url = self.url.replace("{archive}", archive);
         let checksum = DIST_CHECKSUM.get(archive).unwrap();
+
+        // modify is_dynamic
+        debug_log!("checking is_dynamic");
+        if let Some(target_dist) = target_dist.get("is_dynamic") {
+            *is_dynamic = target_dist.as_bool().unwrap();
+            debug_log!("is_dynamic: {}", *is_dynamic);
+        }
 
         let dist = Dist {
             url,

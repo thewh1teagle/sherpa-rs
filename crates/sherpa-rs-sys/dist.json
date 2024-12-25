@@ -20,6 +20,7 @@
         },
         "android": {
             "archive": "sherpa-onnx-{tag}-android.tar.bz2",
+            "is_dynamic": true,
             "arch": {
                 "aarch64-linux-android": "arm64-v8a",
                 "x86_64-linux-android": "x86_64",
@@ -32,6 +33,7 @@
         },
         "ios": {
             "archive": "sherpa-onnx-{tag}-ios.tar.bz2",
+            "is_dynamic": false,
             "arch": {
                 "aarch64-apple-ios": "ios-arm64",
                 "aarch64-apple-ios-sim": "ios-arm64-simulator"

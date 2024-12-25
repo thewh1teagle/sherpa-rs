@@ -25,11 +25,28 @@ lazy_static::lazy_static! {
     static ref RUST_CLANG_TARGET_MAP: HashMap<String, String> = {
         let mut m = HashMap::new();
         m.insert("aarch64-linux-android".to_string(), "armv8-linux-androideabi".to_string());
+        m.insert("aarch64-apple-ios-sim".to_string(), "arm64-apple-ios-sim".to_string());
         m
     };
 }
 
-fn hard_link(src: PathBuf, dst: PathBuf) {
+fn link_lib(lib: &str, is_dynamic: bool) {
+    let lib_kind = if is_dynamic { "dylib" } else { "static" };
+    debug_log!("cargo:rustc-link-lib={}={}", lib_kind, lib);
+    println!("cargo:rustc-link-lib={}={}", lib_kind, lib);
+}
+
+fn link_framework(framework: &str) {
+    debug_log!("cargo:rustc-link-lib=framework={}", framework);
+    println!("cargo:rustc-link-lib=framework={}", framework);
+}
+
+fn add_search_path<P: AsRef<Path>>(path: P) {
+    debug_log!("cargo:rustc-link-search={}", path.as_ref().display());
+    println!("cargo:rustc-link-search={}", path.as_ref().display());
+}
+
+fn copy_file(src: PathBuf, dst: PathBuf) {
     if let Err(err) = std::fs::hard_link(&src, &dst) {
         debug_log!("Failed to hardlink {:?}. fallback to copy.", err);
         fs::copy(&src, &dst)
@@ -215,6 +232,7 @@ fn main() {
     ]);
 
     let target = env::var("TARGET").unwrap();
+    let is_mobile = target.contains("android") || target.contains("ios");
     debug_log!("TARGET: {:?}", target);
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
@@ -281,12 +299,15 @@ fn main() {
             bindings_builder = bindings_builder.clang_arg(format!("--target={}", clang_target));
         }
 
+        debug_log!("Generating bindings...");
         let bindings_builder = bindings_builder
             .generate()
             .expect("Failed to generate bindings");
 
         // Write the generated bindings to an output file
         let bindings_path = out_dir.join("bindings.rs");
+
+        debug_log!("Writing bindings to {:?}", bindings_path);
         bindings_builder
             .write_to_file(bindings_path)
             .expect("Failed to write bindings");
@@ -339,7 +360,6 @@ fn main() {
         .always_configure(false);
 
     let mut sherpa_libs: Vec<String> = Vec::new();
-    let sherpa_libs_kind = if is_dynamic { "dylib" } else { "static" };
 
     // Download libraries, cache and set SHERPA_LIB_PATH
 
@@ -352,7 +372,8 @@ fn main() {
         debug_log!("Download binaries enabled");
         // debug_log!("Dist table: {:?}", DIST_TABLE.targets);
         // Try download sherpa libs and set SHERPA_LIB_PATH
-        if let Some(dist) = DIST_TABLE.get(&target, is_dynamic) {
+        if let Some(dist) = DIST_TABLE.get(&target, &mut is_dynamic) {
+            debug_log!("is_dynamic after: {}", is_dynamic);
             optional_dist = Some(dist.clone());
             let mut cache_dir = if let Some(dir) = get_cache_dir() {
                 dir.join(target.clone()).join(&dist.checksum)
@@ -365,8 +386,16 @@ fn main() {
                 cache_dir = env::var("OUT_DIR").unwrap().into();
             }
             debug_log!("Cache dir: {}", cache_dir.display());
+
             let lib_dir = cache_dir.join(&dist.name);
-            if !lib_dir.exists() {
+            // if is mobile then check if cache dir not empty
+            let cache_dir_empty = cache_dir
+                .read_dir()
+                .map(|mut entries| entries.next().is_none())
+                .unwrap_or(true);
+            // Check if cache directory exists
+            // Sherpa uses special directory structure for mobile
+            if (!lib_dir.exists() && !is_mobile) || (is_mobile && cache_dir_empty) {
                 let downloaded_file = fetch_file(&dist.url);
                 let hash = sha256(&downloaded_file);
                 // verify checksum
@@ -382,15 +411,39 @@ fn main() {
             }
 
             // In Android, we need to set SHERPA_LIB_PATH to the cache directory sincie it has jniLibs
-            if target.contains("android") || target.contains("ios") {
-                env::set_var("SHERPA_LIB_PATH", cache_dir);
+            if is_mobile {
+                env::set_var("SHERPA_LIB_PATH", &cache_dir);
             } else {
                 env::set_var("SHERPA_LIB_PATH", cache_dir.join(&dist.name));
             }
 
             debug_log!("dist libs: {:?}", dist.libs);
             if let Some(libs) = dist.libs {
-                sherpa_libs = libs;
+                for lib in libs.iter() {
+                    let lib_path = cache_dir.join(lib);
+                    let lib_parent = lib_path.parent().unwrap();
+                    add_search_path(lib_parent);
+                }
+
+                sherpa_libs = libs
+                    .iter()
+                    .map(|p| {
+                        Path::new(p)
+                            .file_name()
+                            .unwrap()
+                            .to_string_lossy()
+                            // Remove lib prefix
+                            .strip_prefix("lib")
+                            .unwrap_or_else(|| p)
+                            // Remove .so
+                            .replace(".so", "")
+                            // Remove .dylib
+                            .replace(".dylib", "")
+                            // Remove .a
+                            .replace(".a", "")
+                            .to_string()
+                    })
+                    .collect();
             } else {
                 sherpa_libs = extract_lib_names(&lib_dir, is_dynamic, &target_os);
             }
@@ -403,62 +456,66 @@ fn main() {
         // Skip build if SHERPA_LIB_PATH specified
         debug_log!("Skpping build with Cmake...");
         debug_log!("SHERPA_LIB_PATH: {}", sherpa_lib_path);
-        println!(
-            "cargo:rustc-link-search={}",
-            Path::new(&sherpa_lib_path).join("lib").display()
-        );
-        sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), is_dynamic, &target_os);
+        add_search_path(Path::new(&sherpa_lib_path).join("lib"));
+        if sherpa_libs.is_empty() {
+            sherpa_libs = extract_lib_names(Path::new(&sherpa_lib_path), is_dynamic, &target_os);
+        }
     } else {
         // Build with CMake
         let bindings_dir = config.build();
-        println!("cargo:rustc-link-search={}", bindings_dir.display());
+        add_search_path(&bindings_dir);
 
         // Extract libs on desktop platforms
-        if !target.contains("android") && !target.contains("ios") {
+        if !is_mobile {
             sherpa_libs = extract_lib_names(&bindings_dir, is_dynamic, &target_os);
         }
     }
 
     // Search paths
-    println!("cargo:rustc-link-search={}", out_dir.join("lib").display());
+    debug_log!("Sherpa libs: {:?}", sherpa_libs);
+    add_search_path(out_dir.join("lib"));
 
     for lib in sherpa_libs {
         if lib.contains("cxx") {
             continue;
         }
-        debug_log!(
-            "LINK {}",
-            format!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib)
-        );
-        println!("cargo:rustc-link-lib={}={}", sherpa_libs_kind, lib);
+        link_lib(&lib, is_dynamic);
     }
 
     // Windows debug
     if cfg!(all(debug_assertions, windows)) {
-        println!("cargo:rustc-link-lib=dylib=msvcrtd");
+        link_lib("msvcrtd", true);
     }
 
     // macOS
-    if target_os == "macos" {
-        println!("cargo:rustc-link-lib=framework=Foundation");
-        println!("cargo:rustc-link-lib=c++");
+    if target_os == "macos" || target_os == "ios" {
+        link_framework("CoreML");
+        link_framework("Foundation");
+        link_lib("c++", true);
     }
 
     // Linux
     if target_os == "linux" || target == "android" {
-        println!("cargo:rustc-link-lib=dylib=stdc++");
+        link_lib("stdc++", true);
     }
 
-    if target.contains("apple") {
+    // macOS
+    if target_os == "macos" {
         // On (older) OSX we need to link against the clang runtime,
         // which is hidden in some non-default path.
         //
         // More details at https://github.com/alexcrichton/curl-rust/issues/279.
         if let Some(path) = macos_link_search_path() {
-            println!("cargo:rustc-link-lib=clang_rt.osx");
-            println!("cargo:rustc-link-search={}", path);
+            add_search_path(path);
+            link_lib("clang_rt.osx", is_dynamic);
         }
     }
+
+    // TODO: add rpath for Android and iOS so it can find its dependencies in the same directory of executable
+    // if is_mobile {
+    //     // Add rpath for Android and iOS so that the shared library can find its dependencies in the same directory as well
+    //     println!("cargo:rustc-link-arg=-Wl,-rpath,'$ORIGIN'");
+    // }
 
     // copy DLLs to target
     if is_dynamic {
@@ -467,6 +524,7 @@ fn main() {
             libs_assets.extend(extract_lib_assets(Path::new(&sherpa_lib_path), &target_os));
         }
 
+        #[cfg(feature = "download-binaries")]
         if let Some(dist) = optional_dist {
             if let Some(assets) = dist.libs {
                 if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
@@ -483,7 +541,7 @@ fn main() {
             let dst = target_dir.join(filename);
             // debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
             if !dst.exists() {
-                hard_link(asset.clone(), dst);
+                copy_file(asset.clone(), dst);
             }
 
             // Copy DLLs to examples as well
@@ -491,7 +549,7 @@ fn main() {
                 let dst = target_dir.join("examples").join(filename);
                 // debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
                 if !dst.exists() {
-                    hard_link(asset.clone(), dst);
+                    copy_file(asset.clone(), dst);
                 }
             }
 
@@ -499,7 +557,7 @@ fn main() {
             let dst = target_dir.join("deps").join(filename);
             // debug_log!("HARD LINK {} TO {}", asset.display(), dst.display());
             if !dst.exists() {
-                hard_link(asset.clone(), dst);
+                copy_file(asset.clone(), dst);
             }
         }
     }

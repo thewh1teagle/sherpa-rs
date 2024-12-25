@@ -192,7 +192,7 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
 
 ### Debug build
 
-For debug the build process of sherpa-onnx, please set `BUILD_DEBUG=1` environment variable before build.
+For debug the build process of sherpa-onnx, please set `SHERPA_BUILD_DEBUG=1` environment variable before build.
 
 ## Release new version
 
@@ -220,7 +220,7 @@ You must install NDK from Android Studio settings.
 rustup target add aarch64-linux-android
 cargo install cargo-ndk
 export NDK_HOME="$HOME/Library/Android/sdk/ndk/27.0.12077973"
-cargo ndk -t arm64-v8a -o ./jniLibs build --release
+cargo ndk -t arm64-v8a build --release
 ```
 
 ## Build for IOS
@@ -245,5 +245,6 @@ rustup target add aarch64-apple-ios-sim
 Build
 
 ```console
+export RUSTFLAGS="-C link-arg=-fapple-link-rtlib" # See https://github.com/bmrlab/gendam/issues/96
 cargo build --release --target aarch64-apple-ios
 ```
