@@ -252,3 +252,17 @@ pub fn extract_tbz(buf: &[u8], output: &Path) {
     let mut archive = tar::Archive::new(tar);
     archive.unpack(output).expect("Failed to extract .tbz file");
 }
+
+pub fn extract_lib_name<P: AsRef<Path>>(path: P) -> String {
+    path.as_ref()
+        .file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| {
+            name.strip_prefix("lib")
+                .unwrap_or(name)
+                .replace(".so", "")
+                .replace(".dylib", "")
+                .replace(".a", "")
+        })
+        .unwrap_or_else(|| "".to_string())
+}
