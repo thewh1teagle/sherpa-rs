@@ -72,15 +72,6 @@ fn get_cargo_target_dir() -> Result<std::path::PathBuf, Box<dyn std::error::Erro
 
 fn copy_folder(src: &Path, dst: &Path) {
     std::fs::create_dir_all(dst).expect("Failed to create dst directory");
-    if cfg!(unix) {
-        std::process::Command::new("cp")
-            .arg("-rf")
-            .arg(src)
-            .arg(dst.parent().unwrap())
-            .status()
-            .expect("Failed to execute cp command");
-    }
-
     if cfg!(windows) {
         std::process::Command::new("robocopy.exe")
             .arg("/e")
@@ -88,6 +79,13 @@ fn copy_folder(src: &Path, dst: &Path) {
             .arg(dst)
             .status()
             .expect("Failed to execute robocopy command");
+    } else {
+        std::process::Command::new("cp")
+            .arg("-rf")
+            .arg(src)
+            .arg(dst.parent().unwrap())
+            .status()
+            .expect("Failed to execute cp command");
     }
 }
 
@@ -191,13 +189,24 @@ fn rerun_on_env_changes(vars: &[&str]) {
     }
 }
 
-fn main() {
-    println!("cargo:rerun-if-changed=wrapper.h");
-    println!("cargo:rerun-if-changed=./sherpa-onnx");
-    println!("cargo:rerun-if-changed=dist.txt");
+fn rerun_if_changed(vars: &[&str]) {
+    for var in vars {
+        println!("cargo:rerun-if-changed={}", var);
+    }
+}
 
-    // Note: using cfg!(target_os = "...") doesn't work well when cross compile.
-    // Prefer using this var or TARGET!!!
+fn main() {
+    rerun_if_changed(&["wrapper.h", "dist.json", "checksum.txt", "./sherpa-onnx"]);
+    rerun_on_env_changes(&[
+        "SHERPA_BUILD_SHARED_LIBS",
+        "CMAKE_BUILD_PARALLEL_LEVEL",
+        "CMAKE_VERBOSE",
+        "SHERPA_LIB_PATH",
+        "SHERPA_STATIC_CRT",
+        "SHERPA_LIB_PROFILE",
+        "BUILD_DEBUG",
+    ]);
+
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
     debug_log!("target_os = {}", target_os);
 
@@ -220,17 +229,6 @@ fn main() {
         }
     }
 
-    // Rerun on these environment changes
-    rerun_on_env_changes(&[
-        "SHERPA_BUILD_SHARED_LIBS",
-        "CMAKE_BUILD_PARALLEL_LEVEL",
-        "CMAKE_VERBOSE",
-        "SHERPA_LIB_PATH",
-        "SHERPA_STATIC_CRT",
-        "SHERPA_LIB_PROFILE",
-        "BUILD_DEBUG",
-    ]);
-
     let target = env::var("TARGET").unwrap();
     let is_mobile = target.contains("android") || target.contains("ios");
     debug_log!("TARGET: {:?}", target);
@@ -242,25 +240,16 @@ fn main() {
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
 
     // Dynamic by default
-    let mut is_dynamic = true;
-
-    // Static feature
-    if cfg!(feature = "static") {
-        is_dynamic = false;
-    }
-    // DirectML / Cuda
-    else if cfg!(any(feature = "directml", feature = "cuda")) {
-        is_dynamic = true;
-    }
-    // Env
-    else if let Ok(val) = env::var("SHERPA_BUILD_SHARED_LIBS") {
-        is_dynamic = val == "1";
-    }
-
-    let profile = env::var("SHERPA_LIB_PROFILE").unwrap_or("Release".to_string());
-    let static_crt = env::var("SHERPA_STATIC_CRT")
-        .map(|v| v == "1")
-        .unwrap_or(true);
+    #[allow(unused_mut)]
+    let mut is_dynamic = if cfg!(feature = "static") {
+        false // Static feature is enabled
+    } else if cfg!(any(feature = "directml", feature = "cuda")) {
+        true // DirectML or CUDA feature is enabled
+    } else if let Ok(val) = env::var("SHERPA_BUILD_SHARED_LIBS") {
+        val == "1" // Environment variable determines dynamic state
+    } else {
+        true // Default to true
+    };
 
     debug_log!("TARGET: {}", target);
     debug_log!("CARGO_MANIFEST_DIR: {}", manifest_dir);
@@ -317,64 +306,18 @@ fn main() {
     // Skip build when docs.rs website built this crate
     // Only build the bindings.rs file.
     if env::var("DOCS_RS") == Ok("1".to_string()) {
-        debug_log!("Detected DOCS_RS. Skipping build / fetch.");
+        println!("cargo:warning=Detected DOCS_RS. Skipping build / fetch.");
         return;
     }
-
-    // Build with Cmake
-
-    let mut config = Config::new(&sherpa_dst);
-
-    config
-        .define("SHERPA_ONNX_ENABLE_C_API", "ON")
-        .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
-        .define("BUILD_SHARED_LIBS", if is_dynamic { "ON" } else { "OFF" })
-        .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
-        .define("SHERPA_ONNX_ENABLE_TTS", "OFF")
-        .define("SHERPA_ONNX_BUILD_C_API_EXAMPLES", "OFF");
-
-    if target_os == "windows" {
-        config.static_crt(static_crt);
-    }
-
-    // TTS
-    if cfg!(feature = "tts") {
-        config.define("SHERPA_ONNX_ENABLE_TTS", "ON");
-    }
-
-    // Cuda https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html
-    if cfg!(feature = "cuda") {
-        debug_log!("Cuda enabled");
-        config.define("SHERPA_ONNX_ENABLE_GPU", "ON");
-        config.define("BUILD_SHARED_LIBS", "ON");
-    }
-
-    // DirectML https://onnxruntime.ai/docs/execution-providers/DirectML-ExecutionProvider.html
-    if cfg!(feature = "directml") {
-        debug_log!("DirectML enabled");
-        config.define("SHERPA_ONNX_ENABLE_DIRECTML", "ON");
-        config.define("BUILD_SHARED_LIBS", "ON");
-    }
-
-    if target_os == "windows" || target_os == "linux" || target == "android" {
-        config.define("SHERPA_ONNX_ENABLE_PORTAUDIO", "ON");
-    }
-
-    // General
-    config
-        .profile(&profile)
-        .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default
-        .always_configure(false);
-
-    let mut sherpa_libs: Vec<String> = Vec::new();
-
-    // Download libraries, cache and set SHERPA_LIB_PATH
 
     #[cfg(feature = "download-binaries")]
     let mut optional_dist: Option<download_binaries::Dist> = None;
 
+    let mut sherpa_libs: Vec<String> = Vec::new();
+
     #[cfg(feature = "download-binaries")]
     {
+        // Download libraries, cache and set SHERPA_LIB_PATH
         use download_binaries::{extract_tbz, fetch_file, get_cache_dir, sha256, DIST_TABLE};
         debug_log!("Download binaries enabled");
         // debug_log!("Dist table: {:?}", DIST_TABLE.targets);
@@ -434,22 +377,7 @@ fn main() {
 
                 sherpa_libs = libs
                     .iter()
-                    .map(|p| {
-                        Path::new(p)
-                            .file_name()
-                            .unwrap()
-                            .to_string_lossy()
-                            // Remove lib prefix
-                            .strip_prefix("lib")
-                            .unwrap_or_else(|| p)
-                            // Remove .so
-                            .replace(".so", "")
-                            // Remove .dylib
-                            .replace(".dylib", "")
-                            // Remove .a
-                            .replace(".a", "")
-                            .to_string()
-                    })
+                    .map(|p| download_binaries::extract_lib_name(p))
                     .collect();
             } else {
                 sherpa_libs = extract_lib_names(&lib_dir, is_dynamic, &target_os);
@@ -469,16 +397,64 @@ fn main() {
         }
     } else {
         // Build with CMake
-        let bindings_dir = config.build();
-        add_search_path(&bindings_dir);
+        let profile = env::var("SHERPA_LIB_PROFILE").unwrap_or("Release".to_string());
+        let static_crt = env::var("SHERPA_STATIC_CRT")
+            .map(|v| v == "1")
+            .unwrap_or(true);
+        let mut config = Config::new(&sherpa_dst);
+
+        config
+            .define("SHERPA_ONNX_ENABLE_C_API", "ON")
+            .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
+            .define("BUILD_SHARED_LIBS", if is_dynamic { "ON" } else { "OFF" })
+            .define("SHERPA_ONNX_ENABLE_WEBSOCKET", "OFF")
+            .define("SHERPA_ONNX_ENABLE_TTS", "OFF")
+            .define("SHERPA_ONNX_BUILD_C_API_EXAMPLES", "OFF");
+
+        if target_os == "windows" {
+            config.static_crt(static_crt);
+        }
+
+        // TTS
+        if cfg!(feature = "tts") {
+            config.define("SHERPA_ONNX_ENABLE_TTS", "ON");
+        }
+
+        // Cuda https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html
+        if cfg!(feature = "cuda") {
+            debug_log!("Cuda enabled");
+            config.define("SHERPA_ONNX_ENABLE_GPU", "ON");
+            config.define("BUILD_SHARED_LIBS", "ON");
+        }
+
+        // DirectML https://onnxruntime.ai/docs/execution-providers/DirectML-ExecutionProvider.html
+        if cfg!(feature = "directml") {
+            debug_log!("DirectML enabled");
+            config.define("SHERPA_ONNX_ENABLE_DIRECTML", "ON");
+            config.define("BUILD_SHARED_LIBS", "ON");
+        }
+
+        if target_os == "windows" || target_os == "linux" || target == "android" {
+            config.define("SHERPA_ONNX_ENABLE_PORTAUDIO", "ON");
+        }
+
+        // General
+        config
+            .profile(&profile)
+            .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default
+            .always_configure(false);
+
+        let build_dir = config.build();
+        add_search_path(&build_dir);
 
         // Extract libs on desktop platforms
         if !is_mobile {
-            sherpa_libs = extract_lib_names(&bindings_dir, is_dynamic, &target_os);
+            sherpa_libs = extract_lib_names(&build_dir, is_dynamic, &target_os);
         }
     }
 
-    // Search paths
+    // Linking
+
     debug_log!("Sherpa libs: {:?}", sherpa_libs);
     add_search_path(out_dir.join("lib"));
 
@@ -518,13 +494,8 @@ fn main() {
         }
     }
 
-    // TODO: add rpath for Android and iOS so it can find its dependencies in the same directory of executable
-    // if is_mobile {
-    //     // Add rpath for Android and iOS so that the shared library can find its dependencies in the same directory as well
-    //     println!("cargo:rustc-link-arg=-Wl,-rpath,'$ORIGIN'");
-    // }
+    // Copy dynamic libraries
 
-    // copy DLLs to target
     if is_dynamic {
         let mut libs_assets = extract_lib_assets(&out_dir, &target_os);
         if let Ok(sherpa_lib_path) = env::var("SHERPA_LIB_PATH") {
@@ -567,5 +538,11 @@ fn main() {
                 copy_file(asset.clone(), dst);
             }
         }
+
+        // TODO: add rpath for Android and iOS so it can find its dependencies in the same directory of executable
+        // if is_mobile {
+        //     // Add rpath for Android and iOS so that the shared library can find its dependencies in the same directory as well
+        //     println!("cargo:rustc-link-arg=-Wl,-rpath,'$ORIGIN'");
+        // }
     }
 }
