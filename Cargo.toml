@@ -1,3 +1,4 @@
 [workspace]
+resolver = "2"
 members = ["crates/sherpa-rs", "crates/sherpa-rs-sys"]
 exclude = ["examples/tauri-app/src-tauri"]
