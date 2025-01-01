@@ -164,23 +164,11 @@ impl DistTable {
         let name = archive.replace(".tar.bz2", "");
         let name = name.replace(".tar.gz", "");
 
-        let mut libs: Option<Vec<String>> = target_dist.get("libs").map(|libs| {
-            libs.as_array()
-                .unwrap()
-                .iter()
+        let libs: Option<Vec<String>> = target_dist["targets"][target].as_array().map(|libs| {
+            libs.iter()
                 .map(|lib| lib.as_str().unwrap().to_string())
                 .collect()
         });
-
-        // Replace {arch} in libs
-        let dist_arch = target_dist["arch"][target].as_str().map(|s| s.to_string());
-        if let Some(libs) = libs.as_mut() {
-            if let Some(arch) = dist_arch {
-                libs.iter_mut().for_each(|lib| {
-                    *lib = lib.replace("{arch}", &arch);
-                });
-            }
-        }
 
         let url = self.url.replace("{archive}", archive);
         let checksum = DIST_CHECKSUM.get(archive).unwrap();
