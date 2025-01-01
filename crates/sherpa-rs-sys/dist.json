@@ -21,27 +21,38 @@
         "android": {
             "archive": "sherpa-onnx-{tag}-android.tar.bz2",
             "is_dynamic": true,
-            "arch": {
-                "aarch64-linux-android": "arm64-v8a",
-                "x86_64-linux-android": "x86_64",
-                "armv7-linux-androideabi": "armeabi-v7a"
-            },
-            "libs": [
-                "jniLibs/{arch}/libsherpa-onnx-c-api.so",
-                "jniLibs/{arch}/libonnxruntime.so"
-            ]
+            "targets": {
+                "aarch64-linux-android": [
+                    "jniLibs/arm64-v8a/libsherpa-onnx-c-api.so",
+                    "jniLibs/arm64-v8a/libonnxruntime.so"
+                ],
+                "x86_64-linux-android": [
+                    "jniLibs/x86_64/libsherpa-onnx-c-api.so",
+                    "jniLibs/x86_64/libonnxruntime.so"
+                ],
+                "armv7-linux-androideabi": [
+                    "jniLibs/armeabi-v7a/libsherpa-onnx-c-api.so",
+                    "jniLibs/armeabi-v7a/libonnxruntime.so"
+                ]
+            }
         },
         "ios": {
             "archive": "sherpa-onnx-{tag}-ios.tar.bz2",
             "is_dynamic": false,
-            "arch": {
-                "aarch64-apple-ios": "ios-arm64",
-                "aarch64-apple-ios-sim": "ios-arm64-simulator"
-            },
-            "libs": [
-                "build-ios/ios-onnxruntime/onnxruntime.xcframework/{arch}/libonnxruntime.a",
-                "build-ios/sherpa-onnx.xcframework/{arch}/libsherpa-onnx.a"
-            ]
+            "targets": {
+                "aarch64-apple-ios": [
+                    "build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework/ios-arm64/libonnxruntime.a",
+                    "build-ios/sherpa-onnx.xcframework/ios-arm64/libsherpa-onnx.a"
+                ],
+                "aarch64-apple-ios-sim": [
+                    "build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework/ios-arm64_x86_64-simulator/libonnxruntime.a",
+                    "build-ios/sherpa-onnx.xcframework/ios-arm64_x86_64-simulator/libsherpa-onnx.a"
+                ],
+                "x86_64-apple-ios": [
+                    "build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework/ios-arm64_x86_64-simulator/libonnxruntime.a",
+                    "build-ios/sherpa-onnx.xcframework/ios-arm64_x86_64-simulator/libsherpa-onnx.a"
+                ]
+            }
         }
     }
 }

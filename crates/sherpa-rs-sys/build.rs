@@ -25,7 +25,7 @@ lazy_static::lazy_static! {
     static ref RUST_CLANG_TARGET_MAP: HashMap<String, String> = {
         let mut m = HashMap::new();
         m.insert("aarch64-linux-android".to_string(), "armv8-linux-androideabi".to_string());
-        m.insert("aarch64-apple-ios-sim".to_string(), "arm64-apple-ios-sim".to_string());
+        m.insert("aarch64-apple-ios-sim".to_string(), "arm64-apple-ios-simulator".to_string());
         m
     };
 }
@@ -338,14 +338,15 @@ fn main() {
             debug_log!("Cache dir: {}", cache_dir.display());
 
             let lib_dir = cache_dir.join(&dist.name);
+
             // if is mobile then check if cache dir not empty
+            // Sherpa uses special directory structure for mobile
             let cache_dir_empty = cache_dir
                 .read_dir()
                 .map(|mut entries| entries.next().is_none())
                 .unwrap_or(true);
-            // Check if cache directory exists
-            // Sherpa uses special directory structure for mobile
-            if (!lib_dir.exists() && !is_mobile) || (is_mobile && cache_dir_empty) {
+
+            if (is_mobile && cache_dir_empty) || (!is_mobile && !lib_dir.exists()) {
                 let downloaded_file = fetch_file(&dist.url);
                 let hash = sha256(&downloaded_file);
                 // verify checksum
@@ -377,7 +378,7 @@ fn main() {
 
                 sherpa_libs = libs
                     .iter()
-                    .map(|p| download_binaries::extract_lib_name(p))
+                    .map(download_binaries::extract_lib_name)
                     .collect();
             } else {
                 sherpa_libs = extract_lib_names(&lib_dir, is_dynamic, &target_os);
