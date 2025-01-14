@@ -26,8 +26,10 @@ sherpa-onnx-v1.10.36-ohos-arm64-v8a.tar.bz2	b1399139d83e9e48ee35f8395e22b1b4cedc
 sherpa-onnx-v1.10.36-ohos-armeabi-v7a.tar.bz2	16a3ebb9ded3c9f886ef5388bbbb56ed356d00c7855477ee13fedb0be9d6b8ff
 sherpa-onnx-v1.10.36-ohos-x86_64.tar.bz2	ee793dfc04c3699e63daeaf95515ff5132edc0fb8106c37cc07ec04ee2ba4b35
 sherpa-onnx-v1.10.36-osx-arm64-jni.tar.bz2	a687809073e75e1d3742ea903c4350b5888b7a8c6506b0fe96c9dcff7c39367d
-sherpa-onnx-v1.10.36-osx-universal2-shared.tar.bz2	01b64450ad10b5c9531068c99a6411dcc5709b5de4fcaabb0e510d2b3d71a162
-sherpa-onnx-v1.10.36-osx-universal2-static.tar.bz2	ea5d16f048686d4b4c728d49a4aac1f9f7a2894856fbd183c8be7a8ae9e8f355
+sherpa-onnx-v1.10.36-osx-universal2-shared-no-tts.tar.bz2	7093edc3afad4a5ca8b4fbaac5fef53f6a19efcb377f832d4f2a6441c10dd6a3
+sherpa-onnx-v1.10.36-osx-universal2-shared.tar.bz2	95b9483e8cb8edc6d07ff5bc7b2445d45f9011b862cbd93b21e3aa9e1600f586
+sherpa-onnx-v1.10.36-osx-universal2-static-no-tts.tar.bz2	045f2ed5a0df254e81497595070294b8546d67c9642ddc1ebc0dda3680aaae11
+sherpa-onnx-v1.10.36-osx-universal2-static.tar.bz2	207981a2acb9a6db9a13700248d8a04311a7b513a787b9367d91729302113dd8
 sherpa-onnx-v1.10.36-osx-x86_64-jni.tar.bz2	ec05bc62c008ccd63bf4a61f478a64d232454e45e6a7a08569aac8be7139184a
 sherpa-onnx-v1.10.36-win-x64-cuda.tar.bz2	042b96e1bf56de707bc86b41b51a8c2a0b14c743e58ad64b2a45e4d9a1112967
 sherpa-onnx-v1.10.36-win-x64-jni.tar.bz2	40935c923ed487f4d536528e1f6d4a7e2fbb636b7c1a46cb8a4b4487c7cbd7d5
