@@ -92,3 +92,7 @@ path = "../../examples/whisper.rs"
 [[example]]
 name = "moonshine"
 path = "../../examples/moonshine.rs"
+
+[[example]]
+name = "kokoro"
+path = "../../examples/kokoro.rs"

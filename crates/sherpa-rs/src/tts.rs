@@ -1,3 +1,5 @@
+use std::ptr::null;
+
 use crate::{get_default_provider, utils::RawCStr};
 use eyre::{bail, Result};
 use hound::{WavSpec, WavWriter};
@@ -5,36 +7,44 @@ use hound::{WavSpec, WavWriter};
 #[derive(Debug)]
 pub struct OfflineTtsConfig {
     pub model: String,
+
+    // Piper / Vits
     pub rule_fars: String,
     pub rule_fsts: String,
     pub max_num_sentences: i32,
+
+    // speed
+    pub length_scale: f32,
+
+    // Kokoro
+    pub voices_path: String,
+    pub data_dir: String,
+
+    // Onnx options
     pub num_threads: Option<i32>,
     pub debug: bool,
     pub provider: Option<String>,
+    pub tokens: String,
 }
 
 #[derive(Debug)]
 pub struct VitsConfig {
     pub lexicon: String,
-    pub tokens: String,
-    pub data_dir: String,
+
     pub dict_dir: String,
 
     pub noise_scale: f32,
     pub noise_scale_w: f32,
-    pub length_scale: f32,
 }
 
 impl Default for VitsConfig {
     fn default() -> Self {
         Self {
             lexicon: String::new(),
-            tokens: String::new(),
-            data_dir: String::new(),
+
             dict_dir: String::new(),
             noise_scale: 0.0,
             noise_scale_w: 0.0,
-            length_scale: 1.0,
         }
     }
 }
@@ -45,51 +55,71 @@ impl Default for OfflineTtsConfig {
             model: String::new(),
             rule_fars: String::new(),
             rule_fsts: String::new(),
+            voices_path: String::new(),
+            data_dir: String::new(),
             max_num_sentences: 2,
+            tokens: String::new(),
             num_threads: None,
             debug: false,
             provider: None,
+            length_scale: 1.0,
         }
     }
 }
 
 #[derive(Debug)]
 pub struct OfflineTts {
-    pub(crate) tts: *mut sherpa_rs_sys::SherpaOnnxOfflineTts,
+    pub(crate) tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
 }
 
 impl OfflineTts {
     pub fn new(config: OfflineTtsConfig, vits_config: VitsConfig) -> Self {
         let provider = config.provider.unwrap_or(get_default_provider());
 
-        let data_dir = RawCStr::new(&vits_config.data_dir);
-        let dict_dir = RawCStr::new(&vits_config.dict_dir);
-        let lexicon = RawCStr::new(&vits_config.lexicon);
         let model = RawCStr::new(&config.model);
-        let tokens = RawCStr::new(&vits_config.tokens);
+
         let provider = RawCStr::new(&provider);
+
+        // Vits / Piper
+        let lexicon = RawCStr::new(&vits_config.lexicon);
+        let tokens = RawCStr::new(&config.tokens);
         let rule_fars = RawCStr::new(&config.rule_fars);
         let rule_fsts = RawCStr::new(&config.rule_fsts);
 
+        // Espeak
+        let data_dir = RawCStr::new(&config.data_dir);
+        let dict_dir = RawCStr::new(&vits_config.dict_dir);
+
+        // Kokoro
+        let voices_path = RawCStr::new(&config.voices_path);
+
+        let vits: sherpa_rs_sys::SherpaOnnxOfflineTtsVitsModelConfig =
+            unsafe { std::mem::zeroed() };
+        let matcha: sherpa_rs_sys::SherpaOnnxOfflineTtsMatchaModelConfig =
+            unsafe { std::mem::zeroed() };
+
+        println!(
+            "{:?} {} {} {} {}",
+            config.model, config.voices_path, config.tokens, config.data_dir, config.length_scale,
+        );
         let tts_config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
             max_num_sentences: config.max_num_sentences,
             model: sherpa_rs_sys::SherpaOnnxOfflineTtsModelConfig {
-                vits: sherpa_rs_sys::SherpaOnnxOfflineTtsVitsModelConfig {
-                    data_dir: data_dir.as_ptr(),
-                    dict_dir: dict_dir.as_ptr(),
-                    length_scale: vits_config.length_scale,
-                    lexicon: lexicon.as_ptr(),
-                    model: model.as_ptr(),
-                    noise_scale: vits_config.noise_scale,
-                    noise_scale_w: vits_config.noise_scale_w,
-                    tokens: tokens.as_ptr(),
-                },
+                vits,
+                matcha,
                 num_threads: config.num_threads.unwrap_or(1),
                 debug: config.debug.into(),
                 provider: provider.as_ptr(),
+                kokoro: sherpa_rs_sys::SherpaOnnxOfflineTtsKokoroModelConfig {
+                    model: model.as_ptr(),
+                    voices: voices_path.as_ptr(),
+                    tokens: tokens.as_ptr(),
+                    data_dir: data_dir.as_ptr(),
+                    length_scale: config.length_scale,
+                },
             },
-            rule_fars: rule_fars.as_ptr(),
-            rule_fsts: rule_fsts.as_ptr(),
+            rule_fars: null(),
+            rule_fsts: null(),
         };
 
         let tts = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineTts(&tts_config) };

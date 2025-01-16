@@ -1,21 +1,27 @@
 /*
 Convert text to speech
 
+Kokoro English
+    wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-en-v0_19.tar.bz2
+    tar xf kokoro-en-v0_19.tar.bz2
+    rm kokoro-en-v0_19.tar.bz2
+    cargo run -p sherpa-rs --example tts --no-default-features --features="tts" -- --text 'liliana, the most beautiful and lovely assistant of our team!' --output audio.wav --model "kokoro-en-v0_19/model.onnx" --data-dir "kokoro-en-v0_19/espeak-ng-data" --voices-path "kokoro-en-v0_19/voices.bin"
+
 Piper English model
-wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-amy-low.tar.bz2
-tar xf vits-piper-en_US-amy-low.tar.bz2
-cargo run --example tts --features="tts" -- --text 'liliana, the most beautiful and lovely assistant of our team!' --output audio.wav --tokens "vits-piper-en_US-amy-low/tokens.txt" --model "vits-piper-en_US-amy-low/en_US-amy-low.onnx" --data-dir "vits-piper-en_US-amy-low/espeak-ng-data"
+    wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-amy-low.tar.bz2
+    tar xf vits-piper-en_US-amy-low.tar.bz2
+    cargo run --example tts --features="tts" -- --text 'liliana, the most beautiful and lovely assistant of our team!' --output audio.wav --tokens "vits-piper-en_US-amy-low/tokens.txt" --model "vits-piper-en_US-amy-low/en_US-amy-low.onnx" --data-dir "vits-piper-en_US-amy-low/espeak-ng-data"
 
 High quality vits-ljs with emotions voice
-wget https://huggingface.co/csukuangfj/vits-ljs/resolve/main/vits-ljs.onnx
-wget https://huggingface.co/csukuangfj/vits-ljs/resolve/main/lexicon.txt
-wget https://huggingface.co/csukuangfj/vits-ljs/resolve/main/tokens.txt
-cargo run --example tts --features="tts" -- --text "liliana, the most beautiful and lovely assistant of our team!" --output audio.wav --tokens "tokens.txt" --model "vits-ljs.onnx" --lexicon lexicon.txt
+    wget https://huggingface.co/csukuangfj/vits-ljs/resolve/main/vits-ljs.onnx
+    wget https://huggingface.co/csukuangfj/vits-ljs/resolve/main/lexicon.txt
+    wget https://huggingface.co/csukuangfj/vits-ljs/resolve/main/tokens.txt
+    cargo run --example tts --features="tts" -- --text "liliana, the most beautiful and lovely assistant of our team!" --output audio.wav --tokens "tokens.txt" --model "vits-ljs.onnx" --lexicon lexicon.txt
 
 MMS Hebrew model
-wget https://huggingface.co/thewh1teagle/mms-tts-heb/resolve/main/model_sherpa.onnx
-wget https://huggingface.co/thewh1teagle/mms-tts-heb/resolve/main/tokens.txt
-cargo run --example tts --features="tts" -- --text "שלום וברכה, ניפרד בשמחה" --output audio.wav --tokens "tokens.txt" --model "model_sherpa.onnx"
+    wget https://huggingface.co/thewh1teagle/mms-tts-heb/resolve/main/model_sherpa.onnx
+    wget https://huggingface.co/thewh1teagle/mms-tts-heb/resolve/main/tokens.txt
+    cargo run --example tts --features="tts" -- --text "שלום וברכה, ניפרד בשמחה" --output audio.wav --tokens "tokens.txt" --model "model_sherpa.onnx"
 */
 use clap::Parser;
 
@@ -24,7 +30,7 @@ use clap::Parser;
 #[command(version, about, long_about = None)]
 struct Args {
     #[arg(short, long)]
-    tokens: String,
+    tokens: Option<String>,
 
     #[arg(short, long)]
     model: String,
@@ -49,6 +55,9 @@ struct Args {
 
     #[arg(long)]
     tts_rule_fsts: Option<String>,
+
+    #[arg(long)]
+    voices_path: Option<String>,
 
     #[arg(long)]
     sid: Option<i32>,
@@ -77,8 +86,6 @@ fn main() {
 
     let vits_config = sherpa_rs::tts::VitsConfig {
         lexicon: args.lexicon.unwrap_or_default(),
-        tokens: args.tokens,
-        data_dir: args.data_dir.unwrap_or_default(),
         dict_dir: args.dict_dir.unwrap_or_default(),
         ..Default::default()
     };
@@ -89,6 +96,13 @@ fn main() {
         max_num_sentences,
         rule_fsts: args.tts_rule_fsts.unwrap_or_default(),
         provider: args.provider,
+        // Speed
+        length_scale: args.speed.unwrap_or(1.0),
+        // Kokoro
+        voices_path: args.voices_path.unwrap_or_default(),
+        tokens: args.tokens.unwrap_or_default(),
+        data_dir: args.data_dir.unwrap_or_default(),
+
         ..Default::default()
     };
     let mut tts = sherpa_rs::tts::OfflineTts::new(tts_config, vits_config);
