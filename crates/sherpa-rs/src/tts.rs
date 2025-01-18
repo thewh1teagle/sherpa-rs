@@ -1,6 +1,8 @@
-use crate::{get_default_provider, utils::RawCStr};
-use eyre::{bail, Result};
-use hound::{WavSpec, WavWriter};
+use std::ptr::null;
+
+use crate::{ get_default_provider, utils::RawCStr };
+use eyre::{ bail, Result };
+use hound::{ WavSpec, WavWriter };
 
 #[derive(Debug)]
 pub struct OfflineTtsConfig {
@@ -55,7 +57,7 @@ impl Default for OfflineTtsConfig {
 
 #[derive(Debug)]
 pub struct OfflineTts {
-    pub(crate) tts: *mut sherpa_rs_sys::SherpaOnnxOfflineTts,
+    pub(crate) tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
 }
 
 impl OfflineTts {
@@ -74,6 +76,23 @@ impl OfflineTts {
         let tts_config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
             max_num_sentences: config.max_num_sentences,
             model: sherpa_rs_sys::SherpaOnnxOfflineTtsModelConfig {
+                kokoro: sherpa_rs_sys::SherpaOnnxOfflineTtsKokoroModelConfig {
+                    model: null(),
+                    voices: null(),
+                    tokens: null(),
+                    data_dir: null(),
+                    length_scale: 0.0,
+                },
+                matcha: sherpa_rs_sys::SherpaOnnxOfflineTtsMatchaModelConfig {
+                    acoustic_model: null(),
+                    vocoder: null(),
+                    lexicon: null(),
+                    tokens: null(),
+                    data_dir: null(),
+                    noise_scale: 0.0,
+                    length_scale: 0.0,
+                    dict_dir: null(),
+                },
                 vits: sherpa_rs_sys::SherpaOnnxOfflineTtsVitsModelConfig {
                     data_dir: data_dir.as_ptr(),
                     dict_dir: dict_dir.as_ptr(),
@@ -99,24 +118,28 @@ impl OfflineTts {
     pub fn generate(&mut self, text: String, sid: i32, speed: f32) -> Result<TtsSample> {
         unsafe {
             let text = RawCStr::new(&text);
-            let audio_ptr =
-                sherpa_rs_sys::SherpaOnnxOfflineTtsGenerate(self.tts, text.as_ptr(), sid, speed);
+            let audio_ptr = sherpa_rs_sys::SherpaOnnxOfflineTtsGenerate(
+                self.tts,
+                text.as_ptr(),
+                sid,
+                speed
+            );
 
             if audio_ptr.is_null() {
-                bail!("audio is null")
+                bail!("audio is null");
             }
             let audio = audio_ptr.read();
 
             if audio.n.is_negative() {
-                bail!("no samples found")
+                bail!("no samples found");
             }
             if audio.samples.is_null() {
-                bail!("audio samples are null")
+                bail!("audio samples are null");
             }
             let samples: &[f32] = std::slice::from_raw_parts(audio.samples, audio.n as usize);
             let samples = samples.to_vec();
             let sample_rate = audio.sample_rate;
-            let duration = samples.len() as i32 / sample_rate;
+            let duration = (samples.len() as i32) / sample_rate;
 
             // Free
             sherpa_rs_sys::SherpaOnnxDestroyOfflineTtsGeneratedAudio(audio_ptr);
