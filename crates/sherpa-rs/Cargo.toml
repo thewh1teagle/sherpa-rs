@@ -37,9 +37,19 @@ cuda = ["sherpa-rs-sys/cuda"]
 directml = ["sherpa-rs-sys/directml"]
 
 [[example]]
-name = "tts"
+name = "tts_kokoro"
 required-features = ["tts"]
-path = "../../examples/tts.rs"
+path = "../../examples/tts_kokoro.rs"
+
+[[example]]
+name = "tts_vits"
+required-features = ["tts"]
+path = "../../examples/tts_vits.rs"
+
+[[example]]
+name = "tts_matcha"
+required-features = ["tts"]
+path = "../../examples/tts_matcha.rs"
 
 [[example]]
 name = "audio_tag"
