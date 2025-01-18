@@ -1,12 +1,12 @@
 mod kokoro;
-mod vits;
 mod matcha;
+mod vits;
 
-use eyre::{ bail, Result };
+use eyre::{bail, Result};
 
-pub use kokoro::{ KokoroTts, KokoroTtsConfig };
-pub use vits::{ VitsTts, VitsTtsConfig };
-pub use matcha::{ MatchaTts, MatchaTtsConfig };
+pub use kokoro::{KokoroTts, KokoroTtsConfig};
+pub use matcha::{MatchaTts, MatchaTtsConfig};
+pub use vits::{VitsTts, VitsTtsConfig};
 
 use crate::utils::RawCStr;
 
@@ -24,7 +24,7 @@ pub unsafe fn create(
     tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
     text: &str,
     sid: i32,
-    speed: f32
+    speed: f32,
 ) -> Result<TtsAudio> {
     let text = RawCStr::new(text);
     let audio_ptr = sherpa_rs_sys::SherpaOnnxOfflineTtsGenerate(tts, text.as_ptr(), sid, speed);

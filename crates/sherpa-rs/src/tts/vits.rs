@@ -1,8 +1,8 @@
-use std::{ mem, ptr::null };
+use std::{mem, ptr::null};
 
+use crate::{utils::RawCStr, OnnxConfig};
 use eyre::Result;
 use sherpa_rs_sys;
-use crate::{ utils::RawCStr, OnnxConfig };
 
 use super::TtsAudio;
 
@@ -61,9 +61,7 @@ impl VitsTts {
             sherpa_rs_sys::SherpaOnnxCreateOfflineTts(&config)
         };
 
-        Self {
-            tts,
-        }
+        Self { tts }
     }
 
     pub fn create(&mut self, text: &str, sid: i32, speed: f32) -> Result<TtsAudio> {

@@ -18,7 +18,7 @@ pub mod tts;
 #[cfg(feature = "sys")]
 pub use sherpa_rs_sys;
 
-use eyre::{ bail, Result };
+use eyre::{bail, Result};
 
 pub fn get_default_provider() -> String {
     "cpu".into()
@@ -66,10 +66,8 @@ pub fn write_audio_file(path: &str, samples: &[f32], sample_rate: u32) -> Result
 
     // Convert samples from f32 to i16 and write them to the WAV file
     for &sample in samples {
-        let scaled_sample = (sample * (i16::MAX as f32)).clamp(
-            i16::MIN as f32,
-            i16::MAX as f32
-        ) as i16;
+        let scaled_sample =
+            (sample * (i16::MAX as f32)).clamp(i16::MIN as f32, i16::MAX as f32) as i16;
         writer.write_sample(scaled_sample)?;
     }
 
@@ -85,6 +83,10 @@ pub struct OnnxConfig {
 
 impl Default for OnnxConfig {
     fn default() -> Self {
-        Self { provider: get_default_provider(), debug: false, num_threads: 1 }
+        Self {
+            provider: get_default_provider(),
+            debug: false,
+            num_threads: 1,
+        }
     }
 }
