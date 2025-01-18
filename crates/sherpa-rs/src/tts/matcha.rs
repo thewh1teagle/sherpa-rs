@@ -1,10 +1,10 @@
-use std::{mem, ptr::null};
+use std::{ mem, ptr::null };
 
-use crate::{utils::RawCStr, OnnxConfig};
+use crate::{ utils::RawCStr, OnnxConfig };
 use eyre::Result;
 use sherpa_rs_sys;
 
-use super::TtsAudio;
+use super::{ CommonTtsConfig, TtsAudio };
 
 pub struct MatchaTts {
     tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
@@ -23,6 +23,7 @@ pub struct MatchaTtsConfig {
     pub noise_scale: f32,
     pub noise_scale_w: f32,
 
+    pub common_config: CommonTtsConfig,
     pub onnx_config: OnnxConfig,
 }
 
@@ -38,6 +39,8 @@ impl MatchaTts {
             let acoustic_model = RawCStr::new(&config.acoustic_model);
 
             let provider = RawCStr::new(&config.onnx_config.provider);
+
+            let tts_config = config.common_config.to_raw();
 
             let model_config = sherpa_rs_sys::SherpaOnnxOfflineTtsModelConfig {
                 num_threads: config.onnx_config.num_threads,
@@ -59,8 +62,8 @@ impl MatchaTts {
             let config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
                 max_num_sentences: 0,
                 model: model_config,
-                rule_fars: null(),
-                rule_fsts: null(),
+                rule_fars: tts_config.rule_fars.map(|v| v.as_ptr()).unwrap_or(null()),
+                rule_fsts: tts_config.rule_fsts.map(|v| v.as_ptr()).unwrap_or(null()),
             };
             sherpa_rs_sys::SherpaOnnxCreateOfflineTts(&config)
         };

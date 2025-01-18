@@ -1,10 +1,10 @@
-use std::{mem, ptr::null};
+use std::{ mem, ptr::null };
 
-use crate::{utils::RawCStr, OnnxConfig};
+use crate::{ utils::RawCStr, OnnxConfig };
 use eyre::Result;
 use sherpa_rs_sys;
 
-use super::TtsAudio;
+use super::{ CommonTtsConfig, TtsAudio };
 
 pub struct KokoroTts {
     tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
@@ -18,6 +18,7 @@ pub struct KokoroTtsConfig {
     pub data_dir: String,
     pub length_scale: f32,
     pub onnx_config: OnnxConfig,
+    pub common_config: CommonTtsConfig,
 }
 
 impl KokoroTts {
@@ -29,6 +30,8 @@ impl KokoroTts {
             let data_dir = RawCStr::new(&config.data_dir);
 
             let provider = RawCStr::new(&config.onnx_config.provider);
+
+            let tts_config = config.common_config.to_raw();
 
             let model_config = sherpa_rs_sys::SherpaOnnxOfflineTtsModelConfig {
                 vits: mem::zeroed::<_>(),
@@ -47,8 +50,8 @@ impl KokoroTts {
             let config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
                 max_num_sentences: 0,
                 model: model_config,
-                rule_fars: null(),
-                rule_fsts: null(),
+                rule_fars: tts_config.rule_fars.map(|v| v.as_ptr()).unwrap_or(null()),
+                rule_fsts: tts_config.rule_fsts.map(|v| v.as_ptr()).unwrap_or(null()),
             };
             sherpa_rs_sys::SherpaOnnxCreateOfflineTts(&config)
         };
