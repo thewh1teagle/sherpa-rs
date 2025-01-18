@@ -26,3 +26,5 @@ sherpa-onnx-kws-*
 jniLibs/
 build/
 kokoro-en-*/
+matcha-*
+/
