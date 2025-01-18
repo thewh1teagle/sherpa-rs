@@ -1,8 +1,8 @@
 use std::ptr::null;
 
-use crate::{ get_default_provider, utils::RawCStr };
-use eyre::{ bail, Result };
-use hound::{ WavSpec, WavWriter };
+use crate::{get_default_provider, utils::RawCStr};
+use eyre::{bail, Result};
+use hound::{WavSpec, WavWriter};
 
 #[derive(Debug)]
 pub struct OfflineTtsConfig {
@@ -118,12 +118,8 @@ impl OfflineTts {
     pub fn generate(&mut self, text: String, sid: i32, speed: f32) -> Result<TtsSample> {
         unsafe {
             let text = RawCStr::new(&text);
-            let audio_ptr = sherpa_rs_sys::SherpaOnnxOfflineTtsGenerate(
-                self.tts,
-                text.as_ptr(),
-                sid,
-                speed
-            );
+            let audio_ptr =
+                sherpa_rs_sys::SherpaOnnxOfflineTtsGenerate(self.tts, text.as_ptr(), sid, speed);
 
             if audio_ptr.is_null() {
                 bail!("audio is null");
