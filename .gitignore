@@ -25,3 +25,4 @@ sherpa-onnx-kws-*
 .tmp/
 jniLibs/
 build/
+kokoro-en-*/
