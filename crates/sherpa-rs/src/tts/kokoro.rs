@@ -63,3 +63,14 @@ impl KokoroTts {
         unsafe { super::create(self.tts, text, sid, speed) }
     }
 }
+
+unsafe impl Send for KokoroTts {}
+unsafe impl Sync for KokoroTts {}
+
+impl Drop for KokoroTts {
+    fn drop(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxDestroyOfflineTts(self.tts);
+        }
+    }
+}

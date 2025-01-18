@@ -71,3 +71,14 @@ impl VitsTts {
         unsafe { super::create(self.tts, text, sid, speed) }
     }
 }
+
+unsafe impl Send for VitsTts {}
+unsafe impl Sync for VitsTts {}
+
+impl Drop for VitsTts {
+    fn drop(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxDestroyOfflineTts(self.tts);
+        }
+    }
+}

@@ -75,3 +75,14 @@ impl MatchaTts {
         unsafe { super::create(self.tts, text, sid, speed) }
     }
 }
+
+unsafe impl Send for MatchaTts {}
+unsafe impl Sync for MatchaTts {}
+
+impl Drop for MatchaTts {
+    fn drop(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxDestroyOfflineTts(self.tts);
+        }
+    }
+}
