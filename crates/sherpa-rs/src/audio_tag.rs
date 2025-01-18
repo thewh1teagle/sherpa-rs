@@ -46,7 +46,7 @@ impl AudioTag {
         let audio_tag = unsafe { sherpa_rs_sys::SherpaOnnxCreateAudioTagging(&sherpa_config) };
 
         if audio_tag.is_null() {
-            bail!("Failed to create audio tagging")
+            bail!("Failed to create audio tagging");
         }
         Ok(Self {
             audio_tag,
@@ -64,6 +64,7 @@ impl AudioTag {
                 samples.as_ptr(),
                 samples.len() as i32,
             );
+
             let results = sherpa_rs_sys::SherpaOnnxAudioTaggingCompute(
                 self.audio_tag,
                 stream,
@@ -75,7 +76,20 @@ impl AudioTag {
                 let event_name = cstr_to_string((*event).name);
                 events.push(event_name);
             }
+
+            sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
         }
         events
+    }
+}
+
+unsafe impl Send for AudioTag {}
+unsafe impl Sync for AudioTag {}
+
+impl Drop for AudioTag {
+    fn drop(&mut self) {
+        unsafe {
+            sherpa_rs_sys::SherpaOnnxDestroyAudioTagging(self.audio_tag);
+        }
     }
 }

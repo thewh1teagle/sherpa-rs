@@ -1,6 +1,6 @@
 use crate::{get_default_provider, utils::RawCStr};
 use eyre::{bail, Result};
-use std::path::Path;
+use std::{path::Path, ptr::null_mut};
 
 #[derive(Debug)]
 pub struct Diarize {
@@ -14,7 +14,7 @@ pub struct Segment {
     pub speaker: i32,
 }
 
-type ProgressCallback = Box<dyn Fn(i32, i32) -> i32 + Send + 'static>;
+type ProgressCallback = Box<dyn (Fn(i32, i32) -> i32) + Send + 'static>;
 
 #[derive(Debug, Clone)]
 pub struct DiarizeConfig {
@@ -85,7 +85,7 @@ impl Diarize {
         let sd = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineSpeakerDiarization(&config) };
 
         if sd.is_null() {
-            bail!("Failed to initialize offline speaker diarization")
+            bail!("Failed to initialize offline speaker diarization");
         }
         Ok(Self { sd })
     }
@@ -103,7 +103,7 @@ impl Diarize {
             let callback_ptr = callback_box
                 .as_mut()
                 .map(|b| b.as_mut() as *mut ProgressCallback as *mut std::ffi::c_void)
-                .unwrap_or(std::ptr::null_mut());
+                .unwrap_or(null_mut());
 
             let result = sherpa_rs_sys::SherpaOnnxOfflineSpeakerDiarizationProcessWithCallback(
                 self.sd,
@@ -123,8 +123,9 @@ impl Diarize {
                 sherpa_rs_sys::SherpaOnnxOfflineSpeakerDiarizationResultSortByStartTime(result);
 
             if !segments_ptr.is_null() && num_segments > 0 {
-                let segments_result: &[sherpa_rs_sys::SherpaOnnxOfflineSpeakerDiarizationSegment] =
-                    std::slice::from_raw_parts(segments_ptr, num_segments as usize);
+                let segments_result: &[
+                    sherpa_rs_sys::SherpaOnnxOfflineSpeakerDiarizationSegment
+                ] = std::slice::from_raw_parts(segments_ptr, num_segments as usize);
 
                 for segment in segments_result {
                     // Use segment here
