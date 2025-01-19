@@ -39,7 +39,7 @@ impl Punctuation {
             unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflinePunctuation(&sherpa_config) };
 
         if audio_punctuation.is_null() {
-            bail!("Failed to create audio punctuation")
+            bail!("Failed to create audio punctuation");
         }
         Ok(Self { audio_punctuation })
     }
@@ -51,7 +51,7 @@ impl Punctuation {
                 self.audio_punctuation,
                 text.as_ptr(),
             );
-            let text_with_punct = cstr_to_string(text_with_punct_ptr);
+            let text_with_punct = cstr_to_string(text_with_punct_ptr as _);
             sherpa_rs_sys::SherpaOfflinePunctuationFreeText(text_with_punct_ptr);
             text_with_punct
         }

@@ -731,7 +731,7 @@ dependencies = [
 
 [[package]]
 name = "sherpa-rs"
-version = "0.6.4"
+version = "0.6.5"
 dependencies = [
  "clap",
  "eyre",
@@ -742,7 +742,7 @@ dependencies = [
 
 [[package]]
 name = "sherpa-rs-sys"
-version = "0.6.4"
+version = "0.6.5"
 dependencies = [
  "bindgen",
  "bzip2",

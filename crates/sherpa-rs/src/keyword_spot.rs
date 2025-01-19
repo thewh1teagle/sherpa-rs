@@ -109,7 +109,7 @@ impl KeywordSpot {
         let spotter = unsafe { sherpa_rs_sys::SherpaOnnxCreateKeywordSpotter(&sherpa_config) };
 
         if spotter.is_null() {
-            bail!("Failed to create keyword spotter")
+            bail!("Failed to create keyword spotter");
         }
         let stream = unsafe { sherpa_rs_sys::SherpaOnnxCreateKeywordStream(spotter) };
         if stream.is_null() {
@@ -139,7 +139,7 @@ impl KeywordSpot {
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetKeywordResult(self.spotter, self.stream);
             let mut keyword = None;
             if !result_ptr.is_null() {
-                let decoded_keyword = cstr_to_string((*result_ptr).keyword);
+                let decoded_keyword = cstr_to_string((*result_ptr).keyword as _);
                 if !decoded_keyword.is_empty() {
                     keyword = Some(decoded_keyword);
                 }

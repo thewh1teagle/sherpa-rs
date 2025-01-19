@@ -122,7 +122,7 @@ impl MoonshineRecognizer {
         let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };
 
         if recognizer.is_null() {
-            bail!("Failed to create recognizer")
+            bail!("Failed to create recognizer");
         }
 
         Ok(Self { recognizer })
@@ -140,7 +140,7 @@ impl MoonshineRecognizer {
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
-            let text = cstr_to_string(raw_result.text);
+            let text = cstr_to_string(raw_result.text as _);
             let result = MoonshineRecognizerResult { text };
             // Free
             sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizerResult(result_ptr);

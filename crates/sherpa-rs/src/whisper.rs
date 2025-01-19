@@ -129,7 +129,7 @@ impl WhisperRecognizer {
         let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };
 
         if recognizer.is_null() {
-            bail!("Failed to create recognizer")
+            bail!("Failed to create recognizer");
         }
 
         Ok(Self { recognizer })
@@ -147,7 +147,7 @@ impl WhisperRecognizer {
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
-            let text = cstr_to_string(raw_result.text);
+            let text = cstr_to_string(raw_result.text as _);
             // let timestamps: &[f32] =
             // std::slice::from_raw_parts(raw_result.timestamps, raw_result.count as usize);
             let result = WhisperRecognizerResult { text };

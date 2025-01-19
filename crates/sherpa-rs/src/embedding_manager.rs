@@ -30,7 +30,7 @@ impl EmbeddingManager {
             if name.is_null() {
                 return None;
             }
-            let name = cstr_to_string(name);
+            let name = cstr_to_string(name as _);
             Some(name)
         }
     }
@@ -57,7 +57,7 @@ impl EmbeddingManager {
             let mut matches: Vec<SpeakerMatch> = Vec::new();
             for i in 0..result.count {
                 let match_c = matches_c[i as usize];
-                let name = cstr_to_string(match_c.name);
+                let name = cstr_to_string(match_c.name as _);
                 let score = match_c.score;
                 matches.push(SpeakerMatch { name, score });
             }
@@ -76,7 +76,7 @@ impl EmbeddingManager {
             );
 
             if status.is_negative() {
-                bail!("Failed to register {}", name)
+                bail!("Failed to register {}", name);
             }
             Ok(())
         }
@@ -90,6 +90,6 @@ impl Drop for EmbeddingManager {
     fn drop(&mut self) {
         unsafe {
             sherpa_rs_sys::SherpaOnnxDestroySpeakerEmbeddingManager(self.manager);
-        };
+        }
     }
 }

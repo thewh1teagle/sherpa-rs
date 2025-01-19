@@ -73,7 +73,7 @@ impl AudioTag {
 
             for i in 0..self.config.top_k {
                 let event = *results.add(i.try_into().unwrap());
-                let event_name = cstr_to_string((*event).name);
+                let event_name = cstr_to_string((*event).name as _);
                 events.push(event_name);
             }
 

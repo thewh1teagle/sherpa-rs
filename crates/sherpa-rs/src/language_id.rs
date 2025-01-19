@@ -56,10 +56,10 @@ impl SpokenLanguageId {
             let language_result_ptr =
                 sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationCompute(self.slid, stream);
             if language_result_ptr.is_null() || (*language_result_ptr).lang.is_null() {
-                bail!("language ptr is null")
+                bail!("language ptr is null");
             }
             let language_ptr = (*language_result_ptr).lang;
-            let language = cstr_to_string(language_ptr);
+            let language = cstr_to_string(language_ptr as _);
             // Free
             sherpa_rs_sys::SherpaOnnxDestroySpokenLanguageIdentificationResult(language_result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
