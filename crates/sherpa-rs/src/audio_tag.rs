@@ -1,6 +1,9 @@
-use eyre::{ bail, Result };
+use eyre::{bail, Result};
 
-use crate::{ get_default_provider, utils::{ cstr_to_string, RawCStr } };
+use crate::{
+    get_default_provider,
+    utils::{cstr_to_string, RawCStr},
+};
 
 #[derive(Debug, Default, Clone)]
 pub struct AudioTagConfig {
@@ -59,13 +62,13 @@ impl AudioTag {
                 stream,
                 sample_rate as i32,
                 samples.as_ptr(),
-                samples.len() as i32
+                samples.len() as i32,
             );
 
             let results = sherpa_rs_sys::SherpaOnnxAudioTaggingCompute(
                 self.audio_tag,
                 stream,
-                self.config.top_k
+                self.config.top_k,
             );
 
             for i in 0..self.config.top_k {

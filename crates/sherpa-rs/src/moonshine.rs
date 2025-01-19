@@ -1,5 +1,8 @@
-use crate::{ get_default_provider, utils::{ cstr_to_string, RawCStr } };
-use eyre::{ bail, Result };
+use crate::{
+    get_default_provider,
+    utils::{cstr_to_string, RawCStr},
+};
+use eyre::{bail, Result};
 use std::ptr::null;
 
 #[derive(Debug)]
@@ -132,7 +135,7 @@ impl MoonshineRecognizer {
                 stream,
                 sample_rate as i32,
                 samples.as_ptr(),
-                samples.len().try_into().unwrap()
+                samples.len().try_into().unwrap(),
             );
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);

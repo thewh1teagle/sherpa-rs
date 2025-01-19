@@ -1,4 +1,4 @@
-use std::ffi::{ c_char, CString };
+use std::ffi::{c_char, CString};
 
 // Smart pointer for CString
 pub struct RawCStr {

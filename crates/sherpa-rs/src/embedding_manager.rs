@@ -1,5 +1,5 @@
-use crate::utils::{ cstr_to_string, RawCStr };
-use eyre::{ bail, Result };
+use crate::utils::{cstr_to_string, RawCStr};
+use eyre::{bail, Result};
 
 #[derive(Debug, Clone)]
 pub struct EmbeddingManager {
@@ -25,7 +25,7 @@ impl EmbeddingManager {
             let name = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerSearch(
                 self.manager,
                 embedding.to_owned().as_mut_ptr(),
-                threshold
+                threshold,
             );
             if name.is_null() {
                 return None;
@@ -39,14 +39,14 @@ impl EmbeddingManager {
         &mut self,
         embedding: &[f32],
         threshold: f32,
-        n: i32
+        n: i32,
     ) -> Vec<SpeakerMatch> {
         unsafe {
             let result_ptr = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerGetBestMatches(
                 self.manager,
                 embedding.to_owned().as_mut_ptr(),
                 threshold,
-                n
+                n,
             );
             if result_ptr.is_null() {
                 return Vec::new();
@@ -72,7 +72,7 @@ impl EmbeddingManager {
             let status = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerAdd(
                 self.manager,
                 name_c.as_ptr(),
-                embedding.as_mut_ptr()
+                embedding.as_mut_ptr(),
             );
 
             if status.is_negative() {
