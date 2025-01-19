@@ -1,10 +1,7 @@
 use std::ptr::null;
 
-use crate::{
-    get_default_provider,
-    utils::{cstr_to_string, RawCStr},
-};
-use eyre::{bail, Result};
+use crate::{ get_default_provider, utils::{ cstr_to_string, RawCStr } };
+use eyre::{ bail, Result };
 
 #[derive(Debug, Clone)]
 pub struct KeywordSpotConfig {
@@ -109,7 +106,7 @@ impl KeywordSpot {
         let spotter = unsafe { sherpa_rs_sys::SherpaOnnxCreateKeywordSpotter(&sherpa_config) };
 
         if spotter.is_null() {
-            bail!("Failed to create keyword spotter")
+            bail!("Failed to create keyword spotter");
         }
         let stream = unsafe { sherpa_rs_sys::SherpaOnnxCreateKeywordStream(spotter) };
         if stream.is_null() {
@@ -122,7 +119,7 @@ impl KeywordSpot {
     pub fn extract_keyword(
         &mut self,
         samples: Vec<f32>,
-        sample_rate: u32,
+        sample_rate: u32
     ) -> Result<Option<String>> {
         // Create keyword spotting stream
         unsafe {
@@ -130,7 +127,7 @@ impl KeywordSpot {
                 self.stream,
                 sample_rate as i32,
                 samples.as_ptr(),
-                samples.len() as i32,
+                samples.len() as i32
             );
             sherpa_rs_sys::SherpaOnnxOnlineStreamInputFinished(self.stream);
             while sherpa_rs_sys::SherpaOnnxIsKeywordStreamReady(self.spotter, self.stream) == 1 {
@@ -139,7 +136,7 @@ impl KeywordSpot {
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetKeywordResult(self.spotter, self.stream);
             let mut keyword = None;
             if !result_ptr.is_null() {
-                let decoded_keyword = cstr_to_string((*result_ptr).keyword);
+                let decoded_keyword = cstr_to_string((*result_ptr).keyword as _);
                 if !decoded_keyword.is_empty() {
                     keyword = Some(decoded_keyword);
                 }

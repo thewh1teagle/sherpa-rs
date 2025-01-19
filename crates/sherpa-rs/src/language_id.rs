@@ -1,8 +1,5 @@
-use crate::{
-    get_default_provider,
-    utils::{cstr_to_string, RawCStr},
-};
-use eyre::{bail, Result};
+use crate::{ get_default_provider, utils::{ cstr_to_string, RawCStr } };
+use eyre::{ bail, Result };
 
 #[derive(Debug)]
 pub struct SpokenLanguageId {
@@ -37,29 +34,33 @@ impl SpokenLanguageId {
             provider: provider.as_ptr(),
             whisper,
         };
-        let slid =
-            unsafe { sherpa_rs_sys::SherpaOnnxCreateSpokenLanguageIdentification(&sherpa_config) };
+        let slid = unsafe {
+            sherpa_rs_sys::SherpaOnnxCreateSpokenLanguageIdentification(&sherpa_config)
+        };
 
         Self { slid }
     }
 
     pub fn compute(&mut self, samples: Vec<f32>, sample_rate: u32) -> Result<String> {
         unsafe {
-            let stream =
-                sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationCreateOfflineStream(self.slid);
+            let stream = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationCreateOfflineStream(
+                self.slid
+            );
             sherpa_rs_sys::SherpaOnnxAcceptWaveformOffline(
                 stream,
                 sample_rate as i32,
                 samples.as_ptr(),
-                samples.len().try_into().unwrap(),
+                samples.len().try_into().unwrap()
             );
-            let language_result_ptr =
-                sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationCompute(self.slid, stream);
+            let language_result_ptr = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationCompute(
+                self.slid,
+                stream
+            );
             if language_result_ptr.is_null() || (*language_result_ptr).lang.is_null() {
-                bail!("language ptr is null")
+                bail!("language ptr is null");
             }
             let language_ptr = (*language_result_ptr).lang;
-            let language = cstr_to_string(language_ptr);
+            let language = cstr_to_string(language_ptr as _);
             // Free
             sherpa_rs_sys::SherpaOnnxDestroySpokenLanguageIdentificationResult(language_result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);

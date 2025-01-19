@@ -1,9 +1,6 @@
-use eyre::{bail, Result};
+use eyre::{ bail, Result };
 
-use crate::{
-    get_default_provider,
-    utils::{cstr_to_string, RawCStr},
-};
+use crate::{ get_default_provider, utils::{ cstr_to_string, RawCStr } };
 
 #[derive(Debug, Default, Clone)]
 pub struct PunctuationConfig {
@@ -20,12 +17,16 @@ pub struct Punctuation {
 impl Punctuation {
     pub fn new(config: PunctuationConfig) -> Result<Self> {
         let model = RawCStr::new(&config.model);
-        let provider = RawCStr::new(&config.provider.unwrap_or(if cfg!(target_os = "macos") {
-            // TODO: sherpa-onnx/issues/1448
-            "cpu".into()
-        } else {
-            get_default_provider()
-        }));
+        let provider = RawCStr::new(
+            &config.provider.unwrap_or(
+                if cfg!(target_os = "macos") {
+                    // TODO: sherpa-onnx/issues/1448
+                    "cpu".into()
+                } else {
+                    get_default_provider()
+                }
+            )
+        );
 
         let sherpa_config = sherpa_rs_sys::SherpaOnnxOfflinePunctuationConfig {
             model: sherpa_rs_sys::SherpaOnnxOfflinePunctuationModelConfig {
@@ -35,11 +36,12 @@ impl Punctuation {
                 provider: provider.as_ptr(),
             },
         };
-        let audio_punctuation =
-            unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflinePunctuation(&sherpa_config) };
+        let audio_punctuation = unsafe {
+            sherpa_rs_sys::SherpaOnnxCreateOfflinePunctuation(&sherpa_config)
+        };
 
         if audio_punctuation.is_null() {
-            bail!("Failed to create audio punctuation")
+            bail!("Failed to create audio punctuation");
         }
         Ok(Self { audio_punctuation })
     }
@@ -49,9 +51,9 @@ impl Punctuation {
         unsafe {
             let text_with_punct_ptr = sherpa_rs_sys::SherpaOfflinePunctuationAddPunct(
                 self.audio_punctuation,
-                text.as_ptr(),
+                text.as_ptr()
             );
-            let text_with_punct = cstr_to_string(text_with_punct_ptr);
+            let text_with_punct = cstr_to_string(text_with_punct_ptr as _);
             sherpa_rs_sys::SherpaOfflinePunctuationFreeText(text_with_punct_ptr);
             text_with_punct
         }

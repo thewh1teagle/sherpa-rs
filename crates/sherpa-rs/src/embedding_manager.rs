@@ -1,5 +1,5 @@
-use crate::utils::{cstr_to_string, RawCStr};
-use eyre::{bail, Result};
+use crate::utils::{ cstr_to_string, RawCStr };
+use eyre::{ bail, Result };
 
 #[derive(Debug, Clone)]
 pub struct EmbeddingManager {
@@ -25,12 +25,12 @@ impl EmbeddingManager {
             let name = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerSearch(
                 self.manager,
                 embedding.to_owned().as_mut_ptr(),
-                threshold,
+                threshold
             );
             if name.is_null() {
                 return None;
             }
-            let name = cstr_to_string(name);
+            let name = cstr_to_string(name as _);
             Some(name)
         }
     }
@@ -39,14 +39,14 @@ impl EmbeddingManager {
         &mut self,
         embedding: &[f32],
         threshold: f32,
-        n: i32,
+        n: i32
     ) -> Vec<SpeakerMatch> {
         unsafe {
             let result_ptr = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerGetBestMatches(
                 self.manager,
                 embedding.to_owned().as_mut_ptr(),
                 threshold,
-                n,
+                n
             );
             if result_ptr.is_null() {
                 return Vec::new();
@@ -57,7 +57,7 @@ impl EmbeddingManager {
             let mut matches: Vec<SpeakerMatch> = Vec::new();
             for i in 0..result.count {
                 let match_c = matches_c[i as usize];
-                let name = cstr_to_string(match_c.name);
+                let name = cstr_to_string(match_c.name as _);
                 let score = match_c.score;
                 matches.push(SpeakerMatch { name, score });
             }
@@ -72,11 +72,11 @@ impl EmbeddingManager {
             let status = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerAdd(
                 self.manager,
                 name_c.as_ptr(),
-                embedding.as_mut_ptr(),
+                embedding.as_mut_ptr()
             );
 
             if status.is_negative() {
-                bail!("Failed to register {}", name)
+                bail!("Failed to register {}", name);
             }
             Ok(())
         }
@@ -90,6 +90,6 @@ impl Drop for EmbeddingManager {
     fn drop(&mut self) {
         unsafe {
             sherpa_rs_sys::SherpaOnnxDestroySpeakerEmbeddingManager(self.manager);
-        };
+        }
     }
 }

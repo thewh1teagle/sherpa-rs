@@ -1,10 +1,10 @@
-use std::{mem, ptr::null};
+use std::{ mem, ptr::null };
 
-use crate::{utils::RawCStr, OnnxConfig};
+use crate::{ utils::RawCStr, OnnxConfig };
 use eyre::Result;
 use sherpa_rs_sys;
 
-use super::{CommonTtsConfig, TtsAudio};
+use super::{ CommonTtsConfig, TtsAudio };
 
 pub struct MatchaTts {
     tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
@@ -60,7 +60,7 @@ impl MatchaTts {
                 kokoro: mem::zeroed::<_>(),
             };
             let config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
-                max_num_sentences: 0,
+                max_num_sentences: config.common_config.max_num_sentences,
                 model: model_config,
                 rule_fars: tts_config.rule_fars.map(|v| v.as_ptr()).unwrap_or(null()),
                 rule_fsts: tts_config.rule_fsts.map(|v| v.as_ptr()).unwrap_or(null()),
