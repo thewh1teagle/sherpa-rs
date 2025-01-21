@@ -34,7 +34,7 @@ impl Drop for RawCStr {
     }
 }
 
-pub fn cstr_to_string(ptr: *mut c_char) -> String {
+pub fn cstr_to_string(ptr: *const c_char) -> String {
     unsafe {
         if ptr.is_null() {
             String::new()

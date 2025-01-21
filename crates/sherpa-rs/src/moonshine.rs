@@ -1,7 +1,4 @@
-use crate::{
-    get_default_provider,
-    utils::{cstr_to_string, RawCStr},
-};
+use crate::{get_default_provider, utils::RawCStr};
 use eyre::{bail, Result};
 use std::ptr::null;
 
@@ -10,11 +7,7 @@ pub struct MoonshineRecognizer {
     recognizer: *const sherpa_rs_sys::SherpaOnnxOfflineRecognizer,
 }
 
-#[derive(Debug)]
-pub struct MoonshineRecognizerResult {
-    pub text: String,
-    // pub timestamps: Vec<f32>,
-}
+pub type MoonshineRecognizerResult = super::OfflineRecognizerResult;
 
 #[derive(Debug)]
 pub struct MoonshineConfig {
@@ -140,8 +133,7 @@ impl MoonshineRecognizer {
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
-            let text = cstr_to_string(raw_result.text as _);
-            let result = MoonshineRecognizerResult { text };
+            let result = MoonshineRecognizerResult::new(&raw_result);
             // Free
             sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizerResult(result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
