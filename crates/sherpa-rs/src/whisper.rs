@@ -9,7 +9,7 @@ pub struct WhisperRecognizer {
 
 pub type WhisperRecognizerResult = super::OfflineRecognizerResult;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WhisperConfig {
     pub decoder: String,
     pub encoder: String,
