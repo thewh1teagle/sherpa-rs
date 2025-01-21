@@ -15,10 +15,13 @@ mod utils;
 #[cfg(feature = "tts")]
 pub mod tts;
 
+use std::ffi::CStr;
+
 #[cfg(feature = "sys")]
 pub use sherpa_rs_sys;
 
 use eyre::{bail, Result};
+use utils::cstr_to_string;
 
 pub fn get_default_provider() -> String {
     "cpu".into()
@@ -79,6 +82,43 @@ pub struct OnnxConfig {
     pub provider: String,
     pub debug: bool,
     pub num_threads: i32,
+}
+
+#[derive(Debug, Clone)]
+pub struct OfflineRecognizerResult {
+    pub lang: String,
+    pub text: String,
+    pub timestamps: Vec<f32>,
+    pub tokens: Vec<String>,
+}
+
+impl OfflineRecognizerResult {
+    fn new(result: &sherpa_rs_sys::SherpaOnnxOfflineRecognizerResult) -> Self {
+        let lang = cstr_to_string(result.lang);
+        let text = cstr_to_string(result.text);
+        let count = result.count.try_into().unwrap();
+        let timestamps = if result.timestamps.is_null() {
+            Vec::new()
+        } else {
+            unsafe { std::slice::from_raw_parts(result.timestamps, count).to_vec() }
+        };
+        let mut tokens = Vec::with_capacity(count);
+        let mut next_token = result.tokens;
+
+        for _ in 0..count {
+            let token = unsafe { CStr::from_ptr(next_token) };
+            tokens.push(token.to_string_lossy().into_owned());
+            next_token = next_token
+                .wrapping_byte_offset(token.to_bytes_with_nul().len().try_into().unwrap());
+        }
+
+        Self {
+            lang,
+            text,
+            timestamps,
+            tokens,
+        }
+    }
 }
 
 impl Default for OnnxConfig {
