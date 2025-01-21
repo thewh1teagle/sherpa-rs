@@ -135,7 +135,7 @@ impl WhisperRecognizer {
         Ok(Self { recognizer })
     }
 
-    pub fn transcribe(&mut self, sample_rate: u32, samples: Vec<f32>) -> WhisperRecognizerResult {
+    pub fn transcribe(&mut self, sample_rate: u32, samples: &[f32]) -> WhisperRecognizerResult {
         unsafe {
             let stream = sherpa_rs_sys::SherpaOnnxCreateOfflineStream(self.recognizer);
             sherpa_rs_sys::SherpaOnnxAcceptWaveformOffline(
@@ -200,7 +200,7 @@ mod tests {
         let mut recognizer = WhisperRecognizer::new(config).unwrap();
 
         let start_t = Instant::now();
-        let result = recognizer.transcribe(sample_rate, samples);
+        let result = recognizer.transcribe(sample_rate, &samples);
         println!("{:?}", result);
         println!("Time taken for transcription: {:?}", start_t.elapsed());
     }

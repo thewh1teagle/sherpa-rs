@@ -128,7 +128,7 @@ impl MoonshineRecognizer {
         Ok(Self { recognizer })
     }
 
-    pub fn transcribe(&mut self, sample_rate: u32, samples: Vec<f32>) -> MoonshineRecognizerResult {
+    pub fn transcribe(&mut self, sample_rate: u32, samples: &[f32]) -> MoonshineRecognizerResult {
         unsafe {
             let stream = sherpa_rs_sys::SherpaOnnxCreateOfflineStream(self.recognizer);
             sherpa_rs_sys::SherpaOnnxAcceptWaveformOffline(
