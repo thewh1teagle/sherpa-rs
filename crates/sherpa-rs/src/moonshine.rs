@@ -9,7 +9,7 @@ pub struct MoonshineRecognizer {
 
 pub type MoonshineRecognizerResult = super::OfflineRecognizerResult;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MoonshineConfig {
     pub preprocessor: String,
 
