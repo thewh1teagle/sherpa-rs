@@ -1,4 +1,4 @@
-use crate::{get_default_provider, utils::RawCStr};
+use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::Result;
 
 #[derive(Debug)]
@@ -47,8 +47,8 @@ impl Vad {
     pub fn new(config: VadConfig, buffer_size_in_seconds: f32) -> Result<Self> {
         let provider = config.provider.unwrap_or(get_default_provider());
 
-        let model = RawCStr::new(&config.model);
-        let provider = RawCStr::new(&provider);
+        let model = cstring_from_str(&config.model);
+        let provider = cstring_from_str(&provider);
 
         let silero_vad = sherpa_rs_sys::SherpaOnnxSileroVadModelConfig {
             model: model.as_ptr(),

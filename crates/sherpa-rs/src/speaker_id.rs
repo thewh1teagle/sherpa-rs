@@ -1,7 +1,7 @@
 use eyre::{bail, Result};
 use std::path::PathBuf;
 
-use crate::{get_default_provider, utils::RawCStr};
+use crate::{get_default_provider, utils::cstring_from_str};
 
 /// If similarity is greater or equal to thresold than it's a match!
 pub const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.5;
@@ -31,8 +31,8 @@ impl EmbeddingExtractor {
         if !model_path.exists() {
             bail!("model not found at {}", model_path.display())
         }
-        let model = RawCStr::new(&config.model);
-        let provider = RawCStr::new(&provider);
+        let model = cstring_from_str(&config.model);
+        let provider = cstring_from_str(&provider);
 
         let extractor_config = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig {
             debug,

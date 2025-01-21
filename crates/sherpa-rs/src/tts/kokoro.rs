@@ -1,6 +1,6 @@
 use std::{mem, ptr::null};
 
-use crate::{utils::RawCStr, OnnxConfig};
+use crate::{utils::cstring_from_str, OnnxConfig};
 use eyre::Result;
 use sherpa_rs_sys;
 
@@ -24,12 +24,12 @@ pub struct KokoroTtsConfig {
 impl KokoroTts {
     pub fn new(config: KokoroTtsConfig) -> Self {
         let tts = unsafe {
-            let model = RawCStr::new(&config.model);
-            let voices = RawCStr::new(&config.voices);
-            let tokens = RawCStr::new(&config.tokens);
-            let data_dir = RawCStr::new(&config.data_dir);
+            let model = cstring_from_str(&config.model);
+            let voices = cstring_from_str(&config.voices);
+            let tokens = cstring_from_str(&config.tokens);
+            let data_dir = cstring_from_str(&config.data_dir);
 
-            let provider = RawCStr::new(&config.onnx_config.provider);
+            let provider = cstring_from_str(&config.onnx_config.provider);
 
             let tts_config = config.common_config.to_raw();
 

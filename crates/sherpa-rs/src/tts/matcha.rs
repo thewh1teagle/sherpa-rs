@@ -1,6 +1,6 @@
 use std::{mem, ptr::null};
 
-use crate::{utils::RawCStr, OnnxConfig};
+use crate::{utils::cstring_from_str, OnnxConfig};
 use eyre::Result;
 use sherpa_rs_sys;
 
@@ -30,15 +30,15 @@ pub struct MatchaTtsConfig {
 impl MatchaTts {
     pub fn new(config: MatchaTtsConfig) -> Self {
         let tts = unsafe {
-            let tokens = RawCStr::new(&config.tokens);
-            let data_dir = RawCStr::new(&config.data_dir);
-            let lexicon = RawCStr::new(&config.lexicon);
-            let dict_dir = RawCStr::new(&config.dict_dir);
+            let tokens = cstring_from_str(&config.tokens);
+            let data_dir = cstring_from_str(&config.data_dir);
+            let lexicon = cstring_from_str(&config.lexicon);
+            let dict_dir = cstring_from_str(&config.dict_dir);
 
-            let vocoder = RawCStr::new(&config.vocoder);
-            let acoustic_model = RawCStr::new(&config.acoustic_model);
+            let vocoder = cstring_from_str(&config.vocoder);
+            let acoustic_model = cstring_from_str(&config.acoustic_model);
 
-            let provider = RawCStr::new(&config.onnx_config.provider);
+            let provider = cstring_from_str(&config.onnx_config.provider);
 
             let tts_config = config.common_config.to_raw();
 

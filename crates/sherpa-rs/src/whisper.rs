@@ -1,4 +1,4 @@
-use crate::{get_default_provider, utils::RawCStr};
+use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::{bail, Result};
 use std::ptr::null;
 
@@ -43,21 +43,21 @@ impl WhisperRecognizer {
         let provider = config.provider.unwrap_or(get_default_provider());
 
         // Onnx
-        let provider_ptr = RawCStr::new(&provider);
+        let provider_ptr = cstring_from_str(&provider);
         let num_threads = config.num_threads.unwrap_or(2);
 
         // Whisper
-        let bpe_vocab_ptr = RawCStr::new(&config.bpe_vocab.unwrap_or("".into()));
+        let bpe_vocab_ptr = cstring_from_str(&config.bpe_vocab.unwrap_or("".into()));
         let tail_paddings = 0;
-        let decoder_ptr = RawCStr::new(&config.decoder);
-        let encoder_ptr = RawCStr::new(&config.encoder);
-        let language_ptr = RawCStr::new(&config.language);
-        let task_ptr = RawCStr::new("transcribe");
-        let tokens_ptr = RawCStr::new(&config.tokens);
-        let decoding_method_ptr = RawCStr::new("greedy_search");
+        let decoder_ptr = cstring_from_str(&config.decoder);
+        let encoder_ptr = cstring_from_str(&config.encoder);
+        let language_ptr = cstring_from_str(&config.language);
+        let task_ptr = cstring_from_str("transcribe");
+        let tokens_ptr = cstring_from_str(&config.tokens);
+        let decoding_method_ptr = cstring_from_str("greedy_search");
         // Sense voice
-        let sense_voice_model_ptr = RawCStr::new("");
-        let sense_voice_language_ptr = RawCStr::new("");
+        let sense_voice_model_ptr = cstring_from_str("");
+        let sense_voice_language_ptr = cstring_from_str("");
 
         let whisper = sherpa_rs_sys::SherpaOnnxOfflineWhisperModelConfig {
             decoder: decoder_ptr.as_ptr(),
