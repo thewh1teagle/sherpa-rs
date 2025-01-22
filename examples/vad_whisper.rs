@@ -60,7 +60,7 @@ fn main() {
                 let segment = vad.front();
                 let start_sec = (segment.start as f32) / sample_rate as f32;
                 let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
-                let transcript = recognizer.transcribe(sample_rate, segment.samples.clone());
+                let transcript = recognizer.transcribe(sample_rate, &segment.samples);
 
                 // Compute the speaker embedding
                 let mut embedding = extractor
@@ -96,7 +96,7 @@ fn main() {
             let segment = vad.front();
             let start_sec = (segment.start as f32) / sample_rate as f32;
             let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
-            let transcript = recognizer.transcribe(sample_rate, segment.samples.clone());
+            let transcript = recognizer.transcribe(sample_rate, &segment.samples);
 
             // Compute the speaker embedding
             let mut embedding = extractor

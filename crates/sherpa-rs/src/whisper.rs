@@ -1,7 +1,4 @@
-use crate::{
-    get_default_provider,
-    utils::{cstr_to_string, RawCStr},
-};
+use crate::{get_default_provider, utils::RawCStr};
 use eyre::{bail, Result};
 use std::ptr::null;
 
@@ -10,13 +7,9 @@ pub struct WhisperRecognizer {
     recognizer: *const sherpa_rs_sys::SherpaOnnxOfflineRecognizer,
 }
 
-#[derive(Debug)]
-pub struct WhisperRecognizerResult {
-    pub text: String,
-    // pub timestamps: Vec<f32>,
-}
+pub type WhisperRecognizerResult = super::OfflineRecognizerResult;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WhisperConfig {
     pub decoder: String,
     pub encoder: String,
@@ -135,7 +128,7 @@ impl WhisperRecognizer {
         Ok(Self { recognizer })
     }
 
-    pub fn transcribe(&mut self, sample_rate: u32, samples: Vec<f32>) -> WhisperRecognizerResult {
+    pub fn transcribe(&mut self, sample_rate: u32, samples: &[f32]) -> WhisperRecognizerResult {
         unsafe {
             let stream = sherpa_rs_sys::SherpaOnnxCreateOfflineStream(self.recognizer);
             sherpa_rs_sys::SherpaOnnxAcceptWaveformOffline(
@@ -147,10 +140,7 @@ impl WhisperRecognizer {
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
-            let text = cstr_to_string(raw_result.text as _);
-            // let timestamps: &[f32] =
-            // std::slice::from_raw_parts(raw_result.timestamps, raw_result.count as usize);
-            let result = WhisperRecognizerResult { text };
+            let result = WhisperRecognizerResult::new(&raw_result);
             // Free
             sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizerResult(result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
@@ -200,7 +190,7 @@ mod tests {
         let mut recognizer = WhisperRecognizer::new(config).unwrap();
 
         let start_t = Instant::now();
-        let result = recognizer.transcribe(sample_rate, samples);
+        let result = recognizer.transcribe(sample_rate, &samples);
         println!("{:?}", result);
         println!("Time taken for transcription: {:?}", start_t.elapsed());
     }

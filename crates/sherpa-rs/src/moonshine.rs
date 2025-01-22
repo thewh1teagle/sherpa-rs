@@ -1,7 +1,4 @@
-use crate::{
-    get_default_provider,
-    utils::{cstr_to_string, RawCStr},
-};
+use crate::{get_default_provider, utils::RawCStr};
 use eyre::{bail, Result};
 use std::ptr::null;
 
@@ -10,13 +7,9 @@ pub struct MoonshineRecognizer {
     recognizer: *const sherpa_rs_sys::SherpaOnnxOfflineRecognizer,
 }
 
-#[derive(Debug)]
-pub struct MoonshineRecognizerResult {
-    pub text: String,
-    // pub timestamps: Vec<f32>,
-}
+pub type MoonshineRecognizerResult = super::OfflineRecognizerResult;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MoonshineConfig {
     pub preprocessor: String,
 
@@ -128,7 +121,7 @@ impl MoonshineRecognizer {
         Ok(Self { recognizer })
     }
 
-    pub fn transcribe(&mut self, sample_rate: u32, samples: Vec<f32>) -> MoonshineRecognizerResult {
+    pub fn transcribe(&mut self, sample_rate: u32, samples: &[f32]) -> MoonshineRecognizerResult {
         unsafe {
             let stream = sherpa_rs_sys::SherpaOnnxCreateOfflineStream(self.recognizer);
             sherpa_rs_sys::SherpaOnnxAcceptWaveformOffline(
@@ -140,8 +133,7 @@ impl MoonshineRecognizer {
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
-            let text = cstr_to_string(raw_result.text as _);
-            let result = MoonshineRecognizerResult { text };
+            let result = MoonshineRecognizerResult::new(&raw_result);
             // Free
             sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizerResult(result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
