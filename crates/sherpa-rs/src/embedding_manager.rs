@@ -1,4 +1,4 @@
-use crate::utils::{cstr_to_string, RawCStr};
+use crate::utils::{cstr_to_string, cstring_from_str};
 use eyre::{bail, Result};
 
 #[derive(Debug, Clone)]
@@ -67,7 +67,7 @@ impl EmbeddingManager {
     }
 
     pub fn add(&mut self, name: String, embedding: &mut [f32]) -> Result<()> {
-        let name_c = RawCStr::new(&name.clone());
+        let name_c = cstring_from_str(&name.clone());
         unsafe {
             let status = sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingManagerAdd(
                 self.manager,

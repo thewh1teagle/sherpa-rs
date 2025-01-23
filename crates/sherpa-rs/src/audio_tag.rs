@@ -2,7 +2,7 @@ use eyre::{bail, Result};
 
 use crate::{
     get_default_provider,
-    utils::{cstr_to_string, RawCStr},
+    utils::{cstr_to_string, cstring_from_str},
 };
 
 #[derive(Debug, Default, Clone)]
@@ -25,10 +25,10 @@ impl AudioTag {
     pub fn new(config: AudioTagConfig) -> Result<Self> {
         let config_clone = config.clone();
 
-        let model = RawCStr::new(&config.model);
-        let ced = RawCStr::new(&config.ced.unwrap_or_default());
-        let labels = RawCStr::new(&config.labels);
-        let provider = RawCStr::new(&config.provider.unwrap_or(get_default_provider()));
+        let model = cstring_from_str(&config.model);
+        let ced = cstring_from_str(&config.ced.unwrap_or_default());
+        let labels = cstring_from_str(&config.labels);
+        let provider = cstring_from_str(&config.provider.unwrap_or(get_default_provider()));
 
         let sherpa_config = sherpa_rs_sys::SherpaOnnxAudioTaggingConfig {
             model: sherpa_rs_sys::SherpaOnnxAudioTaggingModelConfig {

@@ -1,4 +1,4 @@
-use crate::{get_default_provider, utils::RawCStr};
+use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::{bail, Result};
 use std::{path::Path, ptr::null_mut};
 
@@ -58,9 +58,9 @@ impl Diarize {
             threshold: config.threshold.unwrap_or(0.5),
         };
 
-        let embedding_model = RawCStr::new(embedding_model);
-        let provider = RawCStr::new(&provider.clone());
-        let segmentation_model = RawCStr::new(segmentation_model);
+        let embedding_model = cstring_from_str(embedding_model);
+        let provider = cstring_from_str(&provider.clone());
+        let segmentation_model = cstring_from_str(segmentation_model);
 
         let config = sherpa_rs_sys::SherpaOnnxOfflineSpeakerDiarizationConfig {
             embedding: sherpa_rs_sys::SherpaOnnxSpeakerEmbeddingExtractorConfig {

@@ -1,4 +1,4 @@
-use crate::{get_default_provider, utils::RawCStr};
+use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::{bail, Result};
 use std::ptr::null;
 
@@ -46,15 +46,15 @@ impl MoonshineRecognizer {
         let provider = config.provider.unwrap_or(get_default_provider());
 
         // Onnx
-        let provider_ptr = RawCStr::new(&provider);
+        let provider_ptr = cstring_from_str(&provider);
         let num_threads = config.num_threads.unwrap_or(2);
 
         // Moonshine
-        let preprocessor_ptr = RawCStr::new(&config.preprocessor);
-        let encoder_ptr = RawCStr::new(&config.encoder);
-        let cached_decoder_ptr = RawCStr::new(&config.cached_decoder);
-        let uncached_decoder_ptr = RawCStr::new(&config.uncached_decoder);
-        let tokens_ptr = RawCStr::new(&config.tokens);
+        let preprocessor_ptr = cstring_from_str(&config.preprocessor);
+        let encoder_ptr = cstring_from_str(&config.encoder);
+        let cached_decoder_ptr = cstring_from_str(&config.cached_decoder);
+        let uncached_decoder_ptr = cstring_from_str(&config.uncached_decoder);
+        let tokens_ptr = cstring_from_str(&config.tokens);
 
         let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
             bpe_vocab: null(),

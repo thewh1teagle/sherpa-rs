@@ -1,6 +1,6 @@
 use crate::{
     get_default_provider,
-    utils::{cstr_to_string, RawCStr},
+    utils::{cstr_to_string, cstring_from_str},
 };
 use eyre::{bail, Result};
 
@@ -22,9 +22,9 @@ impl SpokenLanguageId {
     pub fn new(config: SpokenLanguageIdConfig) -> Self {
         let debug = config.debug.into();
 
-        let decoder = RawCStr::new(&config.decoder);
-        let encoder = RawCStr::new(&config.encoder);
-        let provider = RawCStr::new(&config.provider.unwrap_or(get_default_provider()));
+        let decoder = cstring_from_str(&config.decoder);
+        let encoder = cstring_from_str(&config.encoder);
+        let provider = cstring_from_str(&config.provider.unwrap_or(get_default_provider()));
 
         let whisper = sherpa_rs_sys::SherpaOnnxSpokenLanguageIdentificationWhisperConfig {
             decoder: decoder.as_ptr(),

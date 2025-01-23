@@ -2,13 +2,15 @@ mod kokoro;
 mod matcha;
 mod vits;
 
+use std::ffi::CString;
+
 use eyre::{bail, Result};
 
 pub use kokoro::{KokoroTts, KokoroTtsConfig};
 pub use matcha::{MatchaTts, MatchaTtsConfig};
 pub use vits::{VitsTts, VitsTtsConfig};
 
-use crate::utils::RawCStr;
+use crate::utils::cstring_from_str;
 
 #[derive(Debug)]
 pub struct TtsAudio {
@@ -25,8 +27,8 @@ pub struct CommonTtsConfig {
 }
 
 pub struct CommonTtsRaw {
-    pub rule_fars: Option<RawCStr>,
-    pub rule_fsts: Option<RawCStr>,
+    pub rule_fars: Option<CString>,
+    pub rule_fsts: Option<CString>,
     pub max_num_sentences: i32,
 }
 
@@ -35,13 +37,13 @@ impl CommonTtsConfig {
         let rule_fars = if self.rule_fars.is_empty() {
             None
         } else {
-            Some(RawCStr::new(&self.rule_fars))
+            Some(cstring_from_str(&self.rule_fars))
         };
 
         let rule_fsts = if self.rule_fsts.is_empty() {
             None
         } else {
-            Some(RawCStr::new(&self.rule_fsts))
+            Some(cstring_from_str(&self.rule_fsts))
         };
 
         CommonTtsRaw {
@@ -61,7 +63,7 @@ pub unsafe fn create(
     sid: i32,
     speed: f32,
 ) -> Result<TtsAudio> {
-    let text = RawCStr::new(text);
+    let text = cstring_from_str(text);
     let audio_ptr = sherpa_rs_sys::SherpaOnnxOfflineTtsGenerate(tts, text.as_ptr(), sid, speed);
 
     if audio_ptr.is_null() {

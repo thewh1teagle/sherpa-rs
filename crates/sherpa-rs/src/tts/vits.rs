@@ -1,6 +1,6 @@
 use std::{mem, ptr::null};
 
-use crate::{utils::RawCStr, OnnxConfig};
+use crate::{utils::cstring_from_str, OnnxConfig};
 use eyre::Result;
 use sherpa_rs_sys;
 
@@ -28,13 +28,13 @@ pub struct VitsTtsConfig {
 impl VitsTts {
     pub fn new(config: VitsTtsConfig) -> Self {
         let tts = unsafe {
-            let model = RawCStr::new(&config.model);
-            let tokens = RawCStr::new(&config.tokens);
-            let data_dir = RawCStr::new(&config.data_dir);
-            let lexicon = RawCStr::new(&config.lexicon);
-            let dict_dir = RawCStr::new(&config.dict_dir);
+            let model = cstring_from_str(&config.model);
+            let tokens = cstring_from_str(&config.tokens);
+            let data_dir = cstring_from_str(&config.data_dir);
+            let lexicon = cstring_from_str(&config.lexicon);
+            let dict_dir = cstring_from_str(&config.dict_dir);
 
-            let provider = RawCStr::new(&config.onnx_config.provider);
+            let provider = cstring_from_str(&config.onnx_config.provider);
 
             let tts_config = config.tts_config.to_raw();
 

@@ -1,6 +1,6 @@
 use crate::{
     get_default_provider,
-    utils::{cstr_to_string, RawCStr},
+    utils::{cstr_to_string, cstring_from_str},
 };
 use eyre::{bail, Result};
 use std::ptr::null;
@@ -24,12 +24,12 @@ pub struct ZipFormer {
 impl ZipFormer {
     pub fn new(config: ZipFormerConfig) -> Result<Self> {
         // Zipformer config
-        let decoder_ptr = RawCStr::new(&config.decoder);
-        let encoder_ptr = RawCStr::new(&config.encoder);
-        let joiner_ptr = RawCStr::new(&config.joiner);
-        let provider_ptr = RawCStr::new(&config.provider.unwrap_or(get_default_provider()));
-        let tokens_ptr = RawCStr::new(&config.tokens);
-        let decoding_method_ptr = RawCStr::new("greedy_search");
+        let decoder_ptr = cstring_from_str(&config.decoder);
+        let encoder_ptr = cstring_from_str(&config.encoder);
+        let joiner_ptr = cstring_from_str(&config.joiner);
+        let provider_ptr = cstring_from_str(&config.provider.unwrap_or(get_default_provider()));
+        let tokens_ptr = cstring_from_str(&config.tokens);
+        let decoding_method_ptr = cstring_from_str("greedy_search");
 
         let transcuder_config = sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
             decoder: decoder_ptr.as_ptr(),

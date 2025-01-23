@@ -2,7 +2,7 @@ use eyre::{bail, Result};
 
 use crate::{
     get_default_provider,
-    utils::{cstr_to_string, RawCStr},
+    utils::{cstr_to_string, cstring_from_str},
 };
 
 #[derive(Debug, Default, Clone)]
@@ -19,8 +19,8 @@ pub struct Punctuation {
 
 impl Punctuation {
     pub fn new(config: PunctuationConfig) -> Result<Self> {
-        let model = RawCStr::new(&config.model);
-        let provider = RawCStr::new(&config.provider.unwrap_or(if cfg!(target_os = "macos") {
+        let model = cstring_from_str(&config.model);
+        let provider = cstring_from_str(&config.provider.unwrap_or(if cfg!(target_os = "macos") {
             // TODO: sherpa-onnx/issues/1448
             "cpu".into()
         } else {
@@ -45,7 +45,7 @@ impl Punctuation {
     }
 
     pub fn add_punctuation(&mut self, text: &str) -> String {
-        let text = RawCStr::new(text);
+        let text = cstring_from_str(text);
         unsafe {
             let text_with_punct_ptr = sherpa_rs_sys::SherpaOfflinePunctuationAddPunct(
                 self.audio_punctuation,

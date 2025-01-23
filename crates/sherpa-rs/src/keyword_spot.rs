@@ -2,7 +2,7 @@ use std::ptr::null;
 
 use crate::{
     get_default_provider,
-    utils::{cstr_to_string, RawCStr},
+    utils::{cstr_to_string, cstring_from_str},
 };
 use eyre::{bail, Result};
 
@@ -61,14 +61,14 @@ impl KeywordSpot {
     // Create new keyboard spotter along with stream
     // Ready for streaming or regular use
     pub fn new(config: KeywordSpotConfig) -> Result<Self> {
-        let provider = RawCStr::new(&config.provider.unwrap_or(get_default_provider()));
+        let provider = cstring_from_str(&config.provider.unwrap_or(get_default_provider()));
 
-        let zipformer_encoder = RawCStr::new(&config.zipformer_encoder);
-        let zipformer_decoder = RawCStr::new(&config.zipformer_decoder);
-        let zipformer_joiner = RawCStr::new(&config.zipformer_joiner);
+        let zipformer_encoder = cstring_from_str(&config.zipformer_encoder);
+        let zipformer_decoder = cstring_from_str(&config.zipformer_decoder);
+        let zipformer_joiner = cstring_from_str(&config.zipformer_joiner);
 
-        let tokens = RawCStr::new(&config.tokens);
-        let keywords = RawCStr::new(&config.keywords);
+        let tokens = cstring_from_str(&config.tokens);
+        let keywords = cstring_from_str(&config.keywords);
 
         let sherpa_config = sherpa_rs_sys::SherpaOnnxKeywordSpotterConfig {
             feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
