@@ -16,6 +16,7 @@ pub struct WhisperConfig {
     pub tokens: String,
     pub language: String,
     pub bpe_vocab: Option<String>,
+    pub tail_paddings: Option<i32>,
 
     pub provider: Option<String>,
     pub num_threads: Option<i32>,
@@ -30,6 +31,7 @@ impl Default for WhisperConfig {
             tokens: String::new(),
             language: String::from("en"),
             bpe_vocab: None,
+            tail_paddings: None,
             debug: false,
             provider: None,
             num_threads: Some(1),
@@ -48,7 +50,7 @@ impl WhisperRecognizer {
 
         // Whisper
         let bpe_vocab_ptr = cstring_from_str(&config.bpe_vocab.unwrap_or("".into()));
-        let tail_paddings = 0;
+        let tail_paddings = config.tail_paddings.unwrap_or(0);
         let decoder_ptr = cstring_from_str(&config.decoder);
         let encoder_ptr = cstring_from_str(&config.encoder);
         let language_ptr = cstring_from_str(&config.language);
@@ -181,6 +183,7 @@ mod tests {
             encoder: "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
             tokens: "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
             language: "en".into(),
+            tail_paddings: None,
             debug: true,
             provider: None,
             num_threads: None,
