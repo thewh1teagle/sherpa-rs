@@ -1,5 +1,5 @@
-use crate::{get_default_provider, utils::cstring_from_str};
-use eyre::{bail, Result};
+use crate::{ get_default_provider, utils::cstring_from_str };
+use eyre::{ bail, Result };
 use std::ptr::null;
 
 #[derive(Debug)]
@@ -92,6 +92,10 @@ impl WhisperRecognizer {
                 decoder: null(),
                 joiner: null(),
             },
+            fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
+                encoder: null(),
+                decoder: null(),
+            },
             whisper,
             sense_voice,
             moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
@@ -137,7 +141,7 @@ impl WhisperRecognizer {
                 stream,
                 sample_rate as i32,
                 samples.as_ptr(),
-                samples.len().try_into().unwrap(),
+                samples.len().try_into().unwrap()
             );
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);

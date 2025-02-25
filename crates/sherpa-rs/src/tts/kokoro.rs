@@ -1,10 +1,10 @@
-use std::{mem, ptr::null};
+use std::{ mem, ptr::null };
 
-use crate::{utils::cstring_from_str, OnnxConfig};
+use crate::{ utils::cstring_from_str, OnnxConfig };
 use eyre::Result;
 use sherpa_rs_sys;
 
-use super::{CommonTtsConfig, TtsAudio};
+use super::{ CommonTtsConfig, TtsAudio };
 
 pub struct KokoroTts {
     tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
@@ -16,6 +16,8 @@ pub struct KokoroTtsConfig {
     pub voices: String,
     pub tokens: String,
     pub data_dir: String,
+    pub dict_dir: String,
+    pub lexicon: String,
     pub length_scale: f32,
     pub onnx_config: OnnxConfig,
     pub common_config: CommonTtsConfig,
@@ -28,6 +30,8 @@ impl KokoroTts {
             let voices = cstring_from_str(&config.voices);
             let tokens = cstring_from_str(&config.tokens);
             let data_dir = cstring_from_str(&config.data_dir);
+            let dict_dir = cstring_from_str(&config.dict_dir);
+            let lexicon = cstring_from_str(&config.lexicon);
 
             let provider = cstring_from_str(&config.onnx_config.provider);
 
@@ -45,6 +49,8 @@ impl KokoroTts {
                     tokens: tokens.as_ptr(),
                     data_dir: data_dir.as_ptr(),
                     length_scale: config.length_scale,
+                    dict_dir: dict_dir.as_ptr(),
+                    lexicon: lexicon.as_ptr(),
                 },
             };
             let config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
@@ -52,6 +58,7 @@ impl KokoroTts {
                 model: model_config,
                 rule_fars: tts_config.rule_fars.map(|v| v.as_ptr()).unwrap_or(null()),
                 rule_fsts: tts_config.rule_fsts.map(|v| v.as_ptr()).unwrap_or(null()),
+                silence_scale: config.common_config.silence_scale,
             };
             sherpa_rs_sys::SherpaOnnxCreateOfflineTts(&config)
         };

@@ -1,8 +1,5 @@
-use crate::{
-    get_default_provider,
-    utils::{cstr_to_string, cstring_from_str},
-};
-use eyre::{bail, Result};
+use crate::{ get_default_provider, utils::{ cstr_to_string, cstring_from_str } };
+use eyre::{ bail, Result };
 use std::ptr::null;
 
 #[derive(Debug, Default)]
@@ -49,6 +46,10 @@ impl ZipFormer {
             modeling_unit: null(),
             paraformer: sherpa_rs_sys::SherpaOnnxOfflineParaformerModelConfig { model: null() },
             tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
+            fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
+                encoder: null(),
+                decoder: null(),
+            },
             telespeech_ctc: null(),
 
             nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig { model: null() },
@@ -92,8 +93,9 @@ impl ZipFormer {
             rule_fsts: null(),
         };
 
-        let recognizer =
-            unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&recognizer_config) };
+        let recognizer = unsafe {
+            sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&recognizer_config)
+        };
 
         if recognizer.is_null() {
             bail!("Failed to create recognizer");
@@ -108,7 +110,7 @@ impl ZipFormer {
                 stream,
                 sample_rate as i32,
                 samples.as_ptr(),
-                samples.len().try_into().unwrap(),
+                samples.len().try_into().unwrap()
             );
             sherpa_rs_sys::SherpaOnnxDecodeOfflineStream(self.recognizer, stream);
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);

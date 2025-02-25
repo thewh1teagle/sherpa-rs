@@ -1,17 +1,16 @@
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::{ collections::HashMap, path::{ Path, PathBuf } };
 
 use serde::Deserialize;
 use serde_json::Value;
 
 // Prebuilt sherpa-onnx doesn't have Cuda support
-#[cfg(all(
-    any(target_os = "windows", target_os = "linux"),
-    feature = "download-binaries",
-    feature = "cuda"
-))]
+#[cfg(
+    all(
+        any(target_os = "windows", target_os = "linux"),
+        feature = "download-binaries",
+        feature = "cuda"
+    )
+)]
 compile_error!(
     "The 'download-binaries' and 'cuda' features cannot be enabled at the same time.\n\
     To resolve this, please disable the 'download-binaries' feature when using 'cuda'.\n\
@@ -31,12 +30,7 @@ compile_error!(
 );
 
 // Prebuilt sherpa-onnx does not include TTS in static builds.
-#[cfg(all(
-    windows,
-    feature = "download-binaries",
-    feature = "static",
-    feature = "tts"
-))]
+#[cfg(all(windows, feature = "download-binaries", feature = "static", feature = "tts"))]
 compile_error!(
     "The 'download-binaries', 'static', and 'tts' features cannot be enabled at the same time.\n\
     To resolve this, please disable the 'tts' feature when using 'static' and 'download-binaries' together.\n\
@@ -55,7 +49,8 @@ macro_rules! debug_log {
 }
 
 pub fn fetch_file(source_url: &str) -> Vec<u8> {
-    let resp = ureq::AgentBuilder::new()
+    let resp = ureq::AgentBuilder
+        ::new()
         .try_proxy_from_env(true)
         .build()
         .get(source_url)
@@ -111,7 +106,8 @@ pub struct Dist {
 
 impl DistTable {
     fn new(content: &str) -> Self {
-        let mut table: DistTable = serde_json::from_str(content)
+        let mut table: DistTable = serde_json
+            ::from_str(content)
             .unwrap_or_else(|_| panic!("Failed to parse dist.json: {}", content));
         table.url = table.url.replace("{tag}", &table.tag);
         for value in table.targets.values_mut() {
@@ -144,12 +140,11 @@ impl DistTable {
         } else {
             self.targets
                 .get(target)
-                .unwrap_or_else(|| panic!("Target {} not found. try to disable download-feature with --no-default-features.", target))
+                .unwrap_or_else(||
+                    panic!("Target {} not found. try to disable download-feature with --no-default-features.", target)
+                )
         };
-        debug_log!(
-            "raw target_dist: {:?}",
-            serde_json::to_string(target_dist).unwrap()
-        );
+        debug_log!("raw target_dist: {:?}", serde_json::to_string(target_dist).unwrap());
         let archive = if target_dist.get("archive").is_some() {
             // archive name
             // static/dynamic located in 'is_dynamic' field
@@ -171,12 +166,12 @@ impl DistTable {
         });
 
         let url = self.url.replace("{archive}", archive);
-        let checksum = DIST_CHECKSUM.get(archive).unwrap();
+        let checksum = DIST_CHECKSUM.get(archive)?;
 
         // modify is_dynamic
         debug_log!("checking is_dynamic");
         if let Some(target_dist) = target_dist.get("is_dynamic") {
-            *is_dynamic = target_dist.as_bool().unwrap();
+            *is_dynamic = target_dist.as_bool()?;
             debug_log!("is_dynamic: {}", *is_dynamic);
         }
 
@@ -204,7 +199,7 @@ fn hex_str_to_bytes(c: impl AsRef<[u8]>) -> Vec<u8> {
 
     c.as_ref()
         .chunks(2)
-        .map(|n| nibble(n[0]) << 4 | nibble(n[1]))
+        .map(|n| (nibble(n[0]) << 4) | nibble(n[1]))
         .collect()
 }
 

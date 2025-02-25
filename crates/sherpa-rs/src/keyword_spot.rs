@@ -1,10 +1,7 @@
 use std::ptr::null;
 
-use crate::{
-    get_default_provider,
-    utils::{cstr_to_string, cstring_from_str},
-};
-use eyre::{bail, Result};
+use crate::{ get_default_provider, utils::{ cstr_to_string, cstring_from_str } };
+use eyre::{ bail, Result };
 
 #[derive(Debug, Clone)]
 pub struct KeywordSpotConfig {
@@ -53,8 +50,8 @@ impl Default for KeywordSpotConfig {
 }
 
 pub struct KeywordSpot {
-    spotter: *mut sherpa_rs_sys::SherpaOnnxKeywordSpotter,
-    stream: *mut sherpa_rs_sys::SherpaOnnxOnlineStream,
+    spotter: *const sherpa_rs_sys::SherpaOnnxKeywordSpotter,
+    stream: *const sherpa_rs_sys::SherpaOnnxOnlineStream,
 }
 
 impl KeywordSpot {
@@ -122,7 +119,7 @@ impl KeywordSpot {
     pub fn extract_keyword(
         &mut self,
         samples: Vec<f32>,
-        sample_rate: u32,
+        sample_rate: u32
     ) -> Result<Option<String>> {
         // Create keyword spotting stream
         unsafe {
@@ -130,7 +127,7 @@ impl KeywordSpot {
                 self.stream,
                 sample_rate as i32,
                 samples.as_ptr(),
-                samples.len() as i32,
+                samples.len() as i32
             );
             sherpa_rs_sys::SherpaOnnxOnlineStreamInputFinished(self.stream);
             while sherpa_rs_sys::SherpaOnnxIsKeywordStreamReady(self.spotter, self.stream) == 1 {

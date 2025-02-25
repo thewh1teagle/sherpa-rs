@@ -27,4 +27,5 @@ jniLibs/
 build/
 kokoro-en-*/
 matcha-*
-/
+crates/sherpa-rs-sys/sherpa-onnx/scripts/
+kokoro-multi-lang-v1_0/

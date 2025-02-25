@@ -1,10 +1,10 @@
-use std::{mem, ptr::null};
+use std::{ mem, ptr::null };
 
-use crate::{utils::cstring_from_str, OnnxConfig};
+use crate::{ utils::cstring_from_str, OnnxConfig };
 use eyre::Result;
 use sherpa_rs_sys;
 
-use super::{CommonTtsConfig, TtsAudio};
+use super::{ CommonTtsConfig, TtsAudio };
 
 pub struct MatchaTts {
     tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
@@ -22,6 +22,7 @@ pub struct MatchaTtsConfig {
     pub length_scale: f32,
     pub noise_scale: f32,
     pub noise_scale_w: f32,
+    pub silence_scale: f32,
 
     pub common_config: CommonTtsConfig,
     pub onnx_config: OnnxConfig,
@@ -64,6 +65,7 @@ impl MatchaTts {
                 model: model_config,
                 rule_fars: tts_config.rule_fars.map(|v| v.as_ptr()).unwrap_or(null()),
                 rule_fsts: tts_config.rule_fsts.map(|v| v.as_ptr()).unwrap_or(null()),
+                silence_scale: config.silence_scale,
             };
             sherpa_rs_sys::SherpaOnnxCreateOfflineTts(&config)
         };

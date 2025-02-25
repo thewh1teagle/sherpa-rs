@@ -4,11 +4,11 @@ mod vits;
 
 use std::ffi::CString;
 
-use eyre::{bail, Result};
+use eyre::{ bail, Result };
 
-pub use kokoro::{KokoroTts, KokoroTtsConfig};
-pub use matcha::{MatchaTts, MatchaTtsConfig};
-pub use vits::{VitsTts, VitsTtsConfig};
+pub use kokoro::{ KokoroTts, KokoroTtsConfig };
+pub use matcha::{ MatchaTts, MatchaTtsConfig };
+pub use vits::{ VitsTts, VitsTtsConfig };
 
 use crate::utils::cstring_from_str;
 
@@ -24,6 +24,7 @@ pub struct CommonTtsConfig {
     pub rule_fars: String,
     pub rule_fsts: String,
     pub max_num_sentences: i32,
+    pub silence_scale: f32,
 }
 
 pub struct CommonTtsRaw {
@@ -61,7 +62,7 @@ pub unsafe fn create(
     tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
     text: &str,
     sid: i32,
-    speed: f32,
+    speed: f32
 ) -> Result<TtsAudio> {
     let text = cstring_from_str(text);
     let audio_ptr = sherpa_rs_sys::SherpaOnnxOfflineTtsGenerate(tts, text.as_ptr(), sid, speed);

@@ -3,7 +3,7 @@ use glob::glob;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::{ Path, PathBuf };
 use std::process::Command;
 
 #[path = "src/download_binaries.rs"]
@@ -49,8 +49,9 @@ fn add_search_path<P: AsRef<Path>>(path: P) {
 fn copy_file(src: PathBuf, dst: PathBuf) {
     if let Err(err) = std::fs::hard_link(&src, &dst) {
         debug_log!("Failed to hardlink {:?}. fallback to copy.", err);
-        fs::copy(&src, &dst)
-            .unwrap_or_else(|_| panic!("Failed to copy {} to {}", src.display(), dst.display()));
+        fs::copy(&src, &dst).unwrap_or_else(|_|
+            panic!("Failed to copy {} to {}", src.display(), dst.display())
+        );
     }
 }
 
@@ -70,17 +71,26 @@ fn get_cargo_target_dir() -> Result<std::path::PathBuf, Box<dyn std::error::Erro
     Ok(target_dir.to_path_buf())
 }
 
+fn delete_folder(src: &Path) -> std::io::Result<()> {
+    if src.exists() {
+        fs::remove_dir_all(src)?;
+    }
+    Ok(())
+}
+
 fn copy_folder(src: &Path, dst: &Path) {
     std::fs::create_dir_all(dst).expect("Failed to create dst directory");
     if cfg!(windows) {
-        std::process::Command::new("robocopy.exe")
+        std::process::Command
+            ::new("robocopy.exe")
             .arg("/e")
             .arg(src)
             .arg(dst)
             .status()
             .expect("Failed to execute robocopy command");
     } else {
-        std::process::Command::new("cp")
+        std::process::Command
+            ::new("cp")
             .arg("-rf")
             .arg(src)
             .arg(dst.parent().unwrap())
@@ -93,14 +103,11 @@ fn extract_lib_names(out_dir: &Path, is_dynamic: bool, target_os: &str) -> Vec<S
     let lib_pattern = if target_os == "windows" {
         "*.lib"
     } else if target_os == "macos" {
-        if is_dynamic {
-            "*.dylib"
-        } else {
-            "*.a"
-        }
-    }
-    // Linux, Android
-    else if is_dynamic {
+        if is_dynamic { "*.dylib" } else { "*.a" }
+    } else if
+        // Linux, Android
+        is_dynamic
+    {
         "*.so"
     } else {
         "*.a"
@@ -160,10 +167,7 @@ fn extract_lib_assets(out_dir: &Path, target_os: &str) -> Vec<PathBuf> {
 }
 
 fn macos_link_search_path() -> Option<String> {
-    let output = Command::new("clang")
-        .arg("--print-search-dirs")
-        .output()
-        .ok()?;
+    let output = Command::new("clang").arg("--print-search-dirs").output().ok()?;
     if !output.status.success() {
         println!(
             "failed to run 'clang --print-search-dirs', continuing without a link search path"
@@ -197,31 +201,32 @@ fn rerun_if_changed(vars: &[&str]) {
 
 fn main() {
     rerun_if_changed(&["wrapper.h", "dist.json", "checksum.txt", "./sherpa-onnx"]);
-    rerun_on_env_changes(&[
-        "SHERPA_BUILD_SHARED_LIBS",
-        "CMAKE_BUILD_PARALLEL_LEVEL",
-        "CMAKE_VERBOSE",
-        "SHERPA_LIB_PATH",
-        "SHERPA_STATIC_CRT",
-        "SHERPA_LIB_PROFILE",
-        "BUILD_DEBUG",
-    ]);
+    rerun_on_env_changes(
+        &[
+            "SHERPA_BUILD_SHARED_LIBS",
+            "CMAKE_BUILD_PARALLEL_LEVEL",
+            "CMAKE_VERBOSE",
+            "SHERPA_LIB_PATH",
+            "SHERPA_STATIC_CRT",
+            "SHERPA_LIB_PROFILE",
+            "BUILD_DEBUG",
+        ]
+    );
 
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
     debug_log!("target_os = {}", target_os);
 
     // Show warning if static enabled on Linux without RUSTFLAGS
-    #[cfg(all(
-        feature = "static",
-        target_os = "linux",
-        target_arch = "x86_64",
-        feature = "download-binaries"
-    ))]
+    #[cfg(
+        all(
+            feature = "static",
+            target_os = "linux",
+            target_arch = "x86_64",
+            feature = "download-binaries"
+        )
+    )]
     {
-        if !env::var("RUSTFLAGS")
-            .unwrap_or_default()
-            .contains("relocation-model=dynamic-no-pic")
-        {
+        if !env::var("RUSTFLAGS").unwrap_or_default().contains("relocation-model=dynamic-no-pic") {
             panic!(
                 "cargo:warning=\
             Please enable the following environment variable when static feature enabled on Linux: RUSTFLAGS=\"-C relocation-model=dynamic-no-pic\""
@@ -259,24 +264,24 @@ fn main() {
     // Prepare sherpa-onnx source
     if !sherpa_dst.exists() {
         debug_log!("Copy {} to {}", sherpa_src.display(), sherpa_dst.display());
+        delete_folder(&sherpa_src.join("scripts")).unwrap();
         copy_folder(&sherpa_src, &sherpa_dst);
     }
     // Speed up build
     env::set_var(
         "CMAKE_BUILD_PARALLEL_LEVEL",
-        std::thread::available_parallelism()
-            .unwrap()
-            .get()
-            .to_string(),
+        std::thread::available_parallelism().unwrap().get().to_string()
     );
 
     // Bindings
     if env::var("SHERPA_SKIP_GENERATE_BINDINGS").is_ok() {
         debug_log!("Skip generate bindings");
-        std::fs::copy("src/bindings.rs", out_dir.join("bindings.rs"))
+        std::fs
+            ::copy("src/bindings.rs", out_dir.join("bindings.rs"))
             .expect("Failed to copy bindings.rs");
     } else {
-        let mut bindings_builder = bindgen::Builder::default()
+        let mut bindings_builder = bindgen::Builder
+            ::default()
             .header("wrapper.h")
             .clang_arg(format!("-I{}", sherpa_dst.display()))
             .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
@@ -289,17 +294,13 @@ fn main() {
         }
 
         debug_log!("Generating bindings...");
-        let bindings_builder = bindings_builder
-            .generate()
-            .expect("Failed to generate bindings");
+        let bindings_builder = bindings_builder.generate().expect("Failed to generate bindings");
 
         // Write the generated bindings to an output file
         let bindings_path = out_dir.join("bindings.rs");
 
         debug_log!("Writing bindings to {:?}", bindings_path);
-        bindings_builder
-            .write_to_file(bindings_path)
-            .expect("Failed to write bindings");
+        bindings_builder.write_to_file(bindings_path).expect("Failed to write bindings");
         debug_log!("Bindings Created");
     }
 
@@ -318,7 +319,7 @@ fn main() {
     #[cfg(feature = "download-binaries")]
     {
         // Download libraries, cache and set SHERPA_LIB_PATH
-        use download_binaries::{extract_tbz, fetch_file, get_cache_dir, sha256, DIST_TABLE};
+        use download_binaries::{ extract_tbz, fetch_file, get_cache_dir, sha256, DIST_TABLE };
         debug_log!("Download binaries enabled");
         // debug_log!("Dist table: {:?}", DIST_TABLE.targets);
         // Try download sherpa libs and set SHERPA_LIB_PATH
@@ -350,11 +351,7 @@ fn main() {
                 let downloaded_file = fetch_file(&dist.url);
                 let hash = sha256(&downloaded_file);
                 // verify checksum
-                assert_eq!(
-                    hash, dist.checksum,
-                    "Checksum mismatch: {} != {}",
-                    hash, dist.checksum
-                );
+                assert_eq!(hash, dist.checksum, "Checksum mismatch: {} != {}", hash, dist.checksum);
 
                 extract_tbz(&downloaded_file, &cache_dir);
             } else {
@@ -376,10 +373,7 @@ fn main() {
                     add_search_path(lib_parent);
                 }
 
-                sherpa_libs = libs
-                    .iter()
-                    .map(download_binaries::extract_lib_name)
-                    .collect();
+                sherpa_libs = libs.iter().map(download_binaries::extract_lib_name).collect();
             } else {
                 sherpa_libs = extract_lib_names(&lib_dir, is_dynamic, &target_os);
             }
@@ -399,7 +393,8 @@ fn main() {
     } else {
         // Build with CMake
         let profile = env::var("SHERPA_LIB_PROFILE").unwrap_or("Release".to_string());
-        let static_crt = env::var("SHERPA_STATIC_CRT")
+        let static_crt = env
+            ::var("SHERPA_STATIC_CRT")
             .map(|v| v == "1")
             .unwrap_or(true);
         let mut config = Config::new(&sherpa_dst);
