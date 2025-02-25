@@ -24,6 +24,7 @@ pub struct CommonTtsConfig {
     pub rule_fars: String,
     pub rule_fsts: String,
     pub max_num_sentences: i32,
+    pub silence_scale: f32,
 }
 
 pub struct CommonTtsRaw {

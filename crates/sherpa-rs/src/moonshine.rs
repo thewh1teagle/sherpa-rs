@@ -68,6 +68,10 @@ impl MoonshineRecognizer {
             tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
             telespeech_ctc: null(),
             tokens: tokens_ptr.as_ptr(),
+            fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
+                encoder: null(),
+                decoder: null(),
+            },
             transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
                 encoder: null(),
                 decoder: null(),

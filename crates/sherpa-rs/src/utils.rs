@@ -1,7 +1,7 @@
-use std::ffi::{c_char, CString};
+use std::ffi::{ c_char, CString };
 
 pub fn cstring_from_str(s: &str) -> CString {
-    return CString::new(s).expect("CString::new failed");
+    CString::new(s).expect("CString::new failed")
 }
 
 pub unsafe fn cstr_to_string(ptr: *const c_char) -> String {

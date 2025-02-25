@@ -53,8 +53,8 @@ impl Default for KeywordSpotConfig {
 }
 
 pub struct KeywordSpot {
-    spotter: *mut sherpa_rs_sys::SherpaOnnxKeywordSpotter,
-    stream: *mut sherpa_rs_sys::SherpaOnnxOnlineStream,
+    spotter: *const sherpa_rs_sys::SherpaOnnxKeywordSpotter,
+    stream: *const sherpa_rs_sys::SherpaOnnxOnlineStream,
 }
 
 impl KeywordSpot {

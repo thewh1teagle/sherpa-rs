@@ -70,6 +70,13 @@ fn get_cargo_target_dir() -> Result<std::path::PathBuf, Box<dyn std::error::Erro
     Ok(target_dir.to_path_buf())
 }
 
+fn delete_folder(src: &Path) -> std::io::Result<()> {
+    if src.exists() {
+        fs::remove_dir_all(src)?;
+    }
+    Ok(())
+}
+
 fn copy_folder(src: &Path, dst: &Path) {
     std::fs::create_dir_all(dst).expect("Failed to create dst directory");
     if cfg!(windows) {
@@ -98,9 +105,9 @@ fn extract_lib_names(out_dir: &Path, is_dynamic: bool, target_os: &str) -> Vec<S
         } else {
             "*.a"
         }
-    }
+    } else if
     // Linux, Android
-    else if is_dynamic {
+    is_dynamic {
         "*.so"
     } else {
         "*.a"
@@ -259,6 +266,7 @@ fn main() {
     // Prepare sherpa-onnx source
     if !sherpa_dst.exists() {
         debug_log!("Copy {} to {}", sherpa_src.display(), sherpa_dst.display());
+        delete_folder(&sherpa_src.join("scripts")).unwrap();
         copy_folder(&sherpa_src, &sherpa_dst);
     }
     // Speed up build

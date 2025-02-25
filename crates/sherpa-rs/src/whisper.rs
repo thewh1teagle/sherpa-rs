@@ -92,6 +92,10 @@ impl WhisperRecognizer {
                 decoder: null(),
                 joiner: null(),
             },
+            fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
+                encoder: null(),
+                decoder: null(),
+            },
             whisper,
             sense_voice,
             moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {

@@ -49,6 +49,10 @@ impl ZipFormer {
             modeling_unit: null(),
             paraformer: sherpa_rs_sys::SherpaOnnxOfflineParaformerModelConfig { model: null() },
             tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
+            fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
+                encoder: null(),
+                decoder: null(),
+            },
             telespeech_ctc: null(),
 
             nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig { model: null() },

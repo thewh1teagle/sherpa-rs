@@ -144,7 +144,9 @@ impl DistTable {
         } else {
             self.targets
                 .get(target)
-                .unwrap_or_else(|| panic!("Target {} not found. try to disable download-feature with --no-default-features.", target))
+                .unwrap_or_else(||
+                    panic!("Target {} not found. try to disable download-feature with --no-default-features.", target)
+                )
         };
         debug_log!(
             "raw target_dist: {:?}",
@@ -171,12 +173,12 @@ impl DistTable {
         });
 
         let url = self.url.replace("{archive}", archive);
-        let checksum = DIST_CHECKSUM.get(archive).unwrap();
+        let checksum = DIST_CHECKSUM.get(archive)?;
 
         // modify is_dynamic
         debug_log!("checking is_dynamic");
         if let Some(target_dist) = target_dist.get("is_dynamic") {
-            *is_dynamic = target_dist.as_bool().unwrap();
+            *is_dynamic = target_dist.as_bool()?;
             debug_log!("is_dynamic: {}", *is_dynamic);
         }
 
@@ -204,7 +206,7 @@ fn hex_str_to_bytes(c: impl AsRef<[u8]>) -> Vec<u8> {
 
     c.as_ref()
         .chunks(2)
-        .map(|n| nibble(n[0]) << 4 | nibble(n[1]))
+        .map(|n| (nibble(n[0]) << 4) | nibble(n[1]))
         .collect()
 }
 
