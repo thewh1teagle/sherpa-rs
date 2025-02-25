@@ -1,10 +1,10 @@
-use std::{ mem, ptr::null };
+use std::{mem, ptr::null};
 
-use crate::{ utils::cstring_from_str, OnnxConfig };
+use crate::{utils::cstring_from_str, OnnxConfig};
 use eyre::Result;
 use sherpa_rs_sys;
 
-use super::{ CommonTtsConfig, TtsAudio };
+use super::{CommonTtsConfig, TtsAudio};
 
 pub struct MatchaTts {
     tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
