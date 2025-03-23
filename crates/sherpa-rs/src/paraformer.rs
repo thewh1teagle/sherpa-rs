@@ -34,11 +34,14 @@ impl ParaformerRecognizer {
     pub fn new(config: ParaformerConfig) -> Result<Self> {
         let debug = config.debug.into();
         let provider = config.provider.unwrap_or(get_default_provider());
-        
+
         // Prepare C strings
         let provider_ptr = cstring_from_str(&provider);
         let model_ptr = cstring_from_str(&config.model);
         let tokens_ptr = cstring_from_str(&config.tokens);
+
+        // 创建 decoding_method 的 CString 对象并绑定到变量
+        let decoding_method_ptr = cstring_from_str("greedy_search");
 
         // Paraformer model config
         let paraformer_config = sherpa_rs_sys::SherpaOnnxOfflineParaformerModelConfig {
@@ -52,7 +55,7 @@ impl ParaformerRecognizer {
             provider: provider_ptr.as_ptr(),
             tokens: tokens_ptr.as_ptr(),
             paraformer: paraformer_config,
-            
+
             // Null other model types
             bpe_vocab: null(),
             model_type: null(),
@@ -91,7 +94,7 @@ impl ParaformerRecognizer {
 
         // Recognizer config
         let recognizer_config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
-            decoding_method: cstring_from_str("greedy_search").as_ptr(),
+            decoding_method: decoding_method_ptr.as_ptr(),
             feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
                 sample_rate: 16000,
                 feature_dim: 80,
@@ -109,7 +112,8 @@ impl ParaformerRecognizer {
             blank_penalty: 0.0,
         };
 
-        let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&recognizer_config) };
+        let recognizer =
+            unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&recognizer_config) };
         if recognizer.is_null() {
             bail!("Failed to create Paraformer recognizer");
         }
@@ -130,10 +134,10 @@ impl ParaformerRecognizer {
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
             let result = ParaformerRecognizerResult::new(&raw_result);
-            
+
             sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizerResult(result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
-            
+
             result
         }
     }

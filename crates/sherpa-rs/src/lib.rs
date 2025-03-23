@@ -4,13 +4,13 @@ pub mod embedding_manager;
 pub mod keyword_spot;
 pub mod language_id;
 pub mod moonshine;
+pub mod paraformer;
 pub mod punctuate;
+pub mod sense_voice;
 pub mod speaker_id;
 pub mod vad;
 pub mod whisper;
 pub mod zipformer;
-pub mod sense_voice;
-pub mod paraformer;
 
 mod utils;
 
