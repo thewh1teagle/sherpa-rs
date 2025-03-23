@@ -1,4 +1,4 @@
-use std::ffi::{ c_char, CString };
+use std::ffi::{c_char, CString};
 
 pub fn cstring_from_str(s: &str) -> CString {
     CString::new(s).expect("CString::new failed")
