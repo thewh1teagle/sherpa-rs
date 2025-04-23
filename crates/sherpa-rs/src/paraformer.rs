@@ -1,5 +1,6 @@
 use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::{bail, Result};
+use std::mem;
 use std::ptr::null;
 
 #[derive(Debug)]
@@ -49,47 +50,52 @@ impl ParaformerRecognizer {
         };
 
         // Offline model config
-        let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
-            debug,
-            num_threads: config.num_threads.unwrap_or(1),
-            provider: provider_ptr.as_ptr(),
-            tokens: tokens_ptr.as_ptr(),
-            paraformer: paraformer_config,
+        let model_config = unsafe {
+            sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
+                debug,
+                num_threads: config.num_threads.unwrap_or(1),
+                provider: provider_ptr.as_ptr(),
+                tokens: tokens_ptr.as_ptr(),
+                paraformer: paraformer_config,
 
-            // Null other model types
-            bpe_vocab: null(),
-            model_type: null(),
-            modeling_unit: null(),
-            nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig { model: null() },
-            tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
-            telespeech_ctc: null(),
-            fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
-                encoder: null(),
-                decoder: null(),
-            },
-            transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
-                encoder: null(),
-                decoder: null(),
-                joiner: null(),
-            },
-            whisper: sherpa_rs_sys::SherpaOnnxOfflineWhisperModelConfig {
-                encoder: null(),
-                decoder: null(),
-                language: null(),
-                task: null(),
-                tail_paddings: 0,
-            },
-            sense_voice: sherpa_rs_sys::SherpaOnnxOfflineSenseVoiceModelConfig {
-                model: null(),
-                language: null(),
-                use_itn: 0,
-            },
-            moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
-                preprocessor: null(),
-                encoder: null(),
-                uncached_decoder: null(),
-                cached_decoder: null(),
-            },
+                // Null other model types
+                dolphin: mem::zeroed::<_>(),
+                bpe_vocab: null(),
+                model_type: null(),
+                modeling_unit: null(),
+                nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig {
+                    model: null(),
+                },
+                tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
+                telespeech_ctc: null(),
+                fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
+                    encoder: null(),
+                    decoder: null(),
+                },
+                transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
+                    encoder: null(),
+                    decoder: null(),
+                    joiner: null(),
+                },
+                whisper: sherpa_rs_sys::SherpaOnnxOfflineWhisperModelConfig {
+                    encoder: null(),
+                    decoder: null(),
+                    language: null(),
+                    task: null(),
+                    tail_paddings: 0,
+                },
+                sense_voice: sherpa_rs_sys::SherpaOnnxOfflineSenseVoiceModelConfig {
+                    model: null(),
+                    language: null(),
+                    use_itn: 0,
+                },
+                moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
+                    preprocessor: null(),
+                    encoder: null(),
+                    uncached_decoder: null(),
+                    cached_decoder: null(),
+                },
+            }
         };
 
         // Recognizer config

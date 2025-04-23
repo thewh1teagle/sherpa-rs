@@ -29,3 +29,4 @@ kokoro-en-*/
 matcha-*
 crates/sherpa-rs-sys/sherpa-onnx/scripts/
 kokoro-multi-lang-v1_0/
+sherpa-onnx-dolphin*

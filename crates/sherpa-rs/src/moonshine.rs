@@ -1,5 +1,6 @@
 use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::{bail, Result};
+use std::mem;
 use std::ptr::null;
 
 #[derive(Debug)]
@@ -56,45 +57,50 @@ impl MoonshineRecognizer {
         let uncached_decoder_ptr = cstring_from_str(&config.uncached_decoder);
         let tokens_ptr = cstring_from_str(&config.tokens);
 
-        let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
-            bpe_vocab: null(),
-            debug,
-            model_type: null(),
-            modeling_unit: null(),
-            nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig { model: null() },
-            num_threads,
-            paraformer: sherpa_rs_sys::SherpaOnnxOfflineParaformerModelConfig { model: null() },
-            provider: provider_ptr.as_ptr(),
-            tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
-            telespeech_ctc: null(),
-            tokens: tokens_ptr.as_ptr(),
-            fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
-                encoder: null(),
-                decoder: null(),
-            },
-            transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
-                encoder: null(),
-                decoder: null(),
-                joiner: null(),
-            },
-            whisper: sherpa_rs_sys::SherpaOnnxOfflineWhisperModelConfig {
-                encoder: null(),
-                decoder: null(),
-                language: null(),
-                task: null(),
-                tail_paddings: 0,
-            },
-            sense_voice: sherpa_rs_sys::SherpaOnnxOfflineSenseVoiceModelConfig {
-                model: null(),
-                language: null(),
-                use_itn: 0,
-            },
-            moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
-                preprocessor: preprocessor_ptr.as_ptr(),
-                encoder: encoder_ptr.as_ptr(),
-                uncached_decoder: uncached_decoder_ptr.as_ptr(),
-                cached_decoder: cached_decoder_ptr.as_ptr(),
-            },
+        let model_config = unsafe {
+            sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
+                bpe_vocab: null(),
+                debug,
+                model_type: null(),
+                modeling_unit: null(),
+                dolphin: mem::zeroed::<_>(),
+                nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig {
+                    model: null(),
+                },
+                num_threads,
+                paraformer: sherpa_rs_sys::SherpaOnnxOfflineParaformerModelConfig { model: null() },
+                provider: provider_ptr.as_ptr(),
+                tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
+                telespeech_ctc: null(),
+                tokens: tokens_ptr.as_ptr(),
+                fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
+                    encoder: null(),
+                    decoder: null(),
+                },
+                transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
+                    encoder: null(),
+                    decoder: null(),
+                    joiner: null(),
+                },
+                whisper: sherpa_rs_sys::SherpaOnnxOfflineWhisperModelConfig {
+                    encoder: null(),
+                    decoder: null(),
+                    language: null(),
+                    task: null(),
+                    tail_paddings: 0,
+                },
+                sense_voice: sherpa_rs_sys::SherpaOnnxOfflineSenseVoiceModelConfig {
+                    model: null(),
+                    language: null(),
+                    use_itn: 0,
+                },
+                moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
+                    preprocessor: preprocessor_ptr.as_ptr(),
+                    encoder: encoder_ptr.as_ptr(),
+                    uncached_decoder: uncached_decoder_ptr.as_ptr(),
+                    cached_decoder: cached_decoder_ptr.as_ptr(),
+                },
+            }
         };
 
         let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
