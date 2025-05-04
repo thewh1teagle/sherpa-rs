@@ -177,7 +177,7 @@ mod tests {
     use std::time::Instant;
 
     #[test]
-    fn test_whisper_transcribe() {
+    fn test_transducer_decode() {
         todo!()
     }
 }
