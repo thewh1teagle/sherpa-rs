@@ -169,3 +169,15 @@ impl Drop for TransducerRecognizer {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::read_audio_file;
+    use std::time::Instant;
+
+    #[test]
+    fn test_whisper_transcribe() {
+        todo!()
+    }
+}
