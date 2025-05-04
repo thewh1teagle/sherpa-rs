@@ -11,6 +11,7 @@ pub mod speaker_id;
 pub mod vad;
 pub mod whisper;
 pub mod zipformer;
+pub mod transducer;
 
 mod utils;
 
