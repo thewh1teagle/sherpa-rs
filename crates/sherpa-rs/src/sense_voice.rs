@@ -18,6 +18,8 @@ pub struct SenseVoiceConfig {
     pub num_threads: Option<i32>,
     pub debug: bool,
     pub tokens: String,
+    pub hotwords_file: Option<String>,
+    pub hotwords_score: Option<f32>,
 }
 
 impl Default for SenseVoiceConfig {
@@ -30,6 +32,8 @@ impl Default for SenseVoiceConfig {
             num_threads: Some(1),
             debug: false,
             tokens: String::new(),
+            hotwords_file: None,
+            hotwords_score: Some(0.0),
         }
     }
 }
@@ -92,6 +96,8 @@ impl SenseVoiceRecognizer {
             },
         };
 
+        let hotwords_score = config.hotwords_score.unwrap_or(0.0);
+        let hotwords_file_cstr = config.hotwords_file.map(|f| cstring_from_str(&f));
         // Recognizer config
         let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
             decoding_method: null(),
@@ -99,8 +105,11 @@ impl SenseVoiceRecognizer {
                 sample_rate: 16000,
                 feature_dim: 80,
             },
-            hotwords_file: null(),
-            hotwords_score: 0.0,
+            hotwords_file: hotwords_file_cstr
+                .as_ref()
+                .map(|c| c.as_ptr())
+                .unwrap_or(null()),
+            hotwords_score,
             lm_config: sherpa_rs_sys::SherpaOnnxOfflineLMConfig {
                 model: null(),
                 scale: 0.0,
