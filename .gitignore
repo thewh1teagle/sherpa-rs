@@ -10,7 +10,6 @@ sherpa-onnx/
 *.wav
 !samples/*.wav
 *.bz2
-vosk-en*
 sherpa-onnx-whisper*
 sherpa-onnx-pyannote-*
 sherpa-onnx-zipformer-*
