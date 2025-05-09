@@ -412,6 +412,8 @@ fn main() {
             .unwrap_or(true);
         let mut config = Config::new(&sherpa_dst);
 
+        config.define("CMAKE_POLICY_VERSION_MINIMUM", "3.5");
+
         config
             .define("SHERPA_ONNX_ENABLE_C_API", "ON")
             .define("SHERPA_ONNX_ENABLE_BINARY", "OFF")
