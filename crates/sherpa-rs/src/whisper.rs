@@ -1,5 +1,6 @@
 use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::{bail, Result};
+use std::mem;
 use std::ptr::null;
 
 #[derive(Debug)]
@@ -75,35 +76,40 @@ impl WhisperRecognizer {
             use_itn: 0,
         };
 
-        let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
-            bpe_vocab: bpe_vocab_ptr.as_ptr(),
-            debug,
-            model_type: null(),
-            modeling_unit: null(),
-            nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig { model: null() },
-            num_threads,
-            paraformer: sherpa_rs_sys::SherpaOnnxOfflineParaformerModelConfig { model: null() },
-            provider: provider_ptr.as_ptr(),
-            tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
-            telespeech_ctc: null(),
-            tokens: tokens_ptr.as_ptr(),
-            transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
-                encoder: null(),
-                decoder: null(),
-                joiner: null(),
-            },
-            fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
-                encoder: null(),
-                decoder: null(),
-            },
-            whisper,
-            sense_voice,
-            moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
-                preprocessor: null(),
-                encoder: null(),
-                uncached_decoder: null(),
-                cached_decoder: null(),
-            },
+        let model_config = unsafe {
+            sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
+                bpe_vocab: bpe_vocab_ptr.as_ptr(),
+                debug,
+                model_type: null(),
+                modeling_unit: null(),
+                nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig {
+                    model: null(),
+                },
+                num_threads,
+                paraformer: sherpa_rs_sys::SherpaOnnxOfflineParaformerModelConfig { model: null() },
+                dolphin: mem::zeroed::<_>(),
+                provider: provider_ptr.as_ptr(),
+                tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
+                telespeech_ctc: null(),
+                tokens: tokens_ptr.as_ptr(),
+                transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
+                    encoder: null(),
+                    decoder: null(),
+                    joiner: null(),
+                },
+                fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
+                    encoder: null(),
+                    decoder: null(),
+                },
+                whisper,
+                sense_voice,
+                moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
+                    preprocessor: null(),
+                    encoder: null(),
+                    uncached_decoder: null(),
+                    cached_decoder: null(),
+                },
+            }
         };
 
         let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {

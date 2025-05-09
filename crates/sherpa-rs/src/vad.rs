@@ -3,7 +3,7 @@ use eyre::Result;
 
 #[derive(Debug)]
 pub struct Vad {
-    pub(crate) vad: *mut sherpa_rs_sys::SherpaOnnxVoiceActivityDetector,
+    pub(crate) vad: *const sherpa_rs_sys::SherpaOnnxVoiceActivityDetector,
 }
 
 #[derive(Debug)]

@@ -110,3 +110,7 @@ path = "../../examples/sense_voice.rs"
 [[example]]
 name = "paraformer"
 path = "../../examples/paraformer.rs"
+
+[[example]]
+name = "dolphin"
+path = "../../examples/dolphin.rs"
