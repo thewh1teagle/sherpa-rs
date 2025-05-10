@@ -100,7 +100,7 @@ impl SenseVoiceRecognizer {
         let hotwords_file_cstr = config.hotwords_file.map(|f| cstring_from_str(&f));
         // Recognizer config
         let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
-            decoding_method: null(),
+            decoding_method: "greedy_search",
             feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
                 sample_rate: 16000,
                 feature_dim: 80,
