@@ -8,6 +8,7 @@ venv/
 vits-piper*
 sherpa-onnx/
 *.wav
+*.vocab
 !samples/*.wav
 *.bz2
 sherpa-onnx-whisper*

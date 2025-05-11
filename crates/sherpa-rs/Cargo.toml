@@ -114,3 +114,7 @@ path = "../../examples/paraformer.rs"
 [[example]]
 name = "transducer"
 path = "../../examples/transducer.rs"
+
+[[example]]
+name = "transducer_vosk"
+path = "../../examples/transducer_vosk.rs"
