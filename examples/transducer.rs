@@ -28,16 +28,8 @@ pub fn main() {
         num_threads: 1,
         sample_rate: 16_000,
         feature_dim: 80,
-
-        // NULLs
-        bpe_vocab: "".to_string(),
-        decoding_method: "".to_string(),
-        hotwords_file: "".to_string(),
-        hotwords_score: 0.0,
-        modeling_unit: "".to_string(),
-        blank_penalty: 0.0,
         debug: true,
-        provider: None,
+        ..Default::default()
     };
 
     let mut recognizer = TransducerRecognizer::new(config).unwrap();
