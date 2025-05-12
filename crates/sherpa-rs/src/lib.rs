@@ -8,6 +8,7 @@ pub mod paraformer;
 pub mod punctuate;
 pub mod sense_voice;
 pub mod speaker_id;
+pub mod transducer;
 pub mod vad;
 pub mod whisper;
 pub mod zipformer;
