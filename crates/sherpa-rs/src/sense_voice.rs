@@ -1,6 +1,6 @@
 use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::{bail, Result};
-use std::ptr::null;
+use std::mem;
 
 #[derive(Debug)]
 pub struct SenseVoiceRecognizer {
@@ -54,62 +54,48 @@ impl SenseVoiceRecognizer {
 
         // General model config
         let tokens_ptr = cstring_from_str(&config.tokens);
-        let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
-            tokens: tokens_ptr.as_ptr(),
-            provider: provider_ptr.as_ptr(),
-            num_threads,
-            debug,
-            sense_voice: sense_voice_config,
-            // Other fields set to default/null
-            bpe_vocab: null(),
-            model_type: null(),
-            modeling_unit: null(),
-            nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig { model: null() },
-            paraformer: sherpa_rs_sys::SherpaOnnxOfflineParaformerModelConfig { model: null() },
-            tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
-            telespeech_ctc: null(),
-            fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
-                encoder: null(),
-                decoder: null(),
-            },
-            transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
-                encoder: null(),
-                decoder: null(),
-                joiner: null(),
-            },
-            whisper: sherpa_rs_sys::SherpaOnnxOfflineWhisperModelConfig {
-                encoder: null(),
-                decoder: null(),
-                language: null(),
-                task: null(),
-                tail_paddings: 0,
-            },
-            moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
-                preprocessor: null(),
-                encoder: null(),
-                uncached_decoder: null(),
-                cached_decoder: null(),
-            },
+        let model_config = unsafe {
+            sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
+                tokens: tokens_ptr.as_ptr(),
+                provider: provider_ptr.as_ptr(),
+                num_threads,
+                debug,
+                sense_voice: sense_voice_config,
+                // Other fields set to default/null
+                bpe_vocab: mem::zeroed::<_>(),
+                model_type: mem::zeroed::<_>(),
+                modeling_unit: mem::zeroed::<_>(),
+                nemo_ctc: mem::zeroed::<_>(),
+                paraformer: mem::zeroed::<_>(),
+                tdnn: mem::zeroed::<_>(),
+                telespeech_ctc: mem::zeroed::<_>(),
+                fire_red_asr: mem::zeroed::<_>(),
+                transducer: mem::zeroed::<_>(),
+                whisper: mem::zeroed::<_>(),
+                moonshine: mem::zeroed::<_>(),
+            }
         };
 
         // Recognizer config
-        let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
-            decoding_method: null(),
-            feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
-                sample_rate: 16000,
-                feature_dim: 80,
-            },
-            hotwords_file: null(),
-            hotwords_score: 0.0,
-            lm_config: sherpa_rs_sys::SherpaOnnxOfflineLMConfig {
-                model: null(),
-                scale: 0.0,
-            },
-            max_active_paths: 0,
-            model_config,
-            rule_fars: null(),
-            rule_fsts: null(),
-            blank_penalty: 0.0,
+        let config = unsafe {
+            sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
+                decoding_method: mem::zeroed::<_>(),
+                feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
+                    sample_rate: 16000,
+                    feature_dim: 80,
+                },
+                hotwords_file: mem::zeroed::<_>(),
+                hotwords_score: 0.0,
+                lm_config: sherpa_rs_sys::SherpaOnnxOfflineLMConfig {
+                    model: mem::zeroed::<_>(),
+                    scale: 0.0,
+                },
+                max_active_paths: 0,
+                model_config,
+                rule_fars: mem::zeroed::<_>(),
+                rule_fsts: mem::zeroed::<_>(),
+                blank_penalty: 0.0,
+            }
         };
 
         let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };

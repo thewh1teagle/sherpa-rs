@@ -1,4 +1,4 @@
-use std::ptr::null;
+use std::mem;
 
 use crate::{
     get_default_provider,
@@ -70,41 +70,39 @@ impl KeywordSpot {
         let tokens = cstring_from_str(&config.tokens);
         let keywords = cstring_from_str(&config.keywords);
 
-        let sherpa_config = sherpa_rs_sys::SherpaOnnxKeywordSpotterConfig {
-            feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
-                sample_rate: config.sample_rate,
-                feature_dim: config.feature_dim,
-            },
-            keywords_buf: null(),
-            model_config: sherpa_rs_sys::SherpaOnnxOnlineModelConfig {
-                transducer: sherpa_rs_sys::SherpaOnnxOnlineTransducerModelConfig {
-                    encoder: zipformer_encoder.as_ptr(),
-                    decoder: zipformer_decoder.as_ptr(),
-                    joiner: zipformer_joiner.as_ptr(),
+        let sherpa_config = unsafe {
+            sherpa_rs_sys::SherpaOnnxKeywordSpotterConfig {
+                feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
+                    sample_rate: config.sample_rate,
+                    feature_dim: config.feature_dim,
                 },
-                paraformer: sherpa_rs_sys::SherpaOnnxOnlineParaformerModelConfig {
-                    encoder: null(),
-                    decoder: null(),
+                keywords_buf: mem::zeroed::<_>(),
+                keywords_buf_size: 0,
+                keywords_file: keywords.as_ptr(),
+                max_active_paths: config.max_active_path,
+                keywords_score: config.keywords_score,
+                keywords_threshold: config.keywords_threshold,
+                num_trailing_blanks: config.num_trailing_blanks,
+                model_config: sherpa_rs_sys::SherpaOnnxOnlineModelConfig {
+                    transducer: sherpa_rs_sys::SherpaOnnxOnlineTransducerModelConfig {
+                        encoder: zipformer_encoder.as_ptr(),
+                        decoder: zipformer_decoder.as_ptr(),
+                        joiner: zipformer_joiner.as_ptr(),
+                    },
+                    num_threads: config.num_threads.unwrap_or(1),
+                    provider: provider.as_ptr(),
+                    debug: config.debug.into(),
+                    tokens: tokens.as_ptr(),
+
+                    paraformer: mem::zeroed::<_>(),
+                    zipformer2_ctc: mem::zeroed::<_>(),
+                    model_type: mem::zeroed::<_>(),
+                    modeling_unit: mem::zeroed::<_>(),
+                    bpe_vocab: mem::zeroed::<_>(),
+                    tokens_buf: mem::zeroed::<_>(),
+                    tokens_buf_size: mem::zeroed::<_>(),
                 },
-                zipformer2_ctc: sherpa_rs_sys::SherpaOnnxOnlineZipformer2CtcModelConfig {
-                    model: null(),
-                },
-                tokens: tokens.as_ptr(),
-                model_type: null(),
-                modeling_unit: null(),
-                bpe_vocab: null(),
-                tokens_buf: null(),
-                tokens_buf_size: 0,
-                num_threads: config.num_threads.unwrap_or(1),
-                provider: provider.as_ptr(),
-                debug: config.debug.into(),
-            },
-            keywords_buf_size: 0,
-            keywords_file: keywords.as_ptr(),
-            max_active_paths: config.max_active_path,
-            keywords_score: config.keywords_score,
-            keywords_threshold: config.keywords_threshold,
-            num_trailing_blanks: config.num_trailing_blanks,
+            }
         };
         let spotter = unsafe { sherpa_rs_sys::SherpaOnnxCreateKeywordSpotter(&sherpa_config) };
 

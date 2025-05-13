@@ -29,7 +29,9 @@ fn main() {
         ..Default::default() // fill in any missing fields with defaults
     };
 
+    println!("creating re");
     let mut recognizer = WhisperRecognizer::new(config).unwrap();
+    println!("creating re");
 
     let start_t = std::time::Instant::now();
     let result = recognizer.transcribe(sample_rate, &samples);
