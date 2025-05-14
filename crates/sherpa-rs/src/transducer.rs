@@ -22,6 +22,7 @@ pub struct TransducerConfig {
     pub modeling_unit: String,
     pub bpe_vocab: String,
     pub blank_penalty: f32,
+    pub model_type: String,
     pub debug: bool,
     pub provider: Option<String>,
 }
@@ -33,6 +34,7 @@ impl Default for TransducerConfig {
             encoder: String::new(),
             joiner: String::new(),
             tokens: String::new(),
+            model_type: String::from("transducer"),
             num_threads: 1,
             sample_rate: 0,
             feature_dim: 0,
@@ -58,7 +60,7 @@ impl TransducerRecognizer {
             let encoder = cstring_from_str(&config.encoder);
             let decoder = cstring_from_str(&config.decoder);
             let joiner = cstring_from_str(&config.joiner);
-            let model_type = cstring_from_str("transducer");
+            let model_type = cstring_from_str(&config.model_type);
             let modeling_unit = cstring_from_str(&config.modeling_unit);
             let bpe_vocab = cstring_from_str(&config.bpe_vocab);
             let hotwords_file = cstring_from_str(&config.hotwords_file);
@@ -88,6 +90,7 @@ impl TransducerRecognizer {
                 sense_voice: mem::zeroed::<_>(),
                 moonshine: mem::zeroed::<_>(),
                 fire_red_asr: mem::zeroed::<_>(),
+                dolphin: mem::zeroed::<_>(),
             };
 
             let recognizer_config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
@@ -106,6 +109,7 @@ impl TransducerRecognizer {
                 rule_fsts: mem::zeroed::<_>(),
                 rule_fars: mem::zeroed::<_>(),
                 max_active_paths: mem::zeroed::<_>(),
+                hr: mem::zeroed::<_>(),
             };
 
             let recognizer = sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&recognizer_config);

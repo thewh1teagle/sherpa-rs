@@ -1,6 +1,6 @@
 use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::{bail, Result};
-use std::ptr::null;
+use std::{mem, ptr::null};
 
 #[derive(Debug)]
 pub struct ParaformerRecognizer {
@@ -49,67 +49,48 @@ impl ParaformerRecognizer {
         };
 
         // Offline model config
-        let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
-            debug,
-            num_threads: config.num_threads.unwrap_or(1),
-            provider: provider_ptr.as_ptr(),
-            tokens: tokens_ptr.as_ptr(),
-            paraformer: paraformer_config,
+        let model_config = unsafe {
+            sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
+                debug,
+                num_threads: config.num_threads.unwrap_or(1),
+                provider: provider_ptr.as_ptr(),
+                tokens: tokens_ptr.as_ptr(),
+                paraformer: paraformer_config,
 
-            // Null other model types
-            bpe_vocab: null(),
-            model_type: null(),
-            modeling_unit: null(),
-            nemo_ctc: sherpa_rs_sys::SherpaOnnxOfflineNemoEncDecCtcModelConfig { model: null() },
-            tdnn: sherpa_rs_sys::SherpaOnnxOfflineTdnnModelConfig { model: null() },
-            telespeech_ctc: null(),
-            fire_red_asr: sherpa_rs_sys::SherpaOnnxOfflineFireRedAsrModelConfig {
-                encoder: null(),
-                decoder: null(),
-            },
-            transducer: sherpa_rs_sys::SherpaOnnxOfflineTransducerModelConfig {
-                encoder: null(),
-                decoder: null(),
-                joiner: null(),
-            },
-            whisper: sherpa_rs_sys::SherpaOnnxOfflineWhisperModelConfig {
-                encoder: null(),
-                decoder: null(),
-                language: null(),
-                task: null(),
-                tail_paddings: 0,
-            },
-            sense_voice: sherpa_rs_sys::SherpaOnnxOfflineSenseVoiceModelConfig {
-                model: null(),
-                language: null(),
-                use_itn: 0,
-            },
-            moonshine: sherpa_rs_sys::SherpaOnnxOfflineMoonshineModelConfig {
-                preprocessor: null(),
-                encoder: null(),
-                uncached_decoder: null(),
-                cached_decoder: null(),
-            },
+                // Null other model types
+                bpe_vocab: mem::zeroed::<_>(),
+                model_type: mem::zeroed::<_>(),
+                modeling_unit: mem::zeroed::<_>(),
+                nemo_ctc: mem::zeroed::<_>(),
+                tdnn: mem::zeroed::<_>(),
+                telespeech_ctc: null(),
+                fire_red_asr: mem::zeroed::<_>(),
+                transducer: mem::zeroed::<_>(),
+                whisper: mem::zeroed::<_>(),
+                sense_voice: mem::zeroed::<_>(),
+                moonshine: mem::zeroed::<_>(),
+                dolphin: mem::zeroed::<_>(),
+            }
         };
 
         // Recognizer config
-        let recognizer_config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
-            decoding_method: decoding_method_ptr.as_ptr(),
-            feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
-                sample_rate: 16000,
-                feature_dim: 80,
-            },
-            model_config,
-            hotwords_file: null(),
-            hotwords_score: 0.0,
-            lm_config: sherpa_rs_sys::SherpaOnnxOfflineLMConfig {
-                model: null(),
-                scale: 0.0,
-            },
-            max_active_paths: 0,
-            rule_fars: null(),
-            rule_fsts: null(),
-            blank_penalty: 0.0,
+        let recognizer_config = unsafe {
+            sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
+                decoding_method: decoding_method_ptr.as_ptr(),
+                feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
+                    sample_rate: 16000,
+                    feature_dim: 80,
+                },
+                model_config,
+                hotwords_file: null(),
+                hotwords_score: 0.0,
+                lm_config: mem::zeroed::<_>(),
+                max_active_paths: 0,
+                rule_fars: null(),
+                rule_fsts: null(),
+                blank_penalty: 0.0,
+                hr: mem::zeroed::<_>(),
+            }
         };
 
         let recognizer =
