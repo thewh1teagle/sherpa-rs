@@ -2,13 +2,15 @@ mod kokoro;
 mod matcha;
 mod vits;
 
+use std::ffi::CString;
+
 use eyre::{bail, Result};
 
 pub use kokoro::{KokoroTts, KokoroTtsConfig};
 pub use matcha::{MatchaTts, MatchaTtsConfig};
 pub use vits::{VitsTts, VitsTtsConfig};
 
-use crate::utils::{cstring_from_str, RawCStr};
+use crate::utils::cstring_from_str;
 
 #[derive(Debug)]
 pub struct TtsAudio {
@@ -26,8 +28,8 @@ pub struct CommonTtsConfig {
 }
 
 pub struct CommonTtsRaw {
-    pub rule_fars: Option<RawCStr>,
-    pub rule_fsts: Option<RawCStr>,
+    pub rule_fars: Option<CString>,
+    pub rule_fsts: Option<CString>,
     pub max_num_sentences: i32,
 }
 
