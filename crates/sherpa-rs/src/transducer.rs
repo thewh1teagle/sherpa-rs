@@ -88,6 +88,7 @@ impl TransducerRecognizer {
                 sense_voice: mem::zeroed::<_>(),
                 moonshine: mem::zeroed::<_>(),
                 fire_red_asr: mem::zeroed::<_>(),
+                dolphin: mem::zeroed::<_>(),
             };
 
             let recognizer_config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
@@ -106,6 +107,7 @@ impl TransducerRecognizer {
                 rule_fsts: mem::zeroed::<_>(),
                 rule_fars: mem::zeroed::<_>(),
                 max_active_paths: mem::zeroed::<_>(),
+                hr: mem::zeroed::<_>(),
             };
 
             let recognizer = sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&recognizer_config);

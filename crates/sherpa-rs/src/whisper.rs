@@ -1,6 +1,6 @@
 use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::{bail, Result};
-use std::{mem, ptr::null};
+use std::mem;
 
 #[derive(Debug)]
 pub struct WhisperRecognizer {
@@ -85,6 +85,7 @@ impl WhisperRecognizer {
                 fire_red_asr: mem::zeroed::<_>(),
                 sense_voice: mem::zeroed::<_>(),
                 moonshine: mem::zeroed::<_>(),
+                dolphin: mem::zeroed::<_>(),
             }
         };
 
@@ -104,6 +105,7 @@ impl WhisperRecognizer {
                 rule_fars: mem::zeroed::<_>(),
                 rule_fsts: mem::zeroed::<_>(),
                 blank_penalty: mem::zeroed::<_>(),
+                hr: mem::zeroed::<_>(),
             }
         };
         let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };

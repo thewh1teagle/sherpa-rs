@@ -71,6 +71,7 @@ impl MoonshineRecognizer {
 
                 model_type: mem::zeroed::<_>(),
                 modeling_unit: mem::zeroed::<_>(),
+                dolphin: mem::zeroed::<_>(),
                 bpe_vocab: mem::zeroed::<_>(),
                 nemo_ctc: mem::zeroed::<_>(),
                 paraformer: mem::zeroed::<_>(),
@@ -83,23 +84,26 @@ impl MoonshineRecognizer {
             }
         };
 
-        let config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
-            decoding_method: null(),
-            feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
-                sample_rate: 16000,
-                feature_dim: 512,
-            },
-            hotwords_file: null(),
-            hotwords_score: 0.0,
-            lm_config: sherpa_rs_sys::SherpaOnnxOfflineLMConfig {
-                model: null(),
-                scale: 0.0,
-            },
-            max_active_paths: 0,
-            model_config,
-            rule_fars: null(),
-            rule_fsts: null(),
-            blank_penalty: 0.0,
+        let config = unsafe {
+            sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
+                decoding_method: null(),
+                feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
+                    sample_rate: 16000,
+                    feature_dim: 512,
+                },
+                hotwords_file: null(),
+                hotwords_score: 0.0,
+                lm_config: sherpa_rs_sys::SherpaOnnxOfflineLMConfig {
+                    model: null(),
+                    scale: 0.0,
+                },
+                max_active_paths: 0,
+                model_config,
+                rule_fars: null(),
+                rule_fsts: null(),
+                blank_penalty: 0.0,
+                hr: mem::zeroed::<_>(),
+            }
         };
 
         let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOfflineRecognizer(&config) };

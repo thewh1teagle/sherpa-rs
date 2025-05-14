@@ -2,8 +2,6 @@ mod kokoro;
 mod matcha;
 mod vits;
 
-use std::ffi::CString;
-
 use eyre::{bail, Result};
 
 pub use kokoro::{KokoroTts, KokoroTtsConfig};

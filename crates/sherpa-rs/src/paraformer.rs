@@ -69,6 +69,7 @@ impl ParaformerRecognizer {
                 whisper: mem::zeroed::<_>(),
                 sense_voice: mem::zeroed::<_>(),
                 moonshine: mem::zeroed::<_>(),
+                dolphin: mem::zeroed::<_>(),
             }
         };
 
@@ -88,6 +89,7 @@ impl ParaformerRecognizer {
                 rule_fars: null(),
                 rule_fsts: null(),
                 blank_penalty: 0.0,
+                hr: mem::zeroed::<_>(),
             }
         };
 

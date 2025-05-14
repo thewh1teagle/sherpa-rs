@@ -118,3 +118,7 @@ path = "../../examples/transducer.rs"
 [[example]]
 name = "transducer_vosk"
 path = "../../examples/transducer_vosk.rs"
+
+[[example]]
+name = "dolphin"
+path = "../../examples/dolphin.rs"

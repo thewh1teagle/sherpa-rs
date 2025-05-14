@@ -56,6 +56,7 @@ impl ZipFormer {
                 whisper: mem::zeroed::<_>(),
                 sense_voice: mem::zeroed::<_>(),
                 moonshine: mem::zeroed::<_>(),
+                dolphin: mem::zeroed::<_>(),
             }
         };
         // Recognizer config
@@ -72,6 +73,7 @@ impl ZipFormer {
                 max_active_paths: mem::zeroed::<_>(),
                 rule_fars: mem::zeroed::<_>(),
                 rule_fsts: mem::zeroed::<_>(),
+                hr: mem::zeroed::<_>(),
             }
         };
 

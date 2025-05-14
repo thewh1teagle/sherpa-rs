@@ -1,5 +1,6 @@
 pub mod audio_tag;
 pub mod diarize;
+pub mod dolphin;
 pub mod embedding_manager;
 pub mod keyword_spot;
 pub mod language_id;
@@ -97,8 +98,8 @@ pub struct OfflineRecognizerResult {
 
 impl OfflineRecognizerResult {
     fn new(result: &sherpa_rs_sys::SherpaOnnxOfflineRecognizerResult) -> Self {
-        let lang = unsafe { cstr_to_string(result.lang) };
-        let text = unsafe { cstr_to_string(result.text) };
+        let lang = cstr_to_string(result.lang);
+        let text = cstr_to_string(result.text);
         let count = result.count.try_into().unwrap();
         let timestamps = if result.timestamps.is_null() {
             Vec::new()
