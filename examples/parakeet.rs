@@ -20,14 +20,15 @@ pub fn main() {
     }
 
     let config = TransducerConfig {
-        decoder: "decoder-epoch-90-avg-20.onnx".to_string(),
-        encoder: "encoder-epoch-90-avg-20.onnx".to_string(),
-        joiner: "joiner-epoch-90-avg-20.onnx".to_string(),
-        tokens: "tokens.txt".to_string(),
+        decoder: "./sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8/decoder.int8.onnx".to_string(),
+        encoder: "./sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8/encoder.int8.onnx".to_string(),
+        joiner: "./sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8/joiner.int8.onnx".to_string(),
+        tokens: "./sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8/tokens.txt".to_string(),
         num_threads: 1,
         sample_rate: 16_000,
         feature_dim: 80,
         debug: true,
+        model_type: "nemo_transducer".to_string(),
         ..Default::default()
     };
 
