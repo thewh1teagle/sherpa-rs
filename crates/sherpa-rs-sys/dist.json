@@ -10,6 +10,10 @@
             "static": "sherpa-onnx-{tag}-linux-x64-static.tar.bz2",
             "dynamic": "sherpa-onnx-{tag}-linux-x64-shared.tar.bz2"
         },
+        "aarch64-unknown-linux-gnu": {
+            "static": "sherpa-onnx-{tag}-linux-aarch64-static.tar.bz2",
+            "dynamic": "sherpa-onnx-{tag}-linux-aarch64-shared-cpu.tar.bz2"
+        },
         "aarch64-apple-darwin": {
             "static": "sherpa-onnx-{tag}-osx-universal2-static.tar.bz2",
             "dynamic": "sherpa-onnx-{tag}-osx-universal2-shared.tar.bz2"
