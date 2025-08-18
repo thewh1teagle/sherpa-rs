@@ -1,5 +1,5 @@
 sherpa-onnx-1.11.5-rknn.aar	c9177e475f85e61922ced3d10277cb261a985c75007307cd01df39423710bce0
-sherpa-onnx-1.11.5.aar	1fd9dfefb19df233f868553e872e98b8bd636ac428c0a0b709bc1405bc7eafa0
+sherpa-onnx-1.11.5.aar	8c02431983f0a7f113eb229a12620e3b39fc27150416b7178eab81b5640a4824
 sherpa-onnx-non-streaming-asr-x64-v1.11.5.exe	c049394c10beca44de540b3da6c81618b2c198efe53d87c471145c429294ec1c
 sherpa-onnx-non-streaming-asr-x86-v1.11.5.exe	f72fb5ed449e90455a4de5b2c1548b5416daa117e067fc5a11ddf7d8a1306fc6
 sherpa-onnx-non-streaming-tts-x64-v1.11.5.exe	904c920fe6b500a455ac48832d1689d966a8bcf0b5eed26e62ce1bc6ba4a9df5
@@ -9,7 +9,7 @@ sherpa-onnx-streaming-asr-x64-v1.11.5.exe	a0b6cfb44e9fde8cd78e516c59d59c1f7ac0bc
 sherpa-onnx-streaming-asr-x86-v1.11.5.exe	4cba9b3a20abd87c5422869411c53a722622cdd82e768587b653f6b01a8f7460
 sherpa-onnx-v1.11.5-android-rknn.tar.bz2	4da67093851a44991eac90b1a1e6519db51ea62dd796cad3e1669a1880f24c14
 sherpa-onnx-v1.11.5-android-static-link-onnxruntime.tar.bz2	7e7f7d91617fa77361eb2fbfd9f90aa5d9b7a73be8764e64f6c0b90bcd71af34
-sherpa-onnx-v1.11.5-android.tar.bz2	76e21f461f9527d7ba46c0deb2dec035aaa87e78b8cb46ade883ac9d4d9b853b
+sherpa-onnx-v1.11.5-android.tar.bz2	66b904c94fd43487a66302692125b9afaf8acbb32ece3f5bc038b2f3fac39171
 sherpa-onnx-v1.11.5-ios-no-tts.tar.bz2	84533a2d9287907178b68d0aeb0ae6939d4a109f34675d46655f2ff6d6185dc7
 sherpa-onnx-v1.11.5-ios.tar.bz2	7daf9111f30200416e504428ef457a9f60009ae67a2bd4e3bfb829f5d096fab5
 sherpa-onnx-v1.11.5-java11.jar	7b86e00abc8667d606bc94f47a954ebb9359fc7f764a227b644de3f3962a85ff
@@ -23,12 +23,12 @@ sherpa-onnx-v1.11.5-java22.jar	a6c49e60cf15efb341059593668d3fa34d42e03b695f4dfcc
 sherpa-onnx-v1.11.5-java23.jar	6dd7e9610c5ded573432e461a807ede2672714c9cca1982bf5e57827d7dc74f0
 sherpa-onnx-v1.11.5-java8.jar	3043da43f887f4ecea1aff05df70ea2b31a92d23a90131a3ea1165b35f3c12be
 sherpa-onnx-v1.11.5-linux-aarch64-jni.tar.bz2	12faa7a6fdf25748388713ea7e1bb8c9664372a6291a334a4a9ec4ea5f02f211
-sherpa-onnx-v1.11.5-linux-aarch64-shared-cpu.tar.bz2	18403204bd3dfbe303cc7785ff82449daaaf964ca4fa67ec94fa7be71308173d
-sherpa-onnx-v1.11.5-linux-aarch64-shared-gpu-onnxruntime-1.11.0.tar.bz2	f607b4e5fc6e02d08776ec4a1d4756aa6b8df2d98945c4b20450cf09e3ffa591
-sherpa-onnx-v1.11.5-linux-aarch64-shared-gpu-onnxruntime-1.16.0.tar.bz2	dea5c525647001f73262323cb048516010cd867404061a278b554a408dc82e25
-sherpa-onnx-v1.11.5-linux-aarch64-shared-gpu-onnxruntime-1.18.0.tar.bz2	9f0817095111f5edfab109a82967116ef15fad3076fabbe982a1eba74de135a5
-sherpa-onnx-v1.11.5-linux-aarch64-shared-gpu-onnxruntime-1.18.1.tar.bz2	a3493baaff5e4ef6d9c3413aadc9b5670df8612db7155ec53c292e9449ddd77e
-sherpa-onnx-v1.11.5-linux-aarch64-static.tar.bz2	818a78fd2c7b92df09c65a806087679368bb58df49d344172cf113ad95f2dcd1
+sherpa-onnx-v1.11.5-linux-aarch64-shared-cpu.tar.bz2	e8502f7326ce421f27753b62acffdd275e1d75b38e7d1aa45215d95bb39e2c16
+sherpa-onnx-v1.11.5-linux-aarch64-shared-gpu-onnxruntime-1.11.0.tar.bz2	86acbcb1cffa2c746e2a67c85d338fb2ddd0b2b92afc736d7fea413bdf87bc37
+sherpa-onnx-v1.11.5-linux-aarch64-shared-gpu-onnxruntime-1.16.0.tar.bz2	62b6de549f1a43e14363e8a0f55cb74023e471d17832ec148803258a5d7cbbb1
+sherpa-onnx-v1.11.5-linux-aarch64-shared-gpu-onnxruntime-1.18.0.tar.bz2	db6bd1d37b3f07e39288f545b11bc63e5483df7f27c66c4c9130080ca237bb4e
+sherpa-onnx-v1.11.5-linux-aarch64-shared-gpu-onnxruntime-1.18.1.tar.bz2	ec5f876258c4ce80884a36cd747df7ba749279856df9014514bde44d27aaa098
+sherpa-onnx-v1.11.5-linux-aarch64-static.tar.bz2	8e00818b8e535c0d0666f85bcb5feb2b1b00af78efb265cfa62b8d1275eb3e80
 sherpa-onnx-v1.11.5-linux-riscv64-shared.tar.bz2	d5a02212c3b43f98682e7c088691acba23e1fa3ba4f86e186aeeaa525e3eaee6
 sherpa-onnx-v1.11.5-linux-x64-gpu.tar.bz2	01844c0534883cb9b4ae032f6b4500ecc9ce5f2031d5e9459fbdada9d1f6b8e9
 sherpa-onnx-v1.11.5-linux-x64-jni.tar.bz2	a052bcf0b795ee2c6f36e65adbf9acaddbe595f95723708765b1435e372e5a79
