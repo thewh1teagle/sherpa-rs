@@ -1,3 +1,4 @@
+mod kitten;
 mod kokoro;
 mod matcha;
 mod vits;
@@ -6,6 +7,7 @@ use std::ffi::CString;
 
 use eyre::{bail, Result};
 
+pub use kitten::{KittenTts, KittenTtsConfig};
 pub use kokoro::{KokoroTts, KokoroTtsConfig};
 pub use matcha::{MatchaTts, MatchaTtsConfig};
 pub use vits::{VitsTts, VitsTtsConfig};

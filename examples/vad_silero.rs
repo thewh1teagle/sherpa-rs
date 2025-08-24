@@ -4,11 +4,12 @@ Detect voice in audio file and mark start and stop.
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/motivation.wav -O motivation.wav
-cargo run --example vad motivation.wav
+cargo run --example vad_silero motivation.wav
 */
 use sherpa_rs::{
-    embedding_manager, speaker_id,
-    vad::{Vad, VadConfig},
+    embedding_manager,
+    silero_vad::{SileroVad, SileroVadConfig},
+    speaker_id,
 };
 
 fn get_speaker_name(
@@ -42,7 +43,7 @@ fn get_speaker_name(
 }
 
 fn process_speech_segment(
-    vad: &mut Vad,
+    vad: &mut SileroVad,
     sample_rate: u32,
     embedding_manager: &mut embedding_manager::EmbeddingManager,
     extractor: &mut speaker_id::EmbeddingExtractor,
@@ -96,13 +97,13 @@ fn main() {
     let mut speaker_counter = 1;
 
     let window_size = 512;
-    let vad_config = VadConfig {
+    let vad_config = SileroVadConfig {
         model: "silero_vad.onnx".into(),
         window_size: window_size as i32,
         ..Default::default()
     };
 
-    let mut vad = Vad::new(vad_config, 60.0 * 10.0).unwrap();
+    let mut vad = SileroVad::new(vad_config, 60.0 * 10.0).unwrap();
     let mut index = 0;
     while index + window_size <= samples.len() {
         let window = &samples[index..index + window_size];

@@ -9,8 +9,9 @@ wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/sam_altm
 cargo run --example vad_whisper sam_altman.wav
 */
 use sherpa_rs::{
-    embedding_manager, read_audio_file, speaker_id,
-    vad::{Vad, VadConfig},
+    embedding_manager, read_audio_file,
+    silero_vad::{SileroVad, SileroVadConfig},
+    speaker_id,
     whisper::{WhisperConfig, WhisperRecognizer},
 };
 
@@ -44,13 +45,13 @@ fn main() {
     let mut speaker_counter = 0;
 
     let window_size: usize = 512;
-    let vad_config = VadConfig {
+    let vad_config = SileroVadConfig {
         model: "silero_vad.onnx".into(),
         window_size: window_size as i32,
         ..Default::default()
     };
 
-    let mut vad = Vad::new(vad_config, 60.0 * 10.0).unwrap();
+    let mut vad = SileroVad::new(vad_config, 60.0 * 10.0).unwrap();
     let mut index = 0;
     while index + window_size <= samples.len() {
         let window = &samples[index..index + window_size];

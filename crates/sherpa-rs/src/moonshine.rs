@@ -81,6 +81,8 @@ impl MoonshineRecognizer {
                 transducer: mem::zeroed::<_>(),
                 whisper: mem::zeroed::<_>(),
                 sense_voice: mem::zeroed::<_>(),
+                zipformer_ctc: mem::zeroed(),
+                canary: mem::zeroed::<_>(),
             }
         };
 

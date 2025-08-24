@@ -74,6 +74,8 @@ impl SenseVoiceRecognizer {
                 whisper: mem::zeroed::<_>(),
                 moonshine: mem::zeroed::<_>(),
                 dolphin: mem::zeroed::<_>(),
+                zipformer_ctc: mem::zeroed(),
+                canary: mem::zeroed(),
             }
         };
 

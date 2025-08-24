@@ -101,6 +101,7 @@ impl KeywordSpot {
                     bpe_vocab: mem::zeroed::<_>(),
                     tokens_buf: mem::zeroed::<_>(),
                     tokens_buf_size: mem::zeroed::<_>(),
+                    nemo_ctc: mem::zeroed::<_>(),
                 },
             }
         };

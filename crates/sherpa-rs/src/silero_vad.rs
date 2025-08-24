@@ -1,13 +1,15 @@
+use std::mem;
+
 use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::Result;
 
 #[derive(Debug)]
-pub struct Vad {
+pub struct SileroVad {
     pub(crate) vad: *const sherpa_rs_sys::SherpaOnnxVoiceActivityDetector,
 }
 
 #[derive(Debug)]
-pub struct VadConfig {
+pub struct SileroVadConfig {
     pub model: String,
     pub min_silence_duration: f32,
     pub min_speech_duration: f32,
@@ -20,7 +22,7 @@ pub struct VadConfig {
     pub debug: bool,
 }
 
-impl Default for VadConfig {
+impl Default for SileroVadConfig {
     fn default() -> Self {
         Self {
             model: String::new(),
@@ -43,11 +45,12 @@ pub struct SpeechSegment {
     pub samples: Vec<f32>,
 }
 
-impl Vad {
-    pub fn new(config: VadConfig, buffer_size_in_seconds: f32) -> Result<Self> {
+impl SileroVad {
+    pub fn new(config: SileroVadConfig, buffer_size_in_seconds: f32) -> Result<Self> {
         let provider = config.provider.unwrap_or(get_default_provider());
 
         let model = cstring_from_str(&config.model);
+        // let ten_model = cstring_from_str(&config.ten_model);
         let provider = cstring_from_str(&provider);
 
         let silero_vad = sherpa_rs_sys::SherpaOnnxSileroVadModelConfig {
@@ -59,12 +62,15 @@ impl Vad {
             max_speech_duration: config.max_speech_duration,
         };
         let debug = config.debug.into();
-        let vad_config = sherpa_rs_sys::SherpaOnnxVadModelConfig {
-            debug,
-            provider: provider.as_ptr(),
-            num_threads: config.num_threads.unwrap_or(1),
-            sample_rate: config.sample_rate as i32,
-            silero_vad,
+        let vad_config = unsafe {
+            sherpa_rs_sys::SherpaOnnxVadModelConfig {
+                debug,
+                provider: provider.as_ptr(),
+                num_threads: config.num_threads.unwrap_or(1),
+                sample_rate: config.sample_rate as i32,
+                silero_vad,
+                ten_vad: mem::zeroed::<_>(),
+            }
         };
 
         unsafe {
@@ -135,10 +141,10 @@ impl Vad {
     }
 }
 
-unsafe impl Send for Vad {}
-unsafe impl Sync for Vad {}
+unsafe impl Send for SileroVad {}
+unsafe impl Sync for SileroVad {}
 
-impl Drop for Vad {
+impl Drop for SileroVad {
     fn drop(&mut self) {
         unsafe {
             sherpa_rs_sys::SherpaOnnxDestroyVoiceActivityDetector(self.vad);

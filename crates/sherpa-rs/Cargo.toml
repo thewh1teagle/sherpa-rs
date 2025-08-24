@@ -37,6 +37,10 @@ cuda = ["sherpa-rs-sys/cuda"]
 directml = ["sherpa-rs-sys/directml"]
 
 [[example]]
+name = "tts_kitten"
+path = "../../examples/tts_kitten.rs"
+
+[[example]]
 name = "tts_kokoro"
 required-features = ["tts"]
 path = "../../examples/tts_kokoro.rs"
@@ -68,8 +72,12 @@ name = "speaker_id"
 path = "../../examples/speaker_id.rs"
 
 [[example]]
-name = "vad"
-path = "../../examples/vad.rs"
+name = "vad_silero"
+path = "../../examples/vad_silero.rs"
+
+[[example]]
+name = "vad_ten"
+path = "../../examples/vad_ten.rs"
 
 [[example]]
 name = "vad_whisper"
