@@ -11,10 +11,10 @@ pub struct TenVad {
 #[derive(Debug)]
 pub struct TenVadConfig {
     pub model: String,
+    pub threshold: f32,
     pub min_silence_duration: f32,
     pub min_speech_duration: f32,
     pub max_speech_duration: f32,
-    pub threshold: f32,
     pub sample_rate: u32,
     pub window_size: i32,
     pub provider: Option<String>,
@@ -26,12 +26,12 @@ impl Default for TenVadConfig {
     fn default() -> Self {
         Self {
             model: String::new(),
+            threshold: 0.3,
             min_silence_duration: 0.5,
-            min_speech_duration: 0.5,
-            max_speech_duration: 0.5,
-            threshold: 0.5,
+            min_speech_duration: 0.25,
+            max_speech_duration: 20.0,
             sample_rate: 16000,
-            window_size: 512,
+            window_size: 256,
             provider: None,
             num_threads: Some(1),
             debug: false,
