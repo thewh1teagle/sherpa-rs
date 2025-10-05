@@ -57,6 +57,8 @@ impl ZipFormer {
                 sense_voice: mem::zeroed::<_>(),
                 moonshine: mem::zeroed::<_>(),
                 dolphin: mem::zeroed::<_>(),
+                zipformer_ctc: mem::zeroed::<_>(),
+                canary: mem::zeroed::<_>(),
             }
         };
         // Recognizer config

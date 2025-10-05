@@ -67,6 +67,8 @@ impl DolphinRecognizer {
                 bpe_vocab: mem::zeroed::<_>(),
                 model_type: mem::zeroed::<_>(),
                 modeling_unit: mem::zeroed::<_>(),
+                zipformer_ctc: mem::zeroed::<_>(),
+                canary: mem::zeroed::<_>(),
             }
         };
 

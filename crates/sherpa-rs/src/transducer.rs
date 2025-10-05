@@ -91,6 +91,8 @@ impl TransducerRecognizer {
                 moonshine: mem::zeroed::<_>(),
                 fire_red_asr: mem::zeroed::<_>(),
                 dolphin: mem::zeroed::<_>(),
+                zipformer_ctc: mem::zeroed::<_>(),
+                canary: mem::zeroed::<_>(),
             };
 
             let recognizer_config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {

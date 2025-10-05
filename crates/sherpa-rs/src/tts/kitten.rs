@@ -6,34 +6,28 @@ use sherpa_rs_sys;
 
 use super::{CommonTtsConfig, TtsAudio};
 
-pub struct KokoroTts {
+pub struct KittenTts {
     tts: *const sherpa_rs_sys::SherpaOnnxOfflineTts,
 }
 
 #[derive(Default)]
-pub struct KokoroTtsConfig {
+pub struct KittenTtsConfig {
     pub model: String,
     pub voices: String,
     pub tokens: String,
     pub data_dir: String,
-    pub dict_dir: String,
-    pub lexicon: String,
     pub length_scale: f32,
     pub onnx_config: OnnxConfig,
     pub common_config: CommonTtsConfig,
-    pub lang: String,
 }
 
-impl KokoroTts {
-    pub fn new(config: KokoroTtsConfig) -> Self {
+impl KittenTts {
+    pub fn new(config: KittenTtsConfig) -> Self {
         let tts = unsafe {
             let model = cstring_from_str(&config.model);
             let voices = cstring_from_str(&config.voices);
             let tokens = cstring_from_str(&config.tokens);
             let data_dir = cstring_from_str(&config.data_dir);
-            let dict_dir = cstring_from_str(&config.dict_dir);
-            let lexicon = cstring_from_str(&config.lexicon);
-            let lang = cstring_from_str(&config.lang);
 
             let provider = cstring_from_str(&config.onnx_config.provider);
 
@@ -45,24 +39,21 @@ impl KokoroTts {
                 debug: config.onnx_config.debug.into(),
                 provider: provider.as_ptr(),
                 matcha: mem::zeroed::<_>(),
-                kokoro: sherpa_rs_sys::SherpaOnnxOfflineTtsKokoroModelConfig {
+                kokoro: mem::zeroed(),
+                kitten: sherpa_rs_sys::SherpaOnnxOfflineTtsKittenModelConfig {
                     model: model.as_ptr(),
                     voices: voices.as_ptr(),
                     tokens: tokens.as_ptr(),
                     data_dir: data_dir.as_ptr(),
                     length_scale: config.length_scale,
-                    dict_dir: dict_dir.as_ptr(),
-                    lexicon: lexicon.as_ptr(),
-                    lang: lang.as_ptr(),
                 },
-                kitten: mem::zeroed::<_>(),
             };
             let config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
                 max_num_sentences: config.common_config.max_num_sentences,
                 model: model_config,
                 rule_fars: tts_config.rule_fars.map(|v| v.as_ptr()).unwrap_or(null()),
                 rule_fsts: tts_config.rule_fsts.map(|v| v.as_ptr()).unwrap_or(null()),
-                silence_scale: config.common_config.silence_scale,
+                silence_scale: 1.0,
             };
             sherpa_rs_sys::SherpaOnnxCreateOfflineTts(&config)
         };
@@ -75,10 +66,10 @@ impl KokoroTts {
     }
 }
 
-unsafe impl Send for KokoroTts {}
-unsafe impl Sync for KokoroTts {}
+unsafe impl Send for KittenTts {}
+unsafe impl Sync for KittenTts {}
 
-impl Drop for KokoroTts {
+impl Drop for KittenTts {
     fn drop(&mut self) {
         unsafe {
             sherpa_rs_sys::SherpaOnnxDestroyOfflineTts(self.tts);

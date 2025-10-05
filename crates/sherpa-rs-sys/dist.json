@@ -1,58 +1,62 @@
 {
-    "tag": "v1.11.5",
-    "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/{tag}/{archive}",
-    "targets": {
-        "x86_64-pc-windows-msvc": {
-            "static": "sherpa-onnx-{tag}-win-x64-static.tar.bz2",
-            "dynamic": "sherpa-onnx-{tag}-win-x64-shared.tar.bz2"
-        },
-        "x86_64-unknown-linux-gnu": {
-            "static": "sherpa-onnx-{tag}-linux-x64-static.tar.bz2",
-            "dynamic": "sherpa-onnx-{tag}-linux-x64-shared.tar.bz2"
-        },
-        "aarch64-apple-darwin": {
-            "static": "sherpa-onnx-{tag}-osx-universal2-static.tar.bz2",
-            "dynamic": "sherpa-onnx-{tag}-osx-universal2-shared.tar.bz2"
-        },
-        "x86_64-apple-darwin": {
-            "static": "sherpa-onnx-{tag}-osx-universal2-static.tar.bz2",
-            "dynamic": "sherpa-onnx-{tag}-osx-universal2-shared.tar.bz2"
-        },
-        "android": {
-            "archive": "sherpa-onnx-{tag}-android.tar.bz2",
-            "is_dynamic": true,
-            "targets": {
-                "aarch64-linux-android": [
-                    "jniLibs/arm64-v8a/libsherpa-onnx-c-api.so",
-                    "jniLibs/arm64-v8a/libonnxruntime.so"
-                ],
-                "x86_64-linux-android": [
-                    "jniLibs/x86_64/libsherpa-onnx-c-api.so",
-                    "jniLibs/x86_64/libonnxruntime.so"
-                ],
-                "armv7-linux-androideabi": [
-                    "jniLibs/armeabi-v7a/libsherpa-onnx-c-api.so",
-                    "jniLibs/armeabi-v7a/libonnxruntime.so"
-                ]
-            }
-        },
-        "ios": {
-            "archive": "sherpa-onnx-{tag}-ios.tar.bz2",
-            "is_dynamic": false,
-            "targets": {
-                "aarch64-apple-ios": [
-                    "build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework/ios-arm64/libonnxruntime.a",
-                    "build-ios/sherpa-onnx.xcframework/ios-arm64/libsherpa-onnx.a"
-                ],
-                "aarch64-apple-ios-sim": [
-                    "build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework/ios-arm64_x86_64-simulator/libonnxruntime.a",
-                    "build-ios/sherpa-onnx.xcframework/ios-arm64_x86_64-simulator/libsherpa-onnx.a"
-                ],
-                "x86_64-apple-ios": [
-                    "build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework/ios-arm64_x86_64-simulator/libonnxruntime.a",
-                    "build-ios/sherpa-onnx.xcframework/ios-arm64_x86_64-simulator/libsherpa-onnx.a"
-                ]
-            }
-        }
+  "tag": "v1.12.9",
+  "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/{tag}/{archive}",
+  "targets": {
+    "x86_64-pc-windows-msvc": {
+      "static": "sherpa-onnx-{tag}-win-x64-static.tar.bz2",
+      "dynamic": "sherpa-onnx-{tag}-win-x64-shared.tar.bz2"
+    },
+    "x86_64-unknown-linux-gnu": {
+      "static": "sherpa-onnx-{tag}-linux-x64-static.tar.bz2",
+      "dynamic": "sherpa-onnx-{tag}-linux-x64-shared.tar.bz2"
+    },
+    "aarch64-unknown-linux-gnu": {
+      "static": "sherpa-onnx-{tag}-linux-aarch64-static.tar.bz2",
+      "dynamic": "sherpa-onnx-{tag}-linux-aarch64-shared-cpu.tar.bz2"
+    },
+    "aarch64-apple-darwin": {
+      "static": "sherpa-onnx-{tag}-osx-universal2-static.tar.bz2",
+      "dynamic": "sherpa-onnx-{tag}-osx-universal2-shared.tar.bz2"
+    },
+    "x86_64-apple-darwin": {
+      "static": "sherpa-onnx-{tag}-osx-universal2-static.tar.bz2",
+      "dynamic": "sherpa-onnx-{tag}-osx-universal2-shared.tar.bz2"
+    },
+    "android": {
+      "archive": "sherpa-onnx-{tag}-android.tar.bz2",
+      "is_dynamic": true,
+      "targets": {
+        "aarch64-linux-android": [
+          "jniLibs/arm64-v8a/libsherpa-onnx-c-api.so",
+          "jniLibs/arm64-v8a/libonnxruntime.so"
+        ],
+        "x86_64-linux-android": [
+          "jniLibs/x86_64/libsherpa-onnx-c-api.so",
+          "jniLibs/x86_64/libonnxruntime.so"
+        ],
+        "armv7-linux-androideabi": [
+          "jniLibs/armeabi-v7a/libsherpa-onnx-c-api.so",
+          "jniLibs/armeabi-v7a/libonnxruntime.so"
+        ]
+      }
+    },
+    "ios": {
+      "archive": "sherpa-onnx-{tag}-ios.tar.bz2",
+      "is_dynamic": false,
+      "targets": {
+        "aarch64-apple-ios": [
+          "build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework/ios-arm64/libonnxruntime.a",
+          "build-ios/sherpa-onnx.xcframework/ios-arm64/libsherpa-onnx.a"
+        ],
+        "aarch64-apple-ios-sim": [
+          "build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework/ios-arm64_x86_64-simulator/libonnxruntime.a",
+          "build-ios/sherpa-onnx.xcframework/ios-arm64_x86_64-simulator/libsherpa-onnx.a"
+        ],
+        "x86_64-apple-ios": [
+          "build-ios/ios-onnxruntime/1.17.1/onnxruntime.xcframework/ios-arm64_x86_64-simulator/libonnxruntime.a",
+          "build-ios/sherpa-onnx.xcframework/ios-arm64_x86_64-simulator/libsherpa-onnx.a"
+        ]
+      }
     }
+  }
 }

@@ -1,18 +1,20 @@
+use std::mem;
+
 use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::Result;
 
 #[derive(Debug)]
-pub struct Vad {
+pub struct TenVad {
     pub(crate) vad: *const sherpa_rs_sys::SherpaOnnxVoiceActivityDetector,
 }
 
 #[derive(Debug)]
-pub struct VadConfig {
+pub struct TenVadConfig {
     pub model: String,
+    pub threshold: f32,
     pub min_silence_duration: f32,
     pub min_speech_duration: f32,
     pub max_speech_duration: f32,
-    pub threshold: f32,
     pub sample_rate: u32,
     pub window_size: i32,
     pub provider: Option<String>,
@@ -20,16 +22,16 @@ pub struct VadConfig {
     pub debug: bool,
 }
 
-impl Default for VadConfig {
+impl Default for TenVadConfig {
     fn default() -> Self {
         Self {
             model: String::new(),
+            threshold: 0.3,
             min_silence_duration: 0.5,
-            min_speech_duration: 0.5,
-            max_speech_duration: 0.5,
-            threshold: 0.5,
+            min_speech_duration: 0.25,
+            max_speech_duration: 20.0,
             sample_rate: 16000,
-            window_size: 512,
+            window_size: 256,
             provider: None,
             num_threads: Some(1),
             debug: false,
@@ -43,28 +45,31 @@ pub struct SpeechSegment {
     pub samples: Vec<f32>,
 }
 
-impl Vad {
-    pub fn new(config: VadConfig, buffer_size_in_seconds: f32) -> Result<Self> {
+impl TenVad {
+    pub fn new(config: TenVadConfig, buffer_size_in_seconds: f32) -> Result<Self> {
         let provider = config.provider.unwrap_or(get_default_provider());
 
         let model = cstring_from_str(&config.model);
         let provider = cstring_from_str(&provider);
 
-        let silero_vad = sherpa_rs_sys::SherpaOnnxSileroVadModelConfig {
+        let ten_vad = sherpa_rs_sys::SherpaOnnxTenVadModelConfig {
             model: model.as_ptr(),
+            threshold: config.threshold,
             min_silence_duration: config.min_silence_duration,
             min_speech_duration: config.min_speech_duration,
-            threshold: config.threshold,
             window_size: config.window_size,
             max_speech_duration: config.max_speech_duration,
         };
         let debug = config.debug.into();
-        let vad_config = sherpa_rs_sys::SherpaOnnxVadModelConfig {
-            debug,
-            provider: provider.as_ptr(),
-            num_threads: config.num_threads.unwrap_or(1),
-            sample_rate: config.sample_rate as i32,
-            silero_vad,
+        let vad_config = unsafe {
+            sherpa_rs_sys::SherpaOnnxVadModelConfig {
+                debug,
+                provider: provider.as_ptr(),
+                num_threads: config.num_threads.unwrap_or(1),
+                sample_rate: config.sample_rate as i32,
+                silero_vad: mem::zeroed::<_>(),
+                ten_vad,
+            }
         };
 
         unsafe {
@@ -135,10 +140,10 @@ impl Vad {
     }
 }
 
-unsafe impl Send for Vad {}
-unsafe impl Sync for Vad {}
+unsafe impl Send for TenVad {}
+unsafe impl Sync for TenVad {}
 
-impl Drop for Vad {
+impl Drop for TenVad {
     fn drop(&mut self) {
         unsafe {
             sherpa_rs_sys::SherpaOnnxDestroyVoiceActivityDetector(self.vad);
