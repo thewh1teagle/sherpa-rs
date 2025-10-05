@@ -253,6 +253,9 @@ fn main() {
         if !env::var("RUSTFLAGS")
             .unwrap_or_default()
             .contains("relocation-model=dynamic-no-pic")
+            && !env::var("CARGO_ENCODED_RUSTFLAGS")
+                .unwrap_or_default()
+                .contains("relocation-model=dynamic-no-pic")
         {
             panic!(
                 "cargo:warning=\
