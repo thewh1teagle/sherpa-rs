@@ -202,6 +202,14 @@ patchelf --set-rpath '$ORIGIN' /path/to/binary/or/shared/library.so
 
 For debug the build process of sherpa-onnx, please set `SHERPA_BUILD_DEBUG=1` environment variable before build.
 
+### Bypass checksum validation (NOT RECOMMENDED)
+
+If you encounter checksum validation errors and trust the download source, you can bypass validation:
+
+```console
+UNSAFE_DISABLE_CHECKSUM_VALIDATION=1 cargo build
+```
+
 ## Release new version
 
 ```console
