@@ -202,6 +202,30 @@ fn rerun_if_changed(vars: &[&str]) {
     }
 }
 
+fn verify_checksum(actual_hash: &str, expected_hash: &str) {
+    if env::var("UNSAFE_DISABLE_CHECKSUM_VALIDATION").unwrap_or_default() == "1" {
+        println!("cargo:warning=UNSAFE: Checksum validation disabled!");
+        return;
+    }
+
+    if actual_hash != expected_hash {
+        panic!(
+            "Checksum validation failed!\n\
+            Expected: {}\n\
+            Got:      {}\n\
+            \n\
+            This usually means the downloaded file is corrupted or has been tampered with.\n\
+            \n\
+            Possible solutions:\n\
+            1. Try cleaning the cache and rebuilding: cargo clean && cargo build\n\
+            2. Check your internet connection and try again\n\
+            3. If you trust the source and want to bypass validation (NOT RECOMMENDED):\n\
+               UNSAFE_DISABLE_CHECKSUM_VALIDATION=1 cargo build",
+            expected_hash, actual_hash
+        );
+    }
+}
+
 fn main() {
     rerun_if_changed(&["wrapper.h", "dist.json", "checksum.txt", "./sherpa-onnx"]);
     rerun_on_env_changes(&[
@@ -212,6 +236,7 @@ fn main() {
         "SHERPA_STATIC_CRT",
         "SHERPA_LIB_PROFILE",
         "BUILD_DEBUG",
+        "UNSAFE_DISABLE_CHECKSUM_VALIDATION",
     ]);
 
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
@@ -357,13 +382,7 @@ fn main() {
             if (is_mobile && cache_dir_empty) || (!is_mobile && !lib_dir.exists()) {
                 let downloaded_file = fetch_file(&dist.url);
                 let hash = sha256(&downloaded_file);
-                // verify checksum
-                assert_eq!(
-                    hash, dist.checksum,
-                    "Checksum mismatch: {} != {}",
-                    hash, dist.checksum
-                );
-
+                verify_checksum(&hash, &dist.checksum);
                 extract_tbz(&downloaded_file, &cache_dir);
             } else {
                 debug_log!("Skip fetch file. Using cache from {}", lib_dir.display());
