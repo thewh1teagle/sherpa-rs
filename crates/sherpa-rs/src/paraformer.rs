@@ -72,6 +72,7 @@ impl ParaformerRecognizer {
                 dolphin: mem::zeroed::<_>(),
                 zipformer_ctc: mem::zeroed::<_>(),
                 canary: mem::zeroed::<_>(),
+                wenet_ctc: mem::zeroed::<_>(),
             }
         };
 

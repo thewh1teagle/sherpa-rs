@@ -2,6 +2,7 @@ mod kitten;
 mod kokoro;
 mod matcha;
 mod vits;
+mod zipvoice;
 
 use std::ffi::CString;
 
@@ -11,6 +12,7 @@ pub use kitten::{KittenTts, KittenTtsConfig};
 pub use kokoro::{KokoroTts, KokoroTtsConfig};
 pub use matcha::{MatchaTts, MatchaTtsConfig};
 pub use vits::{VitsTts, VitsTtsConfig};
+pub use zipvoice::{ZipVoiceTts, ZipVoiceTtsConfig};
 
 use crate::utils::cstring_from_str;
 
