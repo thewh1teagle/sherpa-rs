@@ -76,6 +76,7 @@ impl SenseVoiceRecognizer {
                 dolphin: mem::zeroed::<_>(),
                 zipformer_ctc: mem::zeroed(),
                 canary: mem::zeroed(),
+                wenet_ctc: mem::zeroed::<_>(),
             }
         };
 

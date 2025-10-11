@@ -47,6 +47,7 @@ impl KittenTts {
                     data_dir: data_dir.as_ptr(),
                     length_scale: config.length_scale,
                 },
+                zipvoice: mem::zeroed::<_>(),
             };
             let config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
                 max_num_sentences: config.common_config.max_num_sentences,

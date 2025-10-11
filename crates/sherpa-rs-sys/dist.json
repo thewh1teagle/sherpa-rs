@@ -1,5 +1,5 @@
 {
-  "tag": "v1.12.9",
+  "tag": "v1.12.14",
   "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/{tag}/{archive}",
   "targets": {
     "x86_64-pc-windows-msvc": {

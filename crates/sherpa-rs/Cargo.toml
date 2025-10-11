@@ -56,6 +56,11 @@ required-features = ["tts"]
 path = "../../examples/tts_matcha.rs"
 
 [[example]]
+name = "tts_zipvoice"
+required-features = ["tts"]
+path = "../../examples/tts_zipvoice.rs"
+
+[[example]]
 name = "audio_tag"
 path = "../../examples/audio_tag.rs"
 
