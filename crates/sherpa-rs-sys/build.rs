@@ -315,7 +315,8 @@ fn main() {
         let mut bindings_builder = bindgen::Builder::default()
             .header("wrapper.h")
             .clang_arg(format!("-I{}", sherpa_dst.display()))
-            .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
+            .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+            .derive_default(true);
 
         if let Some(clang_target) = RUST_CLANG_TARGET_MAP.get(&target) {
             // Explicitly set target in case we are cross-compiling.
