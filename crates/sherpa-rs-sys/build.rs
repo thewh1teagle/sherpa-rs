@@ -126,6 +126,13 @@ fn extract_lib_names(out_dir: &Path, is_dynamic: bool, target_os: &str) -> Vec<S
                 let stem = path.file_stem().unwrap();
                 let stem_str = stem.to_str().unwrap();
 
+                // Skip certain libraries that should not be linked
+                // cargs.lib is a command line argument parser that shouldn't be linked
+                if stem_str == "cargs" {
+                    debug_log!("Skipping library: {}", stem_str);
+                    continue;
+                }
+
                 // Remove the "lib" prefix if present
                 let lib_name = if stem_str.starts_with("lib") {
                     stem_str.strip_prefix("lib").unwrap_or(stem_str)
@@ -544,6 +551,22 @@ fn main() {
                 }
             }
         }
+
+        // Filter out cargs dynamic libraries from being copied to target output.
+        // This keeps runtime artifacts clean and avoids shipping CLI-only helpers.
+        libs_assets.retain(|p| {
+            let fname = p.file_name().and_then(|s| s.to_str()).unwrap_or("");
+            let lower = fname.to_ascii_lowercase();
+            let is_cargs = lower == "cargs.dll"
+                || lower == "libcargs.so"
+                || lower == "libcargs.dylib"
+                || lower.starts_with("cargs.")
+                || lower.starts_with("libcargs.");
+            if is_cargs {
+                debug_log!("Skipping asset {}", fname);
+            }
+            !is_cargs
+        });
 
         for asset in libs_assets {
             let asset_clone = asset.clone();
