@@ -32,3 +32,4 @@ matcha-*
 crates/sherpa-rs-sys/sherpa-onnx/scripts/
 kokoro-multi-lang-v1_0/
 kitten-nano-en-*/
+sherpa-onnx-zipvoice-*/
