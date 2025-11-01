@@ -33,12 +33,12 @@ lazy_static::lazy_static! {
 fn link_lib(lib: &str, is_dynamic: bool) {
     let lib_kind = if is_dynamic { "dylib" } else { "static" };
     debug_log!("cargo:rustc-link-lib={}={}", lib_kind, lib);
-    println!("cargo:rustc-link-lib={}={}", lib_kind, lib);
+    println!("cargo:rustc-link-lib={lib_kind}={lib}");
 }
 
 fn link_framework(framework: &str) {
     debug_log!("cargo:rustc-link-lib=framework={}", framework);
-    println!("cargo:rustc-link-lib=framework={}", framework);
+    println!("cargo:rustc-link-lib=framework={framework}");
 }
 
 fn add_search_path<P: AsRef<Path>>(path: P) {
@@ -141,7 +141,7 @@ fn extract_lib_names(out_dir: &Path, is_dynamic: bool, target_os: &str) -> Vec<S
                 };
                 lib_names.push(lib_name.to_string());
             }
-            Err(e) => println!("cargo:warning=error={}", e),
+            Err(e) => println!("cargo:warning=error={e}"),
         }
     }
     lib_names
@@ -166,7 +166,7 @@ fn extract_lib_assets(out_dir: &Path, target_os: &str) -> Vec<PathBuf> {
             Ok(path) => {
                 files.push(path);
             }
-            Err(e) => eprintln!("cargo:warning=error={}", e),
+            Err(e) => eprintln!("cargo:warning=error={e}"),
         }
     }
 
@@ -189,7 +189,7 @@ fn macos_link_search_path() -> Option<String> {
     for line in stdout.lines() {
         if line.contains("libraries: =") {
             let path = line.split('=').nth(1)?;
-            return Some(format!("{}/lib/darwin", path));
+            return Some(format!("{path}/lib/darwin"));
         }
     }
 
@@ -199,13 +199,13 @@ fn macos_link_search_path() -> Option<String> {
 
 fn rerun_on_env_changes(vars: &[&str]) {
     for env in vars {
-        println!("cargo::rerun-if-env-changed={}", env);
+        println!("cargo::rerun-if-env-changed={env}");
     }
 }
 
 fn rerun_if_changed(vars: &[&str]) {
     for var in vars {
-        println!("cargo:rerun-if-changed={}", var);
+        println!("cargo:rerun-if-changed={var}");
     }
 }
 
@@ -218,8 +218,8 @@ fn verify_checksum(actual_hash: &str, expected_hash: &str) {
     if actual_hash != expected_hash {
         panic!(
             "Checksum validation failed!\n\
-            Expected: {}\n\
-            Got:      {}\n\
+            Expected: {expected_hash}\n\
+            Got:      {actual_hash}\n\
             \n\
             This usually means the downloaded file is corrupted or has been tampered with.\n\
             \n\
@@ -227,8 +227,7 @@ fn verify_checksum(actual_hash: &str, expected_hash: &str) {
             1. Try cleaning the cache and rebuilding: cargo clean && cargo build\n\
             2. Check your internet connection and try again\n\
             3. If you trust the source and want to bypass validation (NOT RECOMMENDED):\n\
-               UNSAFE_DISABLE_CHECKSUM_VALIDATION=1 cargo build",
-            expected_hash, actual_hash
+               UNSAFE_DISABLE_CHECKSUM_VALIDATION=1 cargo build"
         );
     }
 }
@@ -329,7 +328,7 @@ fn main() {
             // Explicitly set target in case we are cross-compiling.
             // See https://github.com/rust-lang/rust-bindgen/issues/1780 for context.
             debug_log!("mapped clang target: {}", clang_target);
-            bindings_builder = bindings_builder.clang_arg(format!("--target={}", clang_target));
+            bindings_builder = bindings_builder.clang_arg(format!("--target={clang_target}"));
         }
 
         debug_log!("Generating bindings...");
