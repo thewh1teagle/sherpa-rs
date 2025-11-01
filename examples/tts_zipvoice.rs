@@ -18,7 +18,7 @@ fn main() {
     let mut reader = hound::WavReader::open(&prompt_path).expect("Failed to open prompt.wav");
     let spec = reader.spec();
     let prompt_sr = spec.sample_rate as i32;
-    
+
     println!("Prompt audio spec: {:?}", spec);
 
     // Read samples and convert to f32 (mono only for now)
@@ -30,7 +30,7 @@ fn main() {
     } else {
         reader.samples::<f32>().map(|s| s.unwrap()).collect()
     };
-    
+
     // If stereo, convert to mono by averaging channels
     if spec.channels == 2 {
         prompt_samples = prompt_samples
@@ -38,8 +38,12 @@ fn main() {
             .map(|chunk| (chunk[0] + chunk[1]) / 2.0)
             .collect();
     }
-    
-    println!("Loaded {} prompt samples at {} Hz", prompt_samples.len(), prompt_sr);
+
+    println!(
+        "Loaded {} prompt samples at {} Hz",
+        prompt_samples.len(),
+        prompt_sr
+    );
 
     let config = ZipVoiceTtsConfig {
         tokens: format!("{}/tokens.txt", model_dir),
@@ -68,7 +72,7 @@ fn main() {
     let text = "Hello world."; // Start with simple English text
     let speed = 1.0;
     let num_steps = 4; // Number of inference steps
-    
+
     println!("Generating speech for: {}", text);
 
     let audio = tts
