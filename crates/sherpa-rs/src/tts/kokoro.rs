@@ -56,6 +56,7 @@ impl KokoroTts {
                     lang: lang.as_ptr(),
                 },
                 kitten: mem::zeroed::<_>(),
+                zipvoice: mem::zeroed::<_>(),
             };
             let config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
                 max_num_sentences: config.common_config.max_num_sentences,

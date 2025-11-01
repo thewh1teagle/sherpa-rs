@@ -112,7 +112,7 @@ pub struct Dist {
 impl DistTable {
     fn new(content: &str) -> Self {
         let mut table: DistTable = serde_json::from_str(content)
-            .unwrap_or_else(|_| panic!("Failed to parse dist.json: {}", content));
+            .unwrap_or_else(|_| panic!("Failed to parse dist.json: {content}"));
         table.url = table.url.replace("{tag}", &table.tag);
         for value in table.targets.values_mut() {
             // expand static with {tag}
@@ -145,7 +145,7 @@ impl DistTable {
             self.targets
                 .get(target)
                 .unwrap_or_else(||
-                    panic!("Target {} not found. try to disable download-feature with --no-default-features.", target)
+                    panic!("Target {target} not found. try to disable download-feature with --no-default-features.")
                 )
         };
         debug_log!(
@@ -213,7 +213,7 @@ fn hex_str_to_bytes(c: impl AsRef<[u8]>) -> Vec<u8> {
 fn bytes_to_hex_str(bytes: Vec<u8>) -> String {
     let mut s = String::with_capacity(bytes.len() * 2);
     for byte in bytes {
-        s.push_str(&format!("{:02x}", byte));
+        s.push_str(&format!("{byte:02x}"));
     }
     s
 }

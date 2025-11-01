@@ -1,6 +1,6 @@
 [package]
 name = "sherpa-rs"
-version = "0.6.7"
+version = "0.6.8"
 edition = "2021"
 authors = ["thewh1teagle"]
 license = "MIT"
@@ -21,7 +21,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 eyre = "0.6.12"
 hound = { version = "3.5.1" }
-sherpa-rs-sys = { path = "../sherpa-rs-sys", version = "0.6.7", default-features = false }
+sherpa-rs-sys = { path = "../sherpa-rs-sys", version = "0.6.8", default-features = false }
 tracing = "0.1.40"
 
 [dev-dependencies]
@@ -54,6 +54,11 @@ path = "../../examples/tts_vits.rs"
 name = "tts_matcha"
 required-features = ["tts"]
 path = "../../examples/tts_matcha.rs"
+
+[[example]]
+name = "tts_zipvoice"
+required-features = ["tts"]
+path = "../../examples/tts_zipvoice.rs"
 
 [[example]]
 name = "audio_tag"
