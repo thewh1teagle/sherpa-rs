@@ -41,6 +41,11 @@ cuda = ["sherpa-rs-sys/cuda"]
 directml = ["sherpa-rs-sys/directml"]
 
 [[example]]
+name = "server_engine"
+path = "../../examples/server_engine.rs"
+required-features = ["tts"] # Ensures it only runs if TTS is enabled
+
+[[example]]
 name = "tts_kitten"
 path = "../../examples/tts_kitten.rs"
 
