@@ -26,6 +26,10 @@ tracing = "0.1.40"
 
 [dev-dependencies]
 clap = { version = "4.5.8", features = ["derive"] }
+axum = { version = "0.7", features = ["multipart"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 [features]
 default = ["download-binaries", "tts"]
