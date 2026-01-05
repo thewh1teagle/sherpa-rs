@@ -139,3 +139,15 @@ path = "../../examples/dolphin.rs"
 [[example]]
 name = "parakeet"
 path = "../../examples/parakeet.rs"
+
+[[example]]
+name = "funasr_nano"
+path = "../../examples/funasr_nano.rs"
+
+[[example]]
+name = "streaming_asr"
+path = "../../examples/streaming_asr.rs"
+
+[[example]]
+name = "transcribe_test"
+path = "../../examples/transcribe_test.rs"

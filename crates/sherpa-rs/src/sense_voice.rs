@@ -77,6 +77,9 @@ impl SenseVoiceRecognizer {
                 zipformer_ctc: mem::zeroed(),
                 canary: mem::zeroed(),
                 wenet_ctc: mem::zeroed::<_>(),
+                funasr_nano: mem::zeroed::<_>(),
+                medasr: mem::zeroed::<_>(),
+                omnilingual: mem::zeroed::<_>(),
             }
         };
 
