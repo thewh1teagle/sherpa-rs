@@ -1,6 +1,5 @@
 use crate::{get_default_provider, utils::cstring_from_str};
 use eyre::{bail, Result};
-use std::mem;
 
 #[derive(Debug)]
 pub struct FunasrNanoRecognizer {
@@ -101,62 +100,23 @@ impl FunasrNanoRecognizer {
         let tokens_ptr = cstring_from_str("");
         let decoding_method_ptr = cstring_from_str("greedy_search");
 
-        let model_config = unsafe {
-            sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
-                funasr_nano: funasr_nano_config,
-                debug,
-                num_threads,
-                provider: provider_ptr.as_ptr(),
-                tokens: tokens_ptr.as_ptr(),
-
-                // nulls - use mem::zeroed for unused fields
-                model_type: std::ptr::null(),
-                bpe_vocab: mem::zeroed::<_>(),
-                modeling_unit: mem::zeroed::<_>(),
-                nemo_ctc: mem::zeroed::<_>(),
-                paraformer: mem::zeroed::<_>(),
-                tdnn: mem::zeroed::<_>(),
-                telespeech_ctc: mem::zeroed::<_>(),
-                transducer: mem::zeroed::<_>(),
-                whisper: mem::zeroed::<_>(),
-                fire_red_asr: mem::zeroed::<_>(),
-                sense_voice: mem::zeroed::<_>(),
-                moonshine: mem::zeroed::<_>(),
-                dolphin: mem::zeroed::<_>(),
-                zipformer_ctc: mem::zeroed::<_>(),
-                canary: mem::zeroed::<_>(),
-                wenet_ctc: mem::zeroed::<_>(),
-                omnilingual: mem::zeroed::<_>(),
-                medasr: mem::zeroed::<_>(),
-            }
+        let model_config = sherpa_rs_sys::SherpaOnnxOfflineModelConfig {
+            funasr_nano: funasr_nano_config,
+            debug,
+            num_threads,
+            provider: provider_ptr.as_ptr(),
+            tokens: tokens_ptr.as_ptr(),
+            ..Default::default()
         };
 
-        let recognizer_config = unsafe {
-            sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
-                decoding_method: decoding_method_ptr.as_ptr(),
-                feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
-                    sample_rate: 16000,
-                    feature_dim: 80,
-                },
-                model_config,
-
-                // 显式设置为 null 指针，避免被错误解析
-                hotwords_file: std::ptr::null(),
-                hotwords_score: 0.0,
-                lm_config: sherpa_rs_sys::SherpaOnnxOfflineLMConfig {
-                    model: std::ptr::null(),
-                    scale: 0.0,
-                },
-                max_active_paths: 0,
-                rule_fars: std::ptr::null(),
-                rule_fsts: std::ptr::null(),
-                blank_penalty: 0.0,
-                hr: sherpa_rs_sys::SherpaOnnxHomophoneReplacerConfig {
-                    lexicon: std::ptr::null(),
-                    rule_fsts: std::ptr::null(),
-                    dict_dir: std::ptr::null(),
-                },
-            }
+        let recognizer_config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
+            decoding_method: decoding_method_ptr.as_ptr(),
+            feat_config: sherpa_rs_sys::SherpaOnnxFeatureConfig {
+                sample_rate: 16000,
+                feature_dim: 80,
+            },
+            model_config,
+            ..Default::default()
         };
 
         let recognizer =

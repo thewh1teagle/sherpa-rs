@@ -22,14 +22,14 @@ fn test_funasr_nano_config_default() {
     assert!(config.llm_decode.is_empty());
     assert!(config.embedding.is_empty());
     assert!(config.tokenizer.is_empty());
-    assert!(config.system_prompt.is_none());
-    assert!(config.user_prompt.is_none());
-    assert_eq!(config.max_new_tokens, Some(200));
-    assert_eq!(config.temperature, Some(0.0));
-    assert_eq!(config.top_p, Some(0.9));
-    assert_eq!(config.seed, Some(0));
+    assert_eq!(config.system_prompt, Some("You are a helpful assistant.".into()));
+    assert_eq!(config.user_prompt, Some("语音转写：".into()));
+    assert_eq!(config.max_new_tokens, Some(512));
+    assert_eq!(config.temperature, Some(0.3));
+    assert_eq!(config.top_p, Some(0.8));
+    assert_eq!(config.seed, Some(42));
     assert!(config.provider.is_none());
-    assert_eq!(config.num_threads, Some(1));
+    assert_eq!(config.num_threads, Some(4));
     assert!(!config.debug);
 }
 
@@ -105,16 +105,22 @@ fn test_funasr_nano_recognizer_invalid_paths() {
     assert!(result.is_err());
 }
 
+// Helper to get model path relative to workspace root
+fn model_path(relative: &str) -> String {
+    // Tests run from crates/sherpa-rs, so we need to go up two levels
+    format!("../../{}", relative)
+}
+
 /// Test recognizer creation with actual models (requires model files)
 #[test]
 #[ignore = "Requires model files to be downloaded"]
 fn test_funasr_nano_recognizer_creation() {
     let config = FunasrNanoConfig {
-        encoder_adaptor: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/encoder_adaptor.onnx".into(),
-        llm_prefill: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/llm_prefill.onnx".into(),
-        llm_decode: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/llm_decode.onnx".into(),
-        embedding: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/embedding.onnx".into(),
-        tokenizer: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/tokenizer.json".into(),
+        encoder_adaptor: model_path("funasr-nano/encoder_adaptor.int8.onnx"),
+        llm_prefill: model_path("funasr-nano/llm_prefill.int8.onnx"),
+        llm_decode: model_path("funasr-nano/llm_decode.int8.onnx"),
+        embedding: model_path("funasr-nano/embedding.int8.onnx"),
+        tokenizer: model_path("funasr-nano/Qwen3-0.6B"),
         ..Default::default()
     };
 
@@ -127,11 +133,11 @@ fn test_funasr_nano_recognizer_creation() {
 #[ignore = "Requires model files to be downloaded"]
 fn test_funasr_nano_transcription() {
     let config = FunasrNanoConfig {
-        encoder_adaptor: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/encoder_adaptor.onnx".into(),
-        llm_prefill: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/llm_prefill.onnx".into(),
-        llm_decode: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/llm_decode.onnx".into(),
-        embedding: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/embedding.onnx".into(),
-        tokenizer: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/tokenizer.json".into(),
+        encoder_adaptor: model_path("funasr-nano/encoder_adaptor.int8.onnx"),
+        llm_prefill: model_path("funasr-nano/llm_prefill.int8.onnx"),
+        llm_decode: model_path("funasr-nano/llm_decode.int8.onnx"),
+        embedding: model_path("funasr-nano/embedding.int8.onnx"),
+        tokenizer: model_path("funasr-nano/Qwen3-0.6B"),
         ..Default::default()
     };
 
@@ -150,11 +156,11 @@ fn test_funasr_nano_transcription() {
 #[ignore = "Requires model files to be downloaded"]
 fn test_funasr_nano_with_prompts() {
     let config = FunasrNanoConfig {
-        encoder_adaptor: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/encoder_adaptor.onnx".into(),
-        llm_prefill: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/llm_prefill.onnx".into(),
-        llm_decode: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/llm_decode.onnx".into(),
-        embedding: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/embedding.onnx".into(),
-        tokenizer: "sherpa-onnx-funasr-nano-zh-en-ja-2024-12-30/tokenizer.json".into(),
+        encoder_adaptor: model_path("funasr-nano/encoder_adaptor.int8.onnx"),
+        llm_prefill: model_path("funasr-nano/llm_prefill.int8.onnx"),
+        llm_decode: model_path("funasr-nano/llm_decode.int8.onnx"),
+        embedding: model_path("funasr-nano/embedding.int8.onnx"),
+        tokenizer: model_path("funasr-nano/Qwen3-0.6B"),
         system_prompt: Some("你是一个语音识别助手".into()),
         user_prompt: Some("请转录以下音频：".into()),
         max_new_tokens: Some(100),
