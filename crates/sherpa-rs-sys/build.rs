@@ -96,6 +96,68 @@ fn copy_folder(src: &Path, dst: &Path) {
     }
 }
 
+/// Extract a specific architecture from a fat binary for iOS
+/// Returns the path to the extracted single-architecture library
+fn extract_thin_lib_for_ios(lib_path: &Path, target: &str, out_dir: &Path) -> PathBuf {
+    debug_log!("Checking if {} is a fat binary", lib_path.display());
+
+    // Check if it's a fat binary using lipo
+    let lipo_info = Command::new("lipo")
+        .arg("-info")
+        .arg(lib_path)
+        .output();
+
+    if let Ok(output) = lipo_info {
+        let info_str = String::from_utf8_lossy(&output.stdout);
+        debug_log!("lipo info: {}", info_str);
+
+        // If it contains "Architectures in the fat file", it's a fat binary
+        if info_str.contains("Architectures in the fat file") || info_str.contains("universal binary") {
+            // Determine the target architecture
+            let arch = if target.contains("x86_64") {
+                "x86_64"
+            } else if target.contains("aarch64") || target.contains("arm64") {
+                "arm64"
+            } else {
+                debug_log!("Unknown target architecture for {}", target);
+                return lib_path.to_path_buf();
+            };
+
+            debug_log!("Extracting {} architecture from fat binary", arch);
+
+            // Create output path for thin library
+            // Use the original filename to avoid library name conflicts
+            let file_name = lib_path.file_name().unwrap();
+            let thin_lib_path = out_dir.join(file_name);
+
+            // Extract the specific architecture
+            let extract_result = Command::new("lipo")
+                .arg(lib_path)
+                .arg("-thin")
+                .arg(arch)
+                .arg("-output")
+                .arg(&thin_lib_path)
+                .status();
+
+            match extract_result {
+                Ok(status) if status.success() => {
+                    debug_log!("Successfully extracted {} to {}", arch, thin_lib_path.display());
+                    return thin_lib_path;
+                }
+                Ok(status) => {
+                    debug_log!("lipo failed with status: {}", status);
+                }
+                Err(e) => {
+                    debug_log!("Failed to run lipo: {}", e);
+                }
+            }
+        }
+    }
+
+    // If not a fat binary or extraction failed, return original path
+    lib_path.to_path_buf()
+}
+
 fn extract_lib_names(out_dir: &Path, is_dynamic: bool, target_os: &str) -> Vec<String> {
     let lib_pattern = if target_os == "windows" {
         "*.lib"
@@ -195,6 +257,38 @@ fn macos_link_search_path() -> Option<String> {
 
     println!("failed to determine link search path, continuing without it");
     None
+}
+
+fn ios_link_search_path() -> Option<String> {
+    // Get the clang version
+    let output = Command::new("clang")
+        .arg("--version")
+        .output()
+        .ok()?;
+
+    if !output.status.success() {
+        debug_log!("failed to run 'clang --version'");
+        return None;
+    }
+
+    let version_str = String::from_utf8_lossy(&output.stdout);
+    // Extract version number (e.g., "Apple clang version 17.0.0" -> "17")
+    let version = version_str
+        .lines()
+        .next()?
+        .split_whitespace()
+        .find_map(|s| {
+            if s.chars().next()?.is_digit(10) {
+                Some(s.split('.').next()?.to_string())
+            } else {
+                None
+            }
+        })?;
+
+    Some(format!(
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/{}/lib/darwin",
+        version
+    ))
 }
 
 fn rerun_on_env_changes(vars: &[&str]) {
@@ -407,10 +501,26 @@ fn main() {
 
             debug_log!("dist libs: {:?}", dist.libs);
             if let Some(libs) = dist.libs {
-                for lib in libs.iter() {
-                    let lib_path = cache_dir.join(lib);
-                    let lib_parent = lib_path.parent().unwrap();
-                    add_search_path(lib_parent);
+                // For iOS, we need to handle fat binaries (universal binaries with multiple architectures)
+                // Extract the specific architecture needed for the target
+                if target.contains("ios") {
+                    debug_log!("Processing iOS libraries, checking for fat binaries");
+                    for lib in libs.iter() {
+                        let lib_path = cache_dir.join(lib);
+
+                        // Extract thin library if it's a fat binary
+                        let processed_lib_path = extract_thin_lib_for_ios(&lib_path, &target, &out_dir);
+
+                        // Add the directory containing the processed library to search path
+                        let lib_parent = processed_lib_path.parent().unwrap();
+                        add_search_path(lib_parent);
+                    }
+                } else {
+                    for lib in libs.iter() {
+                        let lib_path = cache_dir.join(lib);
+                        let lib_parent = lib_path.parent().unwrap();
+                        add_search_path(lib_parent);
+                    }
                 }
 
                 sherpa_libs = libs
@@ -510,11 +620,52 @@ fn main() {
         link_lib("msvcrtd", true);
     }
 
-    // macOS
+    // macOS and iOS common frameworks
     if target_os == "macos" || target_os == "ios" {
         link_framework("CoreML");
         link_framework("Foundation");
         link_lib("c++", true);
+    }
+
+    // iOS specific configuration
+    if target_os == "ios" {
+        // Set minimum iOS deployment target to avoid linker errors
+        // This prevents "___isPlatformVersionAtLeast" undefined symbol errors
+        println!("cargo:rustc-link-arg=-Wl,-platform_version,ios,13.0,13.0");
+
+        // Add rpath for finding dependencies
+        println!("cargo:rustc-link-arg=-Wl,-rpath,@executable_path");
+
+        // Link clang runtime for iOS to resolve symbols like ___chkstk_darwin
+        if let Some(clang_path) = ios_link_search_path() {
+            debug_log!("iOS clang runtime path: {}", clang_path);
+
+            // Choose the correct runtime library based on target
+            let clang_rt_lib = if target.contains("sim") {
+                "libclang_rt.iossim.a"
+            } else {
+                "libclang_rt.ios.a"
+            };
+
+            let clang_rt_path = Path::new(&clang_path).join(clang_rt_lib);
+
+            // Extract thin library from fat binary
+            let thin_clang_rt = extract_thin_lib_for_ios(&clang_rt_path, &target, &out_dir);
+
+            // Add the directory containing the thin library to search path
+            let clang_rt_parent = thin_clang_rt.parent().unwrap();
+            add_search_path(clang_rt_parent);
+
+            // Extract lib name for linking
+            let lib_name = thin_clang_rt
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .and_then(|s| s.strip_prefix("lib"))
+                .unwrap_or("clang_rt.ios");
+
+            debug_log!("Linking {}", lib_name);
+            link_lib(lib_name, false);
+        }
     }
 
     // Linux
