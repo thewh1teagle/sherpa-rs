@@ -2,6 +2,7 @@ pub mod audio_tag;
 pub mod diarize;
 pub mod dolphin;
 pub mod embedding_manager;
+pub mod funasr_nano;
 pub mod keyword_spot;
 pub mod language_id;
 pub mod moonshine;

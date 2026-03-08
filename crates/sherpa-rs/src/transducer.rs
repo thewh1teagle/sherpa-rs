@@ -94,6 +94,9 @@ impl TransducerRecognizer {
                 zipformer_ctc: mem::zeroed::<_>(),
                 canary: mem::zeroed::<_>(),
                 wenet_ctc: mem::zeroed::<_>(),
+                funasr_nano: mem::zeroed::<_>(),
+                omnilingual: mem::zeroed::<_>(),
+                medasr: mem::zeroed::<_>(),
             };
 
             let recognizer_config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {
