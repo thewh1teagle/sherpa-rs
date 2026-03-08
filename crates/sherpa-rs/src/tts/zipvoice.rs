@@ -13,11 +13,11 @@ pub struct ZipVoiceTts {
 #[derive(Default)]
 pub struct ZipVoiceTtsConfig {
     pub tokens: String,
-    pub text_model: String,
-    pub flow_matching_model: String,
+    pub encoder: String,
+    pub decoder: String,
     pub vocoder: String,
     pub data_dir: String,
-    pub pinyin_dict: String,
+    pub lexicon: String,
     pub feat_scale: f32,
     pub t_shift: f32,
     pub target_rms: f32,
@@ -30,11 +30,11 @@ impl ZipVoiceTts {
     pub fn new(config: ZipVoiceTtsConfig) -> Self {
         let tts = unsafe {
             let tokens = cstring_from_str(&config.tokens);
-            let text_model = cstring_from_str(&config.text_model);
-            let flow_matching_model = cstring_from_str(&config.flow_matching_model);
+            let encoder = cstring_from_str(&config.encoder);
+            let decoder = cstring_from_str(&config.decoder);
             let vocoder = cstring_from_str(&config.vocoder);
             let data_dir = cstring_from_str(&config.data_dir);
-            let pinyin_dict = cstring_from_str(&config.pinyin_dict);
+            let lexicon = cstring_from_str(&config.lexicon);
 
             let provider = cstring_from_str(&config.onnx_config.provider);
 
@@ -50,11 +50,11 @@ impl ZipVoiceTts {
                 kitten: mem::zeroed::<_>(),
                 zipvoice: sherpa_rs_sys::SherpaOnnxOfflineTtsZipvoiceModelConfig {
                     tokens: tokens.as_ptr(),
-                    text_model: text_model.as_ptr(),
-                    flow_matching_model: flow_matching_model.as_ptr(),
+                    encoder: encoder.as_ptr(),
+                    decoder: decoder.as_ptr(),
                     vocoder: vocoder.as_ptr(),
                     data_dir: data_dir.as_ptr(),
-                    pinyin_dict: pinyin_dict.as_ptr(),
+                    lexicon: lexicon.as_ptr(),
                     feat_scale: config.feat_scale,
                     t_shift: config.t_shift,
                     target_rms: config.target_rms,
