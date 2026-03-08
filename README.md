@@ -5,6 +5,25 @@
 
 Rust bindings to [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 
+---
+
+⚠️ **Deprecated**
+
+This crate is deprecated.
+
+The upstream project **sherpa-onnx** now provides an official Rust API, so this repository is no longer maintained.
+
+Please use the official Rust bindings instead:
+https://github.com/k2-fsa/sherpa-onnx
+
+Example:
+https://github.com/k2-fsa/sherpa-onnx/blob/master/rust-api-examples/examples/silero_vad_remove_silence.rs
+
+See also the VoiceActivityDetector API:
+https://docs.rs/sherpa-onnx/latest/sherpa_onnx/struct.VoiceActivityDetector.html
+
+---
+
 ## Features
 
 - Spoken language detection
