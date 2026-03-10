@@ -736,6 +736,8 @@ dependencies = [
  "clap",
  "eyre",
  "hound",
+ "serde",
+ "serde_json",
  "sherpa-rs-sys",
  "tracing",
 ]

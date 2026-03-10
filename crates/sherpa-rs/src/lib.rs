@@ -22,6 +22,7 @@ pub mod tts;
 
 use std::ffi::CStr;
 
+use serde::{Deserialize, Serialize};
 #[cfg(feature = "sys")]
 pub use sherpa_rs_sys;
 
@@ -133,5 +134,78 @@ impl Default for OnnxConfig {
             debug: false,
             num_threads: 1,
         }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct OnlineRecognizerJsonResult {
+    pub text: String,
+    pub tokens: Vec<String>,
+    pub timestamps: Vec<f32>,
+    pub ys_probs: Vec<f32>,
+    pub lm_probs: Vec<f32>,
+    pub context_scores: Vec<f32>,
+    pub segment: i32,
+    pub words: Vec<Word>,
+    pub start_time: f32,
+    pub is_final: bool,
+    pub is_eof: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Word {
+    pub word: String,
+    pub start: f32,
+    pub end: f32,
+}
+
+#[derive(Debug, Clone)]
+pub struct OnlineRecognizerResult {
+    pub text: String,
+    pub timestamps: Vec<f32>,
+    pub tokens: Vec<String>,
+    /// Whether the result is final
+    pub is_final: bool,
+    /// segment id
+    pub segment: i32,
+    /// start_time of the segment in seconds
+    pub start_time: f32,
+}
+
+impl OnlineRecognizerResult {
+    fn new(result: &sherpa_rs_sys::SherpaOnnxOnlineRecognizerResult) -> Self {
+        let text = unsafe { cstr_to_string(result.text) };
+        let count = result.count.try_into().unwrap();
+        let timestamps = if result.timestamps.is_null() {
+            Vec::new()
+        } else {
+            unsafe { std::slice::from_raw_parts(result.timestamps, count).to_vec() }
+        };
+        let mut tokens = Vec::with_capacity(count);
+        let mut next_token = result.tokens;
+        let json_str = unsafe { cstr_to_string(result.json) };
+        let json: OnlineRecognizerJsonResult = serde_json::from_str(&json_str).unwrap_or_default();
+
+        for _ in 0..count {
+            let token = unsafe { CStr::from_ptr(next_token) };
+            tokens.push(token.to_string_lossy().into_owned());
+            next_token = next_token
+                .wrapping_byte_offset(token.to_bytes_with_nul().len().try_into().unwrap());
+        }
+
+        Self {
+            text,
+            timestamps,
+            tokens,
+            is_final: json.is_final,
+            segment: json.segment,
+            start_time: json.start_time,
+        }
+    }
+}
+
+impl From<&sherpa_rs_sys::SherpaOnnxOnlineRecognizerResult> for OnlineRecognizerResult {
+    fn from(value: &sherpa_rs_sys::SherpaOnnxOnlineRecognizerResult) -> Self {
+        Self::new(value)
     }
 }
