@@ -47,11 +47,11 @@ fn main() {
 
     let config = ZipVoiceTtsConfig {
         tokens: format!("{}/tokens.txt", model_dir),
-        text_model: format!("{}/text_encoder.onnx", model_dir),
-        flow_matching_model: format!("{}/fm_decoder.onnx", model_dir),
+        encoder: format!("{}/text_encoder.onnx", model_dir),
+        decoder: format!("{}/fm_decoder.onnx", model_dir),
         vocoder: format!("{}/vocos_24khz.onnx", model_dir),
         data_dir: format!("{}/espeak-ng-data", model_dir),
-        pinyin_dict: format!("{}/pinyin.raw", model_dir),
+        lexicon: format!("{}/pinyin.raw", model_dir),
         feat_scale: 0.1,
         t_shift: 0.5, // Match the default
         target_rms: 0.1,

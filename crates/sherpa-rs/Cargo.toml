@@ -139,3 +139,15 @@ path = "../../examples/dolphin.rs"
 [[example]]
 name = "parakeet"
 path = "../../examples/parakeet.rs"
+
+[[example]]
+name = "omnilingual"
+path = "../../examples/omnilingual.rs"
+
+[[example]]
+name = "medasr"
+path = "../../examples/medasr.rs"
+
+[[example]]
+name = "funasr_nano"
+path = "../../examples/funasr_nano.rs"
