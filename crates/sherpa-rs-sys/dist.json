@@ -1,10 +1,10 @@
 {
-  "tag": "v1.12.15",
+  "tag": "v1.12.38",
   "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/{tag}/{archive}",
   "targets": {
     "x86_64-pc-windows-msvc": {
-      "static": "sherpa-onnx-{tag}-win-x64-static.tar.bz2",
-      "dynamic": "sherpa-onnx-{tag}-win-x64-shared.tar.bz2"
+      "static": "sherpa-onnx-{tag}-win-x64-static-MD-Release.tar.bz2",
+      "dynamic": "sherpa-onnx-{tag}-win-x64-shared-MD-Release.tar.bz2"
     },
     "x86_64-unknown-linux-gnu": {
       "static": "sherpa-onnx-{tag}-linux-x64-static.tar.bz2",
@@ -15,12 +15,12 @@
       "dynamic": "sherpa-onnx-{tag}-linux-aarch64-shared-cpu.tar.bz2"
     },
     "aarch64-apple-darwin": {
-      "static": "sherpa-onnx-{tag}-osx-universal2-static.tar.bz2",
-      "dynamic": "sherpa-onnx-{tag}-osx-universal2-shared.tar.bz2"
+      "static": "sherpa-onnx-{tag}-osx-arm64-static.tar.bz2",
+      "dynamic": "sherpa-onnx-{tag}-onnxruntime-1.24.4-osx-arm64-shared.tar.bz2"
     },
     "x86_64-apple-darwin": {
-      "static": "sherpa-onnx-{tag}-osx-universal2-static.tar.bz2",
-      "dynamic": "sherpa-onnx-{tag}-osx-universal2-shared.tar.bz2"
+      "static": "sherpa-onnx-{tag}-osx-x64-static.tar.bz2",
+      "dynamic": "sherpa-onnx-{tag}-osx-x64-shared.tar.bz2"
     },
     "android": {
       "archive": "sherpa-onnx-{tag}-android.tar.bz2",

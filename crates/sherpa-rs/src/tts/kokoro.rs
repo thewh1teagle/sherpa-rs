@@ -1,4 +1,4 @@
-use std::{mem, ptr::null};
+use std::ptr::null;
 
 use crate::{utils::cstring_from_str, OnnxConfig};
 use eyre::Result;
@@ -40,11 +40,9 @@ impl KokoroTts {
             let tts_config = config.common_config.to_raw();
 
             let model_config = sherpa_rs_sys::SherpaOnnxOfflineTtsModelConfig {
-                vits: mem::zeroed::<_>(),
                 num_threads: config.onnx_config.num_threads,
                 debug: config.onnx_config.debug.into(),
                 provider: provider.as_ptr(),
-                matcha: mem::zeroed::<_>(),
                 kokoro: sherpa_rs_sys::SherpaOnnxOfflineTtsKokoroModelConfig {
                     model: model.as_ptr(),
                     voices: voices.as_ptr(),
@@ -55,8 +53,7 @@ impl KokoroTts {
                     lexicon: lexicon.as_ptr(),
                     lang: lang.as_ptr(),
                 },
-                kitten: mem::zeroed::<_>(),
-                zipvoice: mem::zeroed::<_>(),
+                ..Default::default()
             };
             let config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
                 max_num_sentences: config.common_config.max_num_sentences,

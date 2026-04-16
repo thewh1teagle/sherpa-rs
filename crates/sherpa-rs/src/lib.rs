@@ -1,4 +1,5 @@
 pub mod audio_tag;
+pub mod cohere_transcribe;
 pub mod diarize;
 pub mod dolphin;
 pub mod embedding_manager;

@@ -80,20 +80,7 @@ impl TransducerRecognizer {
                 model_type: model_type.as_ptr(),
                 modeling_unit: modeling_unit.as_ptr(),
                 bpe_vocab: bpe_vocab.as_ptr(),
-
-                // NULLs
-                telespeech_ctc: mem::zeroed::<_>(),
-                paraformer: mem::zeroed::<_>(),
-                tdnn: mem::zeroed::<_>(),
-                nemo_ctc: mem::zeroed::<_>(),
-                whisper: mem::zeroed::<_>(),
-                sense_voice: mem::zeroed::<_>(),
-                moonshine: mem::zeroed::<_>(),
-                fire_red_asr: mem::zeroed::<_>(),
-                dolphin: mem::zeroed::<_>(),
-                zipformer_ctc: mem::zeroed::<_>(),
-                canary: mem::zeroed::<_>(),
-                wenet_ctc: mem::zeroed::<_>(),
+                ..Default::default()
             };
 
             let recognizer_config = sherpa_rs_sys::SherpaOnnxOfflineRecognizerConfig {

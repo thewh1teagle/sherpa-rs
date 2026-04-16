@@ -61,22 +61,7 @@ impl SenseVoiceRecognizer {
                 num_threads,
                 debug,
                 sense_voice: sense_voice_config,
-                // Other fields set to default/null
-                bpe_vocab: mem::zeroed::<_>(),
-                model_type: mem::zeroed::<_>(),
-                modeling_unit: mem::zeroed::<_>(),
-                nemo_ctc: mem::zeroed::<_>(),
-                paraformer: mem::zeroed::<_>(),
-                tdnn: mem::zeroed::<_>(),
-                telespeech_ctc: mem::zeroed::<_>(),
-                fire_red_asr: mem::zeroed::<_>(),
-                transducer: mem::zeroed::<_>(),
-                whisper: mem::zeroed::<_>(),
-                moonshine: mem::zeroed::<_>(),
-                dolphin: mem::zeroed::<_>(),
-                zipformer_ctc: mem::zeroed(),
-                canary: mem::zeroed(),
-                wenet_ctc: mem::zeroed::<_>(),
+                ..Default::default()
             }
         };
 

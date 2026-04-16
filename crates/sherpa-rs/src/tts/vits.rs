@@ -1,4 +1,4 @@
-use std::{mem, ptr::null};
+use std::ptr::null;
 
 use crate::{utils::cstring_from_str, OnnxConfig};
 use eyre::Result;
@@ -53,10 +53,7 @@ impl VitsTts {
                 },
                 debug: config.onnx_config.debug.into(),
                 provider: provider.as_ptr(),
-                matcha: mem::zeroed::<_>(),
-                kokoro: mem::zeroed::<_>(),
-                kitten: mem::zeroed::<_>(),
-                zipvoice: mem::zeroed::<_>(),
+                ..Default::default()
             };
             let config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
                 max_num_sentences: config.tts_config.max_num_sentences,
