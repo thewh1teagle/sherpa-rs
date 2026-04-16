@@ -65,25 +65,11 @@ impl MoonshineRecognizer {
                     encoder: encoder_ptr.as_ptr(),
                     uncached_decoder: uncached_decoder_ptr.as_ptr(),
                     cached_decoder: cached_decoder_ptr.as_ptr(),
+                    ..Default::default()
                 },
                 tokens: tokens_ptr.as_ptr(),
                 provider: provider_ptr.as_ptr(),
-
-                model_type: mem::zeroed::<_>(),
-                modeling_unit: mem::zeroed::<_>(),
-                dolphin: mem::zeroed::<_>(),
-                bpe_vocab: mem::zeroed::<_>(),
-                nemo_ctc: mem::zeroed::<_>(),
-                paraformer: mem::zeroed::<_>(),
-                tdnn: mem::zeroed::<_>(),
-                telespeech_ctc: mem::zeroed::<_>(),
-                fire_red_asr: mem::zeroed::<_>(),
-                transducer: mem::zeroed::<_>(),
-                whisper: mem::zeroed::<_>(),
-                sense_voice: mem::zeroed::<_>(),
-                zipformer_ctc: mem::zeroed(),
-                canary: mem::zeroed::<_>(),
-                wenet_ctc: mem::zeroed::<_>(),
+                ..Default::default()
             }
         };
 

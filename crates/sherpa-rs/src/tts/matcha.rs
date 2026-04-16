@@ -1,4 +1,4 @@
-use std::{mem, ptr::null};
+use std::ptr::null;
 
 use crate::{utils::cstring_from_str, OnnxConfig};
 use eyre::Result;
@@ -45,7 +45,6 @@ impl MatchaTts {
 
             let model_config = sherpa_rs_sys::SherpaOnnxOfflineTtsModelConfig {
                 num_threads: config.onnx_config.num_threads,
-                vits: mem::zeroed::<_>(),
                 debug: config.onnx_config.debug.into(),
                 provider: provider.as_ptr(),
                 matcha: sherpa_rs_sys::SherpaOnnxOfflineTtsMatchaModelConfig {
@@ -58,9 +57,7 @@ impl MatchaTts {
                     length_scale: config.length_scale,
                     dict_dir: dict_dir.as_ptr(),
                 },
-                kokoro: mem::zeroed::<_>(),
-                kitten: mem::zeroed::<_>(),
-                zipvoice: mem::zeroed::<_>(),
+                ..Default::default()
             };
             let config = sherpa_rs_sys::SherpaOnnxOfflineTtsConfig {
                 max_num_sentences: config.common_config.max_num_sentences,

@@ -44,22 +44,7 @@ impl ZipFormer {
                 provider: provider_ptr.as_ptr(),
                 transducer: transcuder_config,
                 tokens: tokens_ptr.as_ptr(),
-                // NULLs
-                bpe_vocab: mem::zeroed::<_>(),
-                model_type: mem::zeroed::<_>(),
-                modeling_unit: mem::zeroed::<_>(),
-                paraformer: mem::zeroed::<_>(),
-                tdnn: mem::zeroed::<_>(),
-                fire_red_asr: mem::zeroed::<_>(),
-                telespeech_ctc: mem::zeroed::<_>(),
-                nemo_ctc: mem::zeroed::<_>(),
-                whisper: mem::zeroed::<_>(),
-                sense_voice: mem::zeroed::<_>(),
-                moonshine: mem::zeroed::<_>(),
-                dolphin: mem::zeroed::<_>(),
-                zipformer_ctc: mem::zeroed::<_>(),
-                canary: mem::zeroed::<_>(),
-                wenet_ctc: mem::zeroed::<_>(),
+                ..Default::default()
             }
         };
         // Recognizer config
